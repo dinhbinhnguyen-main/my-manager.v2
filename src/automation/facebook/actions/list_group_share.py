@@ -214,10 +214,11 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
 # STEP 2: CLICK 'WHAT ARE YOU SELLING?' / 'BẠN ĐANG BÁN GÌ?'
 # ==============================================================================
 
-def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 15) -> bool:
+def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
     """
     STEP 2:
     - Search and click 'What are you selling?' (or 'Bạn đang bán gì?', 'Sell something', 'Item').
+    - If Facebook displays intermediate category layout (e.g. 'Items' / 'Mặt hàng'), click 'Items'.
     - Wait logic: Wait for Listing Composer form to load.
     """
     bot.log("🔍 [Step 2] Searching for 'What are you selling?' button...")
@@ -265,6 +266,40 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 15) -> bool:
     start_time = time.time()
     form_opened = False
     while time.time() - start_time < timeout:
+        # Check if intermediate layout (category selection) is shown: "Items" / "Mặt hàng"
+        for item_kw in ["items", "mặt hàng"]:
+            # 1. Button or TextView matching text / content-desc (e.g. "Items Furniture, clothing, toys, etc.")
+            item_btn = bot.get_button_by_text(item_kw, timeout=0.5)
+            if item_btn and item_btn.exists:
+                bot.log(f"👆 Found listing category button '{item_kw}', clicking...")
+                item_btn.click_exists(timeout=2)
+                bot.smart_sleep(1.5)
+                break
+
+            # 2. ViewGroup with text / content-desc (e.g. ViewGroup with text="Items")
+            item_wg = bot.get_widget_by_text("android.view.ViewGroup", item_kw, timeout=0.5)
+            if item_wg and item_wg.exists:
+                bot.log(f"👆 Found listing category ViewGroup '{item_kw}', clicking...")
+                item_wg.click()
+                bot.smart_sleep(1.5)
+                break
+
+            # 3. Direct device selector fallback
+            if bot.device:
+                item_desc = bot.device(descriptionMatches=f"(?i).*{item_kw}.*")
+                if item_desc.exists:
+                    bot.log(f"👆 Found category element via content-desc '{item_kw}', clicking...")
+                    item_desc.click()
+                    bot.smart_sleep(1.5)
+                    break
+                item_txt = bot.device(textMatches=f"(?i)^{item_kw}$")
+                if item_txt.exists:
+                    bot.log(f"👆 Found category element via text '{item_kw}', clicking...")
+                    item_txt.click()
+                    bot.smart_sleep(1.5)
+                    break
+
+        # Check if Listing Form is loaded
         add_photos = bot.get_button_by_text("add photos", timeout=1)
         them_anh = bot.get_button_by_text("thêm ảnh", timeout=1)
         title_field = bot.get_widget_by_text("android.view.ViewGroup", "composer_v3_title", timeout=1)
@@ -1330,7 +1365,7 @@ class FBGroupShareAction:
 
             # Step 2: Click 'What are you selling?'
             current_step = "step_2_click_what_are_you_selling"
-            click_what_are_you_selling(self.automator, timeout=15)
+            click_what_are_you_selling(self.automator, timeout=20)
 
             # Step 3: Add Photos from Redroid gallery
             current_step = "step_3_click_add_photos"
