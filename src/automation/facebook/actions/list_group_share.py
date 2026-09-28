@@ -206,7 +206,6 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
         bot.smart_sleep(1.0)
 
     bot.log(f"⚠️ Group {group_id} did not confirm loaded within {timeout}s.")
-    dump_error_view(bot, step_name="step_1_open_facebook_group_failed")
     return True
 
 
@@ -259,7 +258,6 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
                 break
 
     if not clicked:
-        dump_error_view(bot, step_name="step_2_what_are_you_selling_not_found")
         raise Exception("❌ Could not find 'What are you selling?' button on group page.")
 
     bot.log("⏳ Waiting for listing form to open...")
@@ -328,7 +326,7 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
         bot.smart_sleep(1.0)
 
     if not form_opened:
-        dump_error_view(bot, step_name="step_2_listing_form_not_opened")
+        raise Exception("❌ Listing form did not open after clicking 'What are you selling?'.")
 
     bot.log("✔️ Completed Step 2 (Clicked sell button).")
     return True
@@ -470,7 +468,6 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
 
     if not gallery_ready:
         bot.log("❌ Could not open gallery / camera roll after retries.")
-        dump_error_view(bot, step_name="step_3_add_photos_button_not_found")
         raise Exception("❌ Could not open Camera Roll / Gallery.")
 
     bot.log("⏳ Waiting for Camera Roll to appear...")
@@ -478,9 +475,91 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
     photos_found = False
     selected_count = 0
 
+    def _click_next_confirm() -> bool:
+        bot.smart_sleep(1.0)
+        # 1. By resourceId
+        next_btn = bot.d(resourceId="marketplace_camera_roll_android_next_button")
+        if next_btn.exists:
+            bot.log("👆 Clicking 'Next' button (via resourceId) to confirm photos...")
+            next_btn.click_exists(timeout=5)
+            bot.smart_sleep(2.0)
+            return True
+
+        # 2. By description
+        next_btn = bot.d(descriptionMatches="(?i)^(Next|Tiếp|Done|Xong|Add|Thêm)$")
+        if next_btn.exists:
+            bot.log("👆 Clicking Next / Confirm button (via description)...")
+            next_btn.click_exists(timeout=5)
+            bot.smart_sleep(2.0)
+            return True
+
+        # 3. By button text / widget
+        for kw in ["next", "tiếp", "done", "xong", "add", "thêm"]:
+            btn = bot.get_button_by_text(kw, timeout=1)
+            if btn and btn.exists:
+                bot.log(f"👆 Clicking '{kw}' button to confirm photos...")
+                btn.click_exists(timeout=5)
+                bot.smart_sleep(2.0)
+                return True
+            btn_txt = bot.d(textMatches=f"(?i)^{kw}$")
+            if btn_txt.exists:
+                bot.log(f"👆 Clicking text '{kw}' to confirm photos...")
+                btn_txt.click()
+                bot.smart_sleep(2.0)
+                return True
+        return False
+
+    def _has_selected_photos() -> bool:
+        if not bot.d:
+            return False
+        # Check 1: CheckBox with selected=True or checked=True
+        if bot.d(className="android.widget.CheckBox", selected=True).exists:
+            return True
+        if bot.d(className="android.widget.CheckBox", checked=True).exists:
+            return True
+        # Check 2: resourceId camera_roll_image with selected=True or checked=True
+        if bot.d(resourceIdMatches=".*camera_roll_image.*", selected=True).exists:
+            return True
+        if bot.d(resourceIdMatches=".*camera_roll_image.*", checked=True).exists:
+            return True
+        # Check 3: Check info of any camera roll images
+        cam_imgs = bot.d(resourceIdMatches=".*camera_roll_image.*")
+        if cam_imgs.exists and cam_imgs.count > 0:
+            for idx in range(cam_imgs.count):
+                try:
+                    info = cam_imgs[idx].info
+                    if info.get("selected") or info.get("checked"):
+                        return True
+                except Exception:
+                    pass
+        # Check 4: ImageView with selected=True
+        if bot.d(className="android.widget.ImageView", selected=True).exists:
+            return True
+        # Check 5: Check if selection badge (e.g. text='1') exists inside camera roll
+        if bot.d(className="android.view.ViewGroup", textMatches=r"^[1-9]\d*$", selected=True).exists:
+            return True
+        if bot.d(className="android.view.ViewGroup", textMatches=r"^[1-9]\d*$").exists:
+            try:
+                badge = bot.d(className="android.view.ViewGroup", textMatches=r"^[1-9]\d*$")
+                b = badge.info.get("bounds", {})
+                if b and (b.get("bottom", 0) - b.get("top", 0) < 150):
+                    return True
+            except Exception:
+                pass
+        return False
+
     while time.time() - start_time < timeout:
         if not bot.d:
             break
+
+        # Check if photos are already selected: if so, skip selection and click Next directly
+        if _has_selected_photos():
+            bot.log("📸 Photo(s) ALREADY selected in Camera Roll. Skipping selection to avoid deselecting, clicking Next directly...")
+            if not _click_next_confirm():
+                raise Exception("❌ Could not find or click Next button after detecting already-selected photos.")
+            bot.log("✔️ Completed Step 3 (Confirmed already-selected photos).")
+            return True
+
         # 1. Try detecting standard Katana camera roll photos (ViewGroup / CheckBox)
         camera_images = bot.d(descriptionMatches="(?i).*Photo taken on.*")
         if not camera_images.exists:
@@ -496,6 +575,12 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
             for i in reversed(range(actual_num)):
                 try:
                     img = camera_images[i]
+                    # Check if already selected to prevent deselecting
+                    info = img.info
+                    if info.get("selected") or info.get("checked"):
+                        bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
+                        selected_count += 1
+                        continue
                     img.click_exists(timeout=3)
                     selected_count += 1
                     bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (bottom up)")
@@ -520,34 +605,30 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                 actual_num = min(count, photo_num)
                 bot.log(f"📸 Found {count} photos in GridView. Selecting {actual_num} photos...")
                 for i in reversed(range(actual_num)):
-                    photo_widgets[i].click_exists(timeout=3)
-                    selected_count += 1
-                    bot.smart_sleep(0.5)
+                    try:
+                        pw = photo_widgets[i]
+                        if pw.info.get("selected") or pw.info.get("checked"):
+                            bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
+                            selected_count += 1
+                            continue
+                        pw.click_exists(timeout=3)
+                        selected_count += 1
+                        bot.smart_sleep(0.5)
+                    except Exception as ce:
+                        logger.debug(f"Error clicking photo {i}: {ce}")
                 photos_found = True
                 break
 
         bot.smart_sleep(1.0)
 
-    if not photos_found:
-        bot.log("⚠️ No photos detected in Camera Roll/Gallery after timeout.")
-        dump_error_view(bot, step_name="step_3_no_photos_detected")
+    if not photos_found and not _has_selected_photos():
+        bot.log("❌ No photos detected in Camera Roll/Gallery after timeout.")
+        raise Exception("❌ No photos detected or selected in Camera Roll/Gallery.")
 
     # 3. Click Next / Done / Add to confirm photos
-    bot.smart_sleep(1.0)
-    next_keywords = ["next", "tiếp", "done", "xong", "add", "thêm"]
-    confirmed = False
-    for kw in next_keywords:
-        btn = bot.get_button_by_text(kw, timeout=3)
-        if btn and btn.exists:
-            bot.log(f"👆 Clicking '{kw}' button to confirm adding {selected_count} photo(s) to listing...")
-            btn.click_exists(timeout=5)
-            bot.smart_sleep(2.0)
-            confirmed = True
-            break
-
-    if not confirmed and selected_count > 0:
-        bot.log("⚠️ Could not find confirm button after selecting photos.")
-        dump_error_view(bot, step_name="step_3_confirm_photos_btn_not_found")
+    confirmed = _click_next_confirm()
+    if not confirmed:
+        raise Exception("❌ Could not find or click Next / Confirm button after selecting photos.")
 
     bot.log(f"✔️ Completed Step 3 (Selected {selected_count} photo(s)).")
     return True
@@ -576,7 +657,6 @@ def _set_title(bot: BaseAutomator, title: str):
         title_elem = bot.get_widget_by_text("android.view.ViewGroup", "title", timeout=5)
 
     if not title_elem or not title_elem.exists:
-        dump_error_view(bot, step_name="step_4_title_field_not_found")
         raise Exception("❌ Could not find Title input field.")
 
     bot.swipe_widget_to_center(title_elem)
@@ -624,7 +704,6 @@ def _set_price(bot: BaseAutomator, price: Optional[Any] = None):
         price_elem = bot.get_widget_by_text("android.view.ViewGroup", "price", timeout=5)
 
     if not price_elem or not price_elem.exists:
-        dump_error_view(bot, step_name="step_4_price_field_not_found")
         raise Exception("❌ Could not find Price input field.")
 
     bot.swipe_widget_to_center(price_elem)
@@ -803,7 +882,6 @@ def _set_category(bot: BaseAutomator, category_name: str = "Miscellaneous", max_
 
     if not found:
         bot.log(f"⚠️ Could not find category '{target_category}' after {max_swipes} swipes.")
-        dump_error_view(bot, step_name=f"step_4_category_{target_category}_not_found")
         # Try closing popup or saving if available
         if not _click_save_if_present():
             close_btn = bot.d(description="Close") or bot.d(description="Back")
@@ -814,41 +892,115 @@ def _set_category(bot: BaseAutomator, category_name: str = "Miscellaneous", max_
 
 
 def _set_condition(bot: BaseAutomator, condition_name: str = "New", timeout: int = 5):
-    """Selects Condition if field is visible on UI."""
+    """
+    Selects Condition if field is visible on UI.
+    Handles 2 cases:
+    1. Condition already selected (e.g. "Condition, New, , ") -> Skip, do not process condition logic.
+    2. Condition unselected (e.g. "Condition, , , ") -> Click button, wait for conditionbox bottom sheet, click "New".
+    """
     if not bot.d:
         return
-    cond_btn = bot.d(descriptionMatches="(?i)^Condition.*")
+    cond_btn = bot.d(descriptionMatches="(?i)^(Condition|Tình trạng).*")
     if not cond_btn.exists:
-        cond_btn = bot.get_button_by_text("condition", timeout=2)
+        cond_btn = bot.get_button_by_text("condition", timeout=2) or bot.get_button_by_text("tình trạng", timeout=1)
     if not cond_btn or not cond_btn.exists:
-        cond_btn = bot.get_widget_by_text("android.view.ViewGroup", "condition", timeout=1)
+        cond_btn = bot.get_widget_by_text("android.view.ViewGroup", "condition", timeout=1) or bot.get_widget_by_text("android.view.ViewGroup", "tình trạng", timeout=1)
+    if not cond_btn or not cond_btn.exists:
+        cond_btn = bot.d(textMatches="(?i)^(Condition|Tình trạng)$")
 
     if not cond_btn or not cond_btn.exists:
         bot.log("⏩ 'Condition' field not found, skipping.")
         return
 
     target_cond = condition_name or "New"
-    bot.log(f"🏷️ Condition field found. Opening and selecting '{target_cond}'...")
+
+    # CASE 1: Check if Condition is already selected (e.g. "Condition, New, , ")
+    desc = ""
+    try:
+        desc = cond_btn.info.get("contentDescription") or ""
+        if not desc:
+            parent = cond_btn.up(className="android.widget.Button")
+            if parent.exists:
+                desc = parent.info.get("contentDescription") or ""
+    except Exception:
+        pass
+
+    already_selected = False
+    if desc:
+        parts = [p.strip() for p in desc.split(",") if p.strip()]
+        # Selected dump format: "Condition, New, , " -> parts: ['Condition', 'New']
+        if len(parts) >= 2 and any(p.lower() == target_cond.lower() for p in parts[1:]):
+            already_selected = True
+        elif re.search(rf"(?i)condition[,\s:]+{re.escape(target_cond)}", desc):
+            already_selected = True
+
+    if not already_selected:
+        try:
+            # Check if there is an overlapping/child ViewGroup text with target_cond inside cond_btn bounds
+            cond_val_elem = bot.d(className="android.view.ViewGroup", textMatches=f"(?i)^{re.escape(target_cond)}$")
+            if cond_val_elem.exists:
+                b_btn = cond_btn.info.get("bounds", {})
+                b_val = cond_val_elem.info.get("bounds", {})
+                if b_btn and b_val:
+                    if b_btn.get("top", 0) <= b_val.get("top", 0) and b_btn.get("bottom", 0) >= b_val.get("bottom", 0):
+                        already_selected = True
+        except Exception:
+            pass
+
+    if already_selected:
+        bot.log(f"   ✔️ Condition is already selected ('{target_cond}'). Skipping condition selection.")
+        return
+
+    # CASE 2: Condition is unselected -> Click button, wait for conditionbox, click target option
+    bot.log(f"🏷️ Condition is unselected. Clicking to open Condition picker...")
     bot.swipe_widget_to_center(cond_btn)
     cond_btn.click()
-    bot.smart_sleep(1.0)
 
-    new_option = bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i)^{target_cond}.*")
+    # Wait for conditionbox to appear (ref: tests/dumps/conditionbox_unselected)
+    bot.log("⏳ Waiting for Condition picker (conditionbox) to appear...")
+    box_appeared = False
+    start_t = time.time()
+    while time.time() - start_t < timeout:
+        if (bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i)^{re.escape(target_cond)}.*").exists
+                or bot.d(description="Reset").exists
+                or bot.d(text="Reset").exists
+                or bot.d(className="android.widget.RadioButton").exists):
+            box_appeared = True
+            break
+        bot.smart_sleep(0.3)
+
+    if not box_appeared:
+        bot.log("⚠️ Condition picker not detected, attempting one retry click...")
+        if cond_btn.exists:
+            cond_btn.click()
+            bot.smart_sleep(1.0)
+
+    # Click target condition option (e.g. "New")
+    new_option = bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i)^{re.escape(target_cond)}.*")
+    if not new_option.exists:
+        new_option = bot.d(className="android.widget.RadioButton", textMatches=f"(?i)^{re.escape(target_cond)}.*")
     if not new_option.exists:
         new_option = bot.d(text=target_cond)
     if not new_option.exists:
-        new_option = bot.d(descriptionMatches=f"(?i)^{target_cond}.*")
+        new_option = bot.d(descriptionMatches=f"(?i)^{re.escape(target_cond)}.*")
     if not new_option.exists:
-        new_option = bot.get_button_by_text(target_cond, exact=False, timeout=timeout)
+        new_option = bot.get_button_by_text(target_cond, exact=False, timeout=2)
 
     if new_option and new_option.exists:
         bot.log(f"👆 Found option '{target_cond}'. Clicking...")
         new_option.click_exists(timeout=3)
         bot.smart_sleep(1.0)
+
+        # In case the bottom sheet doesn't close automatically after selecting
+        close_btn = bot.d(descriptionMatches="(?i)^Close$", className="android.widget.Button")
+        if close_btn.exists and (bot.d(description="Reset").exists or bot.d(text="Reset").exists):
+            bot.log("   Dismissing Condition bottom sheet...")
+            close_btn.click_exists(timeout=1)
+            bot.smart_sleep(0.5)
+
         bot.log(f"   ✔️ Condition '{target_cond}' selected.")
     else:
         bot.log(f"⚠️ Option '{target_cond}' not found in Condition list.")
-        dump_error_view(bot, step_name=f"step_4_condition_{target_cond}_not_found")
 
 
 def _set_location(bot: BaseAutomator, city_name: str = "Da Lat"):
@@ -904,7 +1056,6 @@ def _set_location(bot: BaseAutomator, city_name: str = "Da Lat"):
             bot.log(f"   ✔️ Applied location '{target_city}'.")
     else:
         bot.log("⚠️ Could not find location search field.")
-        dump_error_view(bot, step_name="step_4_location_search_field_not_found")
 
 
 def _set_description(bot: BaseAutomator, description: str):
@@ -968,7 +1119,6 @@ def _set_description(bot: BaseAutomator, description: str):
         bot.log("   ✔️ Description entered successfully.")
     else:
         bot.log("⚠️ Description field not found, skipping.")
-        dump_error_view(bot, step_name="step_4_description_field_not_found")
 
 
 def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll_cycles: int = 5):
@@ -1017,11 +1167,11 @@ def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll
             if not el or not el.exists:
                 el = bot.d(text="Category")
         elif field_name == "condition":
-            el = bot.d(descriptionMatches="(?i)^Condition.*")
+            el = bot.d(descriptionMatches="(?i)^(Condition|Tình trạng).*")
             if not el.exists:
-                el = bot.get_button_by_text("condition", timeout=0.2)
+                el = bot.get_button_by_text("condition", timeout=0.2) or bot.get_button_by_text("tình trạng", timeout=0.2)
             if not el or not el.exists:
-                el = bot.d(text="Condition")
+                el = bot.d(textMatches="(?i)^(Condition|Tình trạng)$")
         elif field_name == "location":
             el = bot.d(descriptionMatches="(?i).*Location.*")
             if not el.exists:
@@ -1083,7 +1233,6 @@ def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll
                     bot.smart_sleep(0.8)
                 except Exception as fe:
                     bot.log(f"⚠️ Error handling field [{field}]: {fe}")
-                    dump_error_view(bot, step_name=f"step_4_field_{field}_error")
                     completed_fields.add(field)
 
         remaining_fields = all_fields - completed_fields
@@ -1125,7 +1274,7 @@ def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll
     critical_missing = missing - {"condition"}
     if critical_missing:
         bot.log(f"⚠️ Incomplete critical fields at end of Step 4: {critical_missing}")
-        dump_error_view(bot, step_name="step_4_incomplete_fields")
+        raise Exception(f"❌ Incomplete critical fields at end of Step 4: {critical_missing}")
     else:
         bot.log("🎉 All required fields completed!")
 
@@ -1167,7 +1316,6 @@ def click_next_button(bot: BaseAutomator, timeout: int = 15) -> bool:
                 bot.log(f"ℹ️ Found direct '{pub}' button on listing form instead of 'Next'. Form does not require group selection, publishing directly!")
                 return False
 
-        dump_error_view(bot, step_name="step_5_next_button_not_found")
         raise Exception("❌ Could not find 'Next' or 'Publish' button on listing form.")
 
     next_btn.click_exists(timeout=5)
@@ -1446,7 +1594,6 @@ def click_publish_or_done(bot: BaseAutomator, timeout: int = 20) -> bool:
             publish_btn = top_right_btn
 
     if not publish_btn or not publish_btn.exists:
-        dump_error_view(bot, step_name="step_7_publish_button_not_found")
         raise Exception("❌ Could not find 'Publish' button on screen.")
 
     bot.log("👆 Clicking 'Publish' button...")
@@ -1469,8 +1616,7 @@ def click_publish_or_done(bot: BaseAutomator, timeout: int = 20) -> bool:
         bot.smart_sleep(1.0)
 
     bot.log("⚠️ Publish step timed out waiting for completion confirmation.")
-    dump_error_view(bot, step_name="step_7_publish_timeout")
-    return True
+    raise Exception("❌ Publish step timed out waiting for completion confirmation.")
 
 
 # ==============================================================================
@@ -1505,6 +1651,7 @@ class FBGroupShareAction:
 
         pushed_remotes = []
         current_step = "step_0_push_media"
+        is_success = False
         try:
             # 0. Clean previous session media & cache, then push new images
             if self.automator.adb_client:
@@ -1536,6 +1683,7 @@ class FBGroupShareAction:
             # Checkpoint safety check
             is_cp, cp_msg = self.detector.is_checkpoint()
             if is_cp:
+                current_step = "checkpoint_detected"
                 AccountRepository.update_status(self.account.uid, AccountStatus.CHECKPOINT, cp_msg)
                 return False
 
@@ -1546,11 +1694,7 @@ class FBGroupShareAction:
             # Step 3: Add Photos from Redroid gallery
             current_step = "step_3_click_add_photos"
             photo_count = min(len(image_paths), 5) if image_paths else 1
-            try:
-                click_add_photos(self.automator, photo_num=photo_count, timeout=15, max_retries=2)
-            except Exception as e:
-                logger.warning(f"Could not add photos: {e}")
-                dump_error_view(self.automator, account_uid=self.account.uid, step_name="step_3_photos_failed")
+            click_add_photos(self.automator, photo_num=photo_count, timeout=15, max_retries=2)
 
             # Step 4: Fill Listing Details (Adaptive Form Filling)
             current_step = "step_4_fill_listing_details"
@@ -1577,15 +1721,18 @@ class FBGroupShareAction:
             current_step = "step_7_click_publish_or_done"
             click_publish_or_done(self.automator, timeout=20)
 
+            is_success = True
             logger.info(f"Successfully published 7-step Group Share listing for {self.account.uid}!")
             return True
 
         except Exception as e:
             logger.exception(f"Error during 7-Step Group Share execution at {current_step}: {e}")
-            dump_error_view(self.automator, account_uid=self.account.uid, step_name=f"exception_{current_step}")
             return False
 
         finally:
+            if not is_success:
+                logger.error(f"Execution failed at {current_step}. Dumping error view in finally block...")
+                dump_error_view(self.automator, account_uid=self.account.uid, step_name=f"error_{current_step}")
             if pushed_remotes:
                 logger.info(f"Cleaning up {len(pushed_remotes)} temp image(s) from Redroid device storage...")
                 for r_path in pushed_remotes:
