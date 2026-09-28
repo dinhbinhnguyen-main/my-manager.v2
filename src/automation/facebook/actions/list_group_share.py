@@ -384,7 +384,7 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                     return True
         return False
 
-    max_open_attempts = max(max_retries, 8)
+    max_open_attempts = max(max_retries, 20)
     gallery_ready = False
 
     for attempt in range(max_open_attempts):
@@ -1694,7 +1694,7 @@ class FBGroupShareAction:
             # Step 3: Add Photos from Redroid gallery
             current_step = "step_3_click_add_photos"
             photo_count = min(len(image_paths), 5) if image_paths else 1
-            click_add_photos(self.automator, photo_num=photo_count, timeout=15, max_retries=2)
+            click_add_photos(self.automator, photo_num=photo_count, timeout=15, max_retries=20)
 
             # Step 4: Fill Listing Details (Adaptive Form Filling)
             current_step = "step_4_fill_listing_details"
