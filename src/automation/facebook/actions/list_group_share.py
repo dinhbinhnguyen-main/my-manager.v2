@@ -897,110 +897,131 @@ def _set_condition(bot: BaseAutomator, condition_name: str = "New", timeout: int
     Handles 2 cases:
     1. Condition already selected (e.g. "Condition, New, , ") -> Skip, do not process condition logic.
     2. Condition unselected (e.g. "Condition, , , ") -> Click button, wait for conditionbox bottom sheet, click "New".
+    Guarantees dismissal of the bottom sheet so it doesn't block subsequent fields.
     """
     if not bot.d:
-        return
-    cond_btn = bot.d(descriptionMatches="(?i)^(Condition|Tình trạng).*")
-    if not cond_btn.exists:
-        cond_btn = bot.get_button_by_text("condition", timeout=2) or bot.get_button_by_text("tình trạng", timeout=1)
-    if not cond_btn or not cond_btn.exists:
-        cond_btn = bot.get_widget_by_text("android.view.ViewGroup", "condition", timeout=1) or bot.get_widget_by_text("android.view.ViewGroup", "tình trạng", timeout=1)
-    if not cond_btn or not cond_btn.exists:
-        cond_btn = bot.d(textMatches="(?i)^(Condition|Tình trạng)$")
-
-    if not cond_btn or not cond_btn.exists:
-        bot.log("⏩ 'Condition' field not found, skipping.")
         return
 
     target_cond = condition_name or "New"
 
-    # CASE 1: Check if Condition is already selected (e.g. "Condition, New, , ")
-    desc = ""
-    try:
-        desc = cond_btn.info.get("contentDescription") or ""
-        if not desc:
-            parent = cond_btn.up(className="android.widget.Button")
-            if parent.exists:
-                desc = parent.info.get("contentDescription") or ""
-    except Exception:
-        pass
+    def _is_picker_open() -> bool:
+        if not bot.d:
+            return False
+        return (
+            bot.d(description="Reset").exists
+            or bot.d(text="Reset").exists
+            or bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i)^{re.escape(target_cond)}.*").exists
+        )
 
-    already_selected = False
-    if desc:
-        parts = [p.strip() for p in desc.split(",") if p.strip()]
-        # Selected dump format: "Condition, New, , " -> parts: ['Condition', 'New']
-        if len(parts) >= 2 and any(p.lower() == target_cond.lower() for p in parts[1:]):
-            already_selected = True
-        elif re.search(rf"(?i)condition[,\s:]+{re.escape(target_cond)}", desc):
-            already_selected = True
+    def _dismiss_picker():
+        for _ in range(3):
+            if not _is_picker_open():
+                break
+            close_btn = bot.d(descriptionMatches="(?i)^Close$", className="android.widget.Button")
+            if not close_btn.exists:
+                close_btn = bot.d(description="Close")
+            if close_btn.exists:
+                bot.log("   Dismissing Condition bottom sheet via Close button...")
+                close_btn.click_exists(timeout=2)
+                bot.smart_sleep(0.8)
+            else:
+                bot.log("   Dismissing Condition bottom sheet via Back key...")
+                bot.d.press("back")
+                bot.smart_sleep(0.8)
 
-    if not already_selected:
+    # CHECK 0: Is Condition picker ALREADY open on screen?
+    if not _is_picker_open():
+        cond_btn = bot.d(descriptionMatches="(?i)^(Condition|Tình trạng).*")
+        if not cond_btn.exists:
+            cond_btn = bot.get_button_by_text("condition", timeout=1) or bot.get_button_by_text("tình trạng", timeout=1)
+        if not cond_btn or not cond_btn.exists:
+            cond_btn = bot.get_widget_by_text("android.view.ViewGroup", "condition", timeout=1) or bot.get_widget_by_text("android.view.ViewGroup", "tình trạng", timeout=1)
+        if not cond_btn or not cond_btn.exists:
+            cond_btn = bot.d(textMatches="(?i)^(Condition|Tình trạng)$")
+
+        if not cond_btn or not cond_btn.exists:
+            bot.log("⏩ 'Condition' field not found, skipping.")
+            return
+
+        # CASE 1: Check if Condition is already selected (e.g. "Condition, New, , ")
+        desc = ""
         try:
-            # Check if there is an overlapping/child ViewGroup text with target_cond inside cond_btn bounds
-            cond_val_elem = bot.d(className="android.view.ViewGroup", textMatches=f"(?i)^{re.escape(target_cond)}$")
-            if cond_val_elem.exists:
-                b_btn = cond_btn.info.get("bounds", {})
-                b_val = cond_val_elem.info.get("bounds", {})
-                if b_btn and b_val:
-                    if b_btn.get("top", 0) <= b_val.get("top", 0) and b_btn.get("bottom", 0) >= b_val.get("bottom", 0):
-                        already_selected = True
+            desc = cond_btn.info.get("contentDescription") or ""
+            if not desc:
+                parent = cond_btn.up(className="android.widget.Button")
+                if parent.exists:
+                    desc = parent.info.get("contentDescription") or ""
         except Exception:
             pass
 
-    if already_selected:
-        bot.log(f"   ✔️ Condition is already selected ('{target_cond}'). Skipping condition selection.")
-        return
+        already_selected = False
+        if desc:
+            parts = [p.strip() for p in desc.split(",") if p.strip()]
+            # Selected dump format: "Condition, New, , " -> parts: ['Condition', 'New']
+            if len(parts) >= 2 and any(p.lower() == target_cond.lower() for p in parts[1:]):
+                already_selected = True
+            elif re.search(rf"(?i)condition[,\s:]+{re.escape(target_cond)}", desc):
+                already_selected = True
 
-    # CASE 2: Condition is unselected -> Click button, wait for conditionbox, click target option
-    bot.log(f"🏷️ Condition is unselected. Clicking to open Condition picker...")
-    bot.swipe_widget_to_center(cond_btn)
-    cond_btn.click()
+        if not already_selected:
+            try:
+                # Check if there is an overlapping/child ViewGroup text with target_cond inside cond_btn bounds
+                cond_val_elem = bot.d(className="android.view.ViewGroup", textMatches=f"(?i)^{re.escape(target_cond)}$")
+                if cond_val_elem.exists:
+                    b_btn = cond_btn.info.get("bounds", {})
+                    b_val = cond_val_elem.info.get("bounds", {})
+                    if b_btn and b_val:
+                        if b_btn.get("top", 0) <= b_val.get("top", 0) and b_btn.get("bottom", 0) >= b_val.get("bottom", 0):
+                            already_selected = True
+            except Exception:
+                pass
+
+        if already_selected:
+            bot.log(f"   ✔️ Condition is already selected ('{target_cond}'). Skipping condition selection.")
+            return
+
+        # CASE 2: Condition is unselected -> Click button, wait for conditionbox, click target option
+        bot.log(f"🏷️ Condition is unselected. Clicking to open Condition picker...")
+        # Avoid swipe_widget_to_center as swiping from a button center can trigger unwanted touch events
+        clicked = cond_btn.click_exists(timeout=2)
+        if not clicked:
+            try:
+                cx, cy = cond_btn.center()
+                bot.d.click(cx, cy)
+            except Exception:
+                pass
+        bot.smart_sleep(1.0)
 
     # Wait for conditionbox to appear (ref: tests/dumps/conditionbox_unselected)
     bot.log("⏳ Waiting for Condition picker (conditionbox) to appear...")
-    box_appeared = False
     start_t = time.time()
     while time.time() - start_t < timeout:
-        if (bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i)^{re.escape(target_cond)}.*").exists
-                or bot.d(description="Reset").exists
-                or bot.d(text="Reset").exists
-                or bot.d(className="android.widget.RadioButton").exists):
-            box_appeared = True
+        if _is_picker_open():
             break
         bot.smart_sleep(0.3)
 
-    if not box_appeared:
-        bot.log("⚠️ Condition picker not detected, attempting one retry click...")
-        if cond_btn.exists:
-            cond_btn.click()
+    try:
+        # Click target condition option (e.g. "New")
+        new_option = bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i)^{re.escape(target_cond)}.*")
+        if not new_option.exists:
+            new_option = bot.d(className="android.widget.RadioButton", textMatches=f"(?i)^{re.escape(target_cond)}.*")
+        if not new_option.exists:
+            new_option = bot.d(text=target_cond)
+        if not new_option.exists:
+            new_option = bot.d(descriptionMatches=f"(?i)^{re.escape(target_cond)}.*")
+        if not new_option.exists:
+            new_option = bot.get_button_by_text(target_cond, exact=False, timeout=2)
+
+        if new_option and new_option.exists:
+            bot.log(f"👆 Found option '{target_cond}'. Clicking...")
+            new_option.click_exists(timeout=3)
             bot.smart_sleep(1.0)
-
-    # Click target condition option (e.g. "New")
-    new_option = bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i)^{re.escape(target_cond)}.*")
-    if not new_option.exists:
-        new_option = bot.d(className="android.widget.RadioButton", textMatches=f"(?i)^{re.escape(target_cond)}.*")
-    if not new_option.exists:
-        new_option = bot.d(text=target_cond)
-    if not new_option.exists:
-        new_option = bot.d(descriptionMatches=f"(?i)^{re.escape(target_cond)}.*")
-    if not new_option.exists:
-        new_option = bot.get_button_by_text(target_cond, exact=False, timeout=2)
-
-    if new_option and new_option.exists:
-        bot.log(f"👆 Found option '{target_cond}'. Clicking...")
-        new_option.click_exists(timeout=3)
-        bot.smart_sleep(1.0)
-
-        # In case the bottom sheet doesn't close automatically after selecting
-        close_btn = bot.d(descriptionMatches="(?i)^Close$", className="android.widget.Button")
-        if close_btn.exists and (bot.d(description="Reset").exists or bot.d(text="Reset").exists):
-            bot.log("   Dismissing Condition bottom sheet...")
-            close_btn.click_exists(timeout=1)
-            bot.smart_sleep(0.5)
-
-        bot.log(f"   ✔️ Condition '{target_cond}' selected.")
-    else:
-        bot.log(f"⚠️ Option '{target_cond}' not found in Condition list.")
+            bot.log(f"   ✔️ Condition '{target_cond}' selected.")
+        else:
+            bot.log(f"⚠️ Option '{target_cond}' not found in Condition list.")
+    finally:
+        # Always guarantee bottom sheet is closed so it doesn't block the rest of the form
+        _dismiss_picker()
 
 
 def _set_location(bot: BaseAutomator, city_name: str = "Da Lat"):
