@@ -92,7 +92,8 @@ class GeminiService:
             "generationConfig": {
                 "temperature": 0.85,
                 "topP": 0.95,
-                "topK": 40
+                "topK": 40,
+                "responseMimeType": "application/json"
             }
         }
 
@@ -110,32 +111,83 @@ class GeminiService:
                 if parts:
                     gen_text = parts[0].get("text", "").strip()
 
-                    # 1. Parse JSON response
-                    json_match = re.search(r'\{[\s\S]*\}', gen_text)
-                    if json_match:
-                        try:
-                            parsed_json = json.loads(json_match.group(0))
-                            ai_title = str(parsed_json.get("title", "")).strip()
-                            ai_desc = str(parsed_json.get("description", "")).strip()
+                    ai_title = ""
+                    ai_desc = ""
 
-                            # Enforce max 90 characters for title
-                            ai_title = ai_title[:90].strip() if ai_title else fallback_title
-                            ai_desc = self._clean_response(ai_desc) if ai_desc else fallback_desc
+                    # 1. Clean markdown code fences if model wrapped response in ```json ... ```
+                    cleaned_text = re.sub(r"^```(?:json)?\s*", "", gen_text, flags=re.IGNORECASE)
+                    cleaned_text = re.sub(r"\s*```$", "", cleaned_text).strip()
 
-                            logger.info(f"Gemini listing rewrite succeeded! Title ({len(ai_title)} chars): '{ai_title}'")
-                            return ai_title, ai_desc
-                        except Exception as parse_err:
-                            logger.warning(f"Could not parse JSON from Gemini response: {parse_err}")
+                    # 2. Try JSON parsing with strict=False (allows unescaped newlines/control chars)
+                    parsed_json = None
+                    try:
+                        parsed_json = json.loads(cleaned_text, strict=False)
+                    except Exception:
+                        json_match = re.search(r'\{[\s\S]*\}', gen_text)
+                        if json_match:
+                            try:
+                                parsed_json = json.loads(json_match.group(0), strict=False)
+                            except Exception as parse_err:
+                                logger.warning(f"Could not parse JSON from Gemini response: {parse_err}")
 
-                    # 2. Fallback line-based parsing
-                    lines = [ln.strip() for ln in gen_text.splitlines() if ln.strip()]
-                    if len(lines) >= 2:
-                        ai_title = lines[0][:90].strip()
-                        ai_desc = self._clean_response("\n".join(lines[1:]).strip())
-                        logger.info(f"Gemini listing rewrite parsed line-by-line! Title ({len(ai_title)} chars): '{ai_title}'")
-                        return ai_title, ai_desc
+                    if isinstance(parsed_json, dict):
+                        ai_title = str(parsed_json.get("title", "")).strip()
+                        ai_desc = str(parsed_json.get("description", "")).strip()
 
-                    return fallback_title, self._clean_response(gen_text)
+                    # 3. Fallback: Regex extraction for title and description keys
+                    if not ai_title or not ai_desc:
+                        t_match = re.search(r'"title"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"', gen_text, re.IGNORECASE)
+                        if not t_match:
+                            t_match = re.search(r'"title"\s*:\s*"([^"\n\r]+)"', gen_text, re.IGNORECASE)
+                        if t_match and not ai_title:
+                            ai_title = t_match.group(1).strip()
+
+                        d_match = re.search(r'"description"\s*:\s*"([\s\S]*?)(?:"\s*\}|"$)', gen_text, re.IGNORECASE)
+                        if d_match and not ai_desc:
+                            ai_desc = d_match.group(1).strip()
+                            ai_desc = ai_desc.replace('\\n', '\n').replace('\\"', '"').replace('\\\\', '\\')
+
+                    # 4. Fallback: Filtered line-based parsing (stripping code fences, braces, json keys)
+                    if not ai_title or not ai_desc:
+                        valid_lines = []
+                        for line in gen_text.splitlines():
+                            ln = line.strip()
+                            if not ln or ln.startswith("```") or ln in ("{", "}", "[", "]"):
+                                continue
+                            # Remove residual JSON keys if any
+                            ln = re.sub(r'^"?(?:title|description)"?\s*:\s*"?', '', ln, flags=re.IGNORECASE)
+                            ln = re.sub(r'"?,?$', '', ln).strip()
+                            if ln:
+                                valid_lines.append(ln)
+
+                        if not ai_title and valid_lines:
+                            ai_title = valid_lines[0]
+                            valid_lines = valid_lines[1:]
+                        if not ai_desc and valid_lines:
+                            ai_desc = "\n".join(valid_lines)
+
+                    # 5. Sanitize and validate title
+                    def _is_invalid_title(val: str) -> bool:
+                        if not val or len(val.strip()) < 5:
+                            return True
+                        val_lower = val.strip().lower()
+                        return val_lower.startswith("```") or val_lower in ("{", "}", "json", "```json")
+
+                    if _is_invalid_title(ai_title):
+                        logger.warning(f"Extracted title '{ai_title}' is invalid. Using fallback title.")
+                        ai_title = fallback_title
+                    else:
+                        ai_title = ai_title[:90].strip()
+
+                    # 6. Sanitize and validate description
+                    if not ai_desc or ai_desc.strip().startswith("```") or ai_desc.strip() in ("{", "}"):
+                        logger.warning("Extracted description is empty or invalid. Using fallback description.")
+                        ai_desc = fallback_desc
+                    else:
+                        ai_desc = self._clean_response(ai_desc)
+
+                    logger.info(f"Gemini listing rewrite succeeded! Title ({len(ai_title)} chars): '{ai_title}'")
+                    return ai_title, ai_desc
         except Exception as e:
             logger.error(f"Gemini API call failed: {e}")
 

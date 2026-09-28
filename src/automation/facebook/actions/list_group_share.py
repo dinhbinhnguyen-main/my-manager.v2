@@ -561,7 +561,12 @@ def _set_title(bot: BaseAutomator, title: str):
     """Enters listing title (max 90 characters, in UPPERCASE)."""
     if not bot.d:
         return
-    title_text = str(title).strip().upper()[:90] if title else "BẤT ĐỘNG SẢN GIÁ TỐT"
+    t_clean = str(title).strip() if title else ""
+    if not t_clean or t_clean.lower().startswith("```") or t_clean in ("{", "}", '""', "''") or len(t_clean) < 5:
+        title_text = "BẤT ĐỘNG SẢN GIÁ TỐT"
+    else:
+        title_text = t_clean.upper()[:90]
+
     bot.log(f"✏️ Entering Title ({len(title_text)} chars): '{title_text[:40]}...'")
 
     title_elem = bot.d(resourceId="composer_v3_title")
@@ -906,10 +911,20 @@ def _set_description(bot: BaseAutomator, description: str):
     """Inputs listing description."""
     if not bot.d:
         return
-    desc_text = str(description).strip() if description else "Bất động sản chính chủ, giá tốt. Liên hệ xem nhà đất ngay."
+    d_clean = str(description).strip() if description else ""
+    if not d_clean or d_clean.lower().startswith("```") or d_clean in ("{", "}", '""', "''") or len(d_clean) < 10:
+        desc_text = "Bất động sản chính chủ, giá tốt, vị trí thuận tiện. Liên hệ xem nhà đất ngay."
+    else:
+        desc_text = d_clean
     bot.log(f"📝 Finding and entering Description ({len(desc_text)} chars)...")
 
-    desc_elem = bot.d(descriptionMatches="(?i).*Description.*")
+    desc_elem = bot.d(resourceId="composer_v3_description")
+    if not desc_elem.exists:
+        desc_elem = bot.d(descriptionMatches="(?i).*Description.*")
+    if not desc_elem.exists:
+        desc_elem = bot.d(descriptionMatches="(?i).*Mô tả.*")
+    if not desc_elem.exists:
+        desc_elem = bot.d(text="Description")
     if not desc_elem.exists:
         desc_elem = bot.get_widget_by_text("android.view.ViewGroup", "description", timeout=2)
     if not desc_elem or not desc_elem.exists:
@@ -919,7 +934,11 @@ def _set_description(bot: BaseAutomator, description: str):
         bot.log("🔄 Scrolling down to locate Description field...")
         bot.swipe_up(scale=0.5)
         bot.smart_sleep(1.0)
-        desc_elem = bot.d(descriptionMatches="(?i).*Description.*")
+        desc_elem = bot.d(resourceId="composer_v3_description")
+        if not desc_elem.exists:
+            desc_elem = bot.d(descriptionMatches="(?i).*Description.*")
+        if not desc_elem.exists:
+            desc_elem = bot.d(descriptionMatches="(?i).*Mô tả.*")
         if not desc_elem.exists:
             desc_elem = bot.get_widget_by_text("android.view.ViewGroup", "description", timeout=3)
 
@@ -928,7 +947,9 @@ def _set_description(bot: BaseAutomator, description: str):
         desc_elem.click()
         bot.smart_sleep(0.5)
 
-        desc_input = bot.d(className="android.widget.EditText", descriptionMatches="(?i).*Description.*")
+        desc_input = desc_elem.child(className="android.widget.EditText")
+        if not desc_input.exists:
+            desc_input = bot.d(className="android.widget.EditText", descriptionMatches="(?i).*Description.*")
         if not desc_input.exists:
             desc_input = bot.get_interactable_from_parent(desc_elem, "android.widget.EditText", timeout=3)
         if not desc_input.exists:
@@ -1012,6 +1033,8 @@ def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll
             if not el.exists:
                 el = bot.d(descriptionMatches="(?i).*Description.*")
             if not el.exists:
+                el = bot.d(descriptionMatches="(?i).*Mô tả.*")
+            if not el.exists:
                 el = bot.d(text="Description")
             if not el.exists:
                 el = bot.get_widget_by_text("android.view.ViewGroup", "description", timeout=0.2)
@@ -1057,15 +1080,15 @@ def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll
                 try:
                     field_handlers[field]()
                     completed_fields.add(field)
-                    bot.smart_sleep(1.0)
+                    bot.smart_sleep(0.8)
                 except Exception as fe:
                     bot.log(f"⚠️ Error handling field [{field}]: {fe}")
                     dump_error_view(bot, step_name=f"step_4_field_{field}_error")
                     completed_fields.add(field)
 
         remaining_fields = all_fields - completed_fields
-        if not remaining_fields:
-            bot.log("🎉 All fields completed!")
+        if not remaining_fields or ({"title", "price", "description"}.issubset(completed_fields) and "location" in completed_fields):
+            bot.log("🎉 All required fields completed!")
             break
 
         bot.log(f"🔄 Remaining fields: {list(remaining_fields)}. Scrolling down...")
@@ -1075,13 +1098,36 @@ def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll
         sig2 = bot._get_screen_signature()
 
         if sig1 == sig2 and sig1 != 0:
-            bot.log("🏁 Reached the bottom of listing form.")
+            bot.log("🏁 Reached the bottom of listing form. Performing final scan on remaining fields...")
+            # Scan and fill any remaining fields that are visible at the bottom
+            for field in list(remaining_fields):
+                top_y = detect_field_position(field)
+                if top_y is not None:
+                    bot.log(f"👉 Filling remaining field at bottom: [{field}]...")
+                    try:
+                        field_handlers[field]()
+                        completed_fields.add(field)
+                        bot.smart_sleep(0.8)
+                    except Exception as fe:
+                        bot.log(f"⚠️ Error handling field [{field}] at bottom: {fe}")
             break
 
+    # Final safety check: if description was not completed, attempt direct fill
+    if "description" not in completed_fields:
+        bot.log("⚠️ Description was not completed during adaptive cycles. Attempting direct description fill...")
+        try:
+            _set_description(bot, description)
+            completed_fields.add("description")
+        except Exception as e:
+            bot.log(f"⚠️ Direct description fill failed: {e}")
+
     missing = all_fields - completed_fields
-    if missing:
-        bot.log(f"⚠️ Incomplete fields at end of Step 4: {missing}")
+    critical_missing = missing - {"condition"}
+    if critical_missing:
+        bot.log(f"⚠️ Incomplete critical fields at end of Step 4: {critical_missing}")
         dump_error_view(bot, step_name="step_4_incomplete_fields")
+    else:
+        bot.log("🎉 All required fields completed!")
 
     bot.log(f"✔️ [Step 4] Completed listing details ({len(completed_fields)}/{len(all_fields)} fields)!")
 
@@ -1569,10 +1615,20 @@ class FBGroupShareAction:
             is_rental = str(product.get("transaction_type")) in ("rental", "1")
 
             if use_ai:
-                title, description = self.ai_service.rewrite_real_estate_listing(raw_title, raw_desc, is_rental=is_rental)
-                title = title[:90].strip()
+                ai_t, ai_d = self.ai_service.rewrite_real_estate_listing(raw_title, raw_desc, is_rental=is_rental)
+                t_clean = str(ai_t).strip() if ai_t else ""
+                if not t_clean or t_clean.lower().startswith("```") or t_clean in ("{", "}", '""', "''") or len(t_clean) < 5:
+                    title = raw_title[:90].strip() or "BẤT ĐỘNG SẢN GIÁ TỐT"
+                else:
+                    title = t_clean[:90].strip()
+
+                d_clean = str(ai_d).strip() if ai_d else ""
+                if not d_clean or d_clean.lower().startswith("```") or d_clean in ("{", "}", '""', "''") or len(d_clean) < 10:
+                    description = raw_desc
+                else:
+                    description = d_clean
             else:
-                title = raw_title[:90].strip()
+                title = raw_title[:90].strip() or "BẤT ĐỘNG SẢN GIÁ TỐT"
                 description = raw_desc
 
             images = self.v1_bridge.get_product_images(str(product.get("id")))[:5]

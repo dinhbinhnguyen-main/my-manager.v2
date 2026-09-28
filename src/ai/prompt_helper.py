@@ -140,11 +140,9 @@ DỮ LIỆU BẤT ĐỘNG SẢN GỐC:
 - Mô tả gốc: {raw_desc}
 
 ĐỊNH DẠNG TRẢ VỀ:
-Bắt buộc trả về đúng định dạng JSON duy nhất (không có lời mở đầu hay giải thích thêm):
-```json
+Bắt buộc trả về đúng 1 JSON object hợp lệ duy nhất (không có lời mở đầu hay giải thích thêm, các dòng ngắt trong description dùng ký tự \\n):
 {{
   "title": "Tiêu đề dưới 90 ký tự",
   "description": "Nội dung bài viết đầy đủ..."
-}}
-```"""
+}}"""
         return prompt
