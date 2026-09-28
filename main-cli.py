@@ -10,15 +10,10 @@ from rich.console import Console
 
 from src.db.database import init_db
 
-# Configure real-time logging format
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%H:%M:%S",
-)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-logging.getLogger("requests").setLevel(logging.WARNING)
-logging.getLogger("adbutils").setLevel(logging.WARNING)
+from src.core.logger import setup_logging
+
+# Configure real-time colored logging format
+setup_logging()
 
 # Initialize database schema immediately on startup
 init_db()

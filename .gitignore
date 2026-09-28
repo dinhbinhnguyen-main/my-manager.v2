@@ -56,14 +56,15 @@ htmlcov/
 
 # Database files
 *.db
+*.db-*
 *.sqlite
 *.sqlite3
-/local.db
+/local.db*
 
 # User requested ignores
 /data/containers/
 /data/logs/
-/data/manager.db
+/data/manager.db*
 
 # Application logs & large binaries
 /logs/

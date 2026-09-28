@@ -33,8 +33,15 @@ def get_db_cursor():
         conn.close()
 
 
-def init_db():
+_db_initialized = False
+
+
+def init_db(force: bool = False):
     """Initializes SQLite database tables."""
+    global _db_initialized
+    if _db_initialized and not force:
+        return
+
     with get_db_cursor() as cursor:
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS accounts (
@@ -181,7 +188,8 @@ def init_db():
                 "INSERT INTO settings (name, value) VALUES (?, ?) ON CONFLICT(name) DO NOTHING;",
                 (name, default_val),
             )
-        logger.info("Database tables initialized successfully.")
+        _db_initialized = True
+        logger.debug("Database tables initialized successfully.")
 
 
 # Auto-initialize database schema when module is loaded

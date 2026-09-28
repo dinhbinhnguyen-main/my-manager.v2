@@ -1,6 +1,7 @@
 """Database repositories for Accounts, Proxies, Device Profiles, and Redroid Instances."""
 
 import json
+import threading
 from typing import List, Optional, Union, Dict, Any
 from src.db.database import get_db_cursor
 from src.core.models import Account, Proxy, RedroidInstance, AutomationTask, AccountStatus, AutomationJob, JobStatus
@@ -211,57 +212,84 @@ class ProxyRepository:
                 proxy.id = row["id"]
             return proxy
 
+    _lock = threading.Lock()
+
     @staticmethod
     def acquire_available_proxy(account_uid: str) -> Optional[Proxy]:
         """Atomically locks an available Proxy URL for an account UID."""
-        with get_db_cursor() as cursor:
-            # 1. First check if this account already has an assigned proxy
-            cursor.execute(
-                "SELECT * FROM proxies WHERE assigned_account_uid = ? AND status != 'unavailable' LIMIT 1",
-                (account_uid,),
-            )
-            row = cursor.fetchone()
-            if row:
-                return Proxy(**dict(row))
+        with ProxyRepository._lock:
+            with get_db_cursor() as cursor:
+                # 1. First check if this account already has an assigned proxy
+                cursor.execute(
+                    """
+                    SELECT * FROM proxies 
+                    WHERE assigned_account_uid = ? 
+                      AND status != 'unavailable' 
+                    LIMIT 1
+                    """,
+                    (account_uid,),
+                )
+                row = cursor.fetchone()
+                if row:
+                    proxy = Proxy(**dict(row))
+                    if proxy.status != "working":
+                        cursor.execute(
+                            "UPDATE proxies SET status = 'working' WHERE id = ?",
+                            (proxy.id,),
+                        )
+                        proxy.status = "working"
+                    return proxy
 
-            # 2. Otherwise find a proxy that is available or unassigned
-            cursor.execute(
-                """
-                SELECT * FROM proxies 
-                WHERE (status = 'available' OR assigned_account_uid IS NULL OR assigned_account_uid = '')
-                  AND status != 'unavailable'
-                ORDER BY id ASC LIMIT 1
-                """
-            )
-            row = cursor.fetchone()
-            if not row:
-                return None
+                # 2. Otherwise find a proxy that is strictly available AND unassigned
+                cursor.execute(
+                    """
+                    SELECT * FROM proxies 
+                    WHERE status = 'available' 
+                      AND (assigned_account_uid IS NULL OR assigned_account_uid = '')
+                    ORDER BY id ASC LIMIT 1
+                    """
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return None
 
-            proxy = Proxy(**dict(row))
-            cursor.execute(
-                "UPDATE proxies SET status = 'working', assigned_account_uid = ? WHERE id = ?",
-                (account_uid, proxy.id),
-            )
-            proxy.status = "working"
-            proxy.assigned_account_uid = account_uid
-            return proxy
+                proxy = Proxy(**dict(row))
+                cursor.execute(
+                    "UPDATE proxies SET status = 'working', assigned_account_uid = ? WHERE id = ?",
+                    (account_uid, proxy.id),
+                )
+                proxy.status = "working"
+                proxy.assigned_account_uid = account_uid
+                return proxy
+
+    @staticmethod
+    def release_proxy_by_id(proxy_id: int):
+        """Releases a specific proxy by ID back to available and unassigned."""
+        with ProxyRepository._lock:
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "UPDATE proxies SET status = 'available', assigned_account_uid = NULL WHERE id = ?",
+                    (proxy_id,),
+                )
 
     @staticmethod
     def release_proxy_by_account_uid(account_uid: str):
         """Releases all proxies currently bound to an account UID back to available."""
-        with get_db_cursor() as cursor:
-            cursor.execute(
-                "UPDATE proxies SET status = 'available', assigned_account_uid = NULL WHERE assigned_account_uid = ?",
-                (account_uid,),
-            )
+        with ProxyRepository._lock:
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "UPDATE proxies SET status = 'available', assigned_account_uid = NULL WHERE assigned_account_uid = ?",
+                    (account_uid,),
+                )
 
     @staticmethod
     def release_all_unassigned_proxies():
         """Resets all unassigned proxies back to 'available'."""
-        with get_db_cursor() as cursor:
-            cursor.execute(
-                "UPDATE proxies SET status = 'available' WHERE (assigned_account_uid IS NULL OR assigned_account_uid = '') AND status != 'unavailable'"
-            )
+        with ProxyRepository._lock:
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "UPDATE proxies SET status = 'available' WHERE (assigned_account_uid IS NULL OR assigned_account_uid = '') AND status != 'unavailable'"
+                )
 
     @staticmethod
     def release_stale_proxies():
@@ -269,29 +297,31 @@ class ProxyRepository:
         Releases proxies that are marked 'working' or assigned to accounts
         that do not have an active running automation job in SQLite.
         """
-        with get_db_cursor() as cursor:
-            cursor.execute(
-                """
-                UPDATE proxies 
-                SET status = 'available', assigned_account_uid = NULL 
-                WHERE status != 'unavailable' 
-                  AND (
-                    assigned_account_uid IS NULL 
-                    OR assigned_account_uid = '' 
-                    OR assigned_account_uid NOT IN (
-                        SELECT account_uid FROM automation_jobs WHERE status = 'running'
-                    )
-                  )
-                """
-            )
+        with ProxyRepository._lock:
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    """
+                    UPDATE proxies 
+                    SET status = 'available', assigned_account_uid = NULL 
+                    WHERE status != 'unavailable' 
+                      AND (
+                        assigned_account_uid IS NULL 
+                        OR assigned_account_uid = '' 
+                        OR assigned_account_uid NOT IN (
+                            SELECT account_uid FROM automation_jobs WHERE status = 'running'
+                        )
+                      )
+                    """
+                )
 
     @staticmethod
     def release_all_proxies():
         """Force-resets all proxies back to 'available' and unassigned."""
-        with get_db_cursor() as cursor:
-            cursor.execute(
-                "UPDATE proxies SET status = 'available', assigned_account_uid = NULL WHERE status != 'unavailable'"
-            )
+        with ProxyRepository._lock:
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "UPDATE proxies SET status = 'available', assigned_account_uid = NULL WHERE status != 'unavailable'"
+                )
 
     @staticmethod
     def set_status(proxy_id_or_url: str, status: str):

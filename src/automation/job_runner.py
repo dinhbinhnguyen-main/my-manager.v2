@@ -191,8 +191,12 @@ class JobRunner:
                 redroid_mgr.stop_instance(container_id)
 
             # 7. Release Proxy lock
-            ProxyRepository.release_proxy_by_account_uid(account_uid)
-            logger.info(f"[Job-{job.id}] Proxy released for account {account_uid}.")
+            if proxy and proxy.id:
+                ProxyRepository.release_proxy_by_id(proxy.id)
+                logger.info(f"[Job-{job.id}] Proxy #{proxy.id} released for account {account_uid}.")
+            else:
+                ProxyRepository.release_proxy_by_account_uid(account_uid)
+                logger.info(f"[Job-{job.id}] Proxy released for account {account_uid}.")
 
         return success
 

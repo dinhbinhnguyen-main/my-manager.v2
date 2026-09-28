@@ -294,10 +294,10 @@ def scrcpy_cmd(
             ]
 
         if not targets_to_act:
-            console.print("[bold yellow]Không tìm thấy container nào đang chạy để ẩn bàn phím ảo.[/bold yellow]")
+            console.print("[bold yellow]No running containers found to disable virtual keyboard.[/bold yellow]")
             return
 
-        table = Table(title="Ẩn Bàn Phím Ảo (Disable Virtual Soft Keyboard)", show_lines=True)
+        table = Table(title="Disable Virtual Soft Keyboard", show_lines=True)
         table.add_column("Container / Target", style="cyan")
         table.add_column("ADB Port", style="yellow")
         table.add_column("FB UID", style="green")
@@ -308,11 +308,11 @@ def scrcpy_cmd(
             inst = RedroidRepository.get_by_identifier(tgt)
             port_str = str(inst.adb_port) if inst else (tgt if tgt.isdigit() and len(tgt) <= 5 else "-")
             ok = scrcpy_mgr.hide_virtual_keyboard(tgt)
-            status_str = "[bold green]✔ ĐÃ ẨN (DISABLED)[/bold green]" if ok else "[bold red]✖ LỖI (FAILED)[/bold red]"
+            status_str = "[bold green]✔ DISABLED[/bold green]" if ok else "[bold red]✖ FAILED[/bold red]"
             table.add_row(c_name or tgt, port_str, acc_uid or (inst.account_uid if inst else "-") or "-", status_str)
 
         console.print(table)
-        console.print(f"[bold green]✔ Hoàn tất ẩn bàn phím ảo cho {len(targets_to_act)} container.[/bold green]")
+        console.print(f"[bold green]✔ Successfully disabled virtual keyboard on {len(targets_to_act)} container(s).[/bold green]")
         return
 
     # Action: Explicitly show/re-enable virtual keyboard
@@ -327,10 +327,10 @@ def scrcpy_cmd(
             ]
 
         if not targets_to_act:
-            console.print("[bold yellow]Không tìm thấy container nào đang chạy để bật lại bàn phím ảo.[/bold yellow]")
+            console.print("[bold yellow]No running containers found to re-enable virtual keyboard.[/bold yellow]")
             return
 
-        table = Table(title="Bật Lại Bàn Phím Ảo (Enable Virtual Soft Keyboard)", show_lines=True)
+        table = Table(title="Enable Virtual Soft Keyboard", show_lines=True)
         table.add_column("Container / Target", style="cyan")
         table.add_column("ADB Port", style="yellow")
         table.add_column("FB UID", style="green")
@@ -341,7 +341,7 @@ def scrcpy_cmd(
             inst = RedroidRepository.get_by_identifier(tgt)
             port_str = str(inst.adb_port) if inst else (tgt if tgt.isdigit() and len(tgt) <= 5 else "-")
             ok = scrcpy_mgr.show_virtual_keyboard(tgt)
-            status_str = "[bold green]✔ ĐÃ BẬT (ENABLED)[/bold green]" if ok else "[bold red]✖ LỖI (FAILED)[/bold red]"
+            status_str = "[bold green]✔ ENABLED[/bold green]" if ok else "[bold red]✖ FAILED[/bold red]"
             table.add_row(c_name or tgt, port_str, acc_uid or (inst.account_uid if inst else "-") or "-", status_str)
 
         console.print(table)
@@ -388,21 +388,21 @@ def scrcpy_cmd(
             from src.db.repository import AccountRepository
             acc = AccountRepository.get_by_uid(acc_uid)
             if acc:
-                console.print(f"[cyan]Container cho UID '{acc_uid}' ({acc.username}) chưa có trong hệ thống. Đang tự động khởi tạo máy ảo mới...[/cyan]")
+                console.print(f"[cyan]Container for UID '{acc_uid}' ({acc.username}) does not exist. Auto-provisioning new container...[/cyan]")
                 try:
                     inst = manager.create_instance(account_uid=acc_uid)
                     AccountRepository.bind_container(acc_uid, inst.container_id, inst.device_profile_id or "")
                 except Exception as e:
-                    console.print(f"[bold red]Tạo container thất bại: {e}[/bold red]")
+                    console.print(f"[bold red]Failed to create container: {e}[/bold red]")
                     return
 
         # Auto-start if container is currently stopped
         if inst and manager.get_live_docker_status(inst.container_name) != "running":
-            console.print(f"[cyan]Container '{inst.container_name}' đang tắt. Đang tự động khởi động...[/cyan]")
+            console.print(f"[cyan]Container '{inst.container_name}' is currently stopped. Auto-starting...[/cyan]")
             try:
                 manager.start_instance(inst.container_name)
             except Exception as e:
-                console.print(f"[bold red]Khởi động container thất bại: {e}[/bold red]")
+                console.print(f"[bold red]Failed to start container: {e}[/bold red]")
                 return
 
         adb_port = inst.adb_port if inst else (int(resolved_target) if resolved_target and resolved_target.isdigit() and len(resolved_target) <= 5 else None)
@@ -411,7 +411,7 @@ def scrcpy_cmd(
             scrcpy_mgr.hide_virtual_keyboard(adb_port)
             title = f"Redroid [UID: {inst.account_uid if inst else resolved_target}] (Port: {adb_port})"
             if scrcpy_mgr.open_scrcpy(adb_port, window_title=title):
-                console.print(f"[bold green]Successfully opened scrcpy for target '{resolved_target}' (Port {adb_port}) [Bàn phím ảo: ĐÃ ẨN].[/bold green]")
+                console.print(f"[bold green]Successfully opened scrcpy for target '{resolved_target}' (Port {adb_port}) [Virtual keyboard: DISABLED].[/bold green]")
             return
         elif resolved_target and open_win:
             console.print(f"[bold red]Could not resolve container for target '{resolved_target}'.[/bold red]")

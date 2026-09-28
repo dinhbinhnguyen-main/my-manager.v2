@@ -266,6 +266,15 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
     start_time = time.time()
     form_opened = False
     while time.time() - start_time < timeout:
+        # Check if draft discard prompt appeared ("Discard draft?" / "Bỏ bản nháp?" / "Bỏ bài viết")
+        for discard_kw in ["discard", "bỏ bài viết", "bỏ bản nháp"]:
+            discard_btn = bot.get_button_by_text(discard_kw, timeout=0.3)
+            if discard_btn and discard_btn.exists:
+                bot.log(f"🧹 Found draft discard prompt ('{discard_kw}'), clicking to reset form...")
+                discard_btn.click_exists(timeout=2)
+                bot.smart_sleep(1.0)
+                break
+
         # Check if intermediate layout (category selection) is shown: "Items" / "Mặt hàng"
         for item_kw in ["items", "mặt hàng"]:
             # 1. Button or TextView matching text / content-desc (e.g. "Items Furniture, clothing, toys, etc.")
@@ -377,7 +386,7 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                     return True
         return False
 
-    max_open_attempts = max(max_retries, 4)
+    max_open_attempts = max(max_retries, 8)
     gallery_ready = False
 
     for attempt in range(max_open_attempts):
@@ -549,11 +558,11 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
 # ==============================================================================
 
 def _set_title(bot: BaseAutomator, title: str):
-    """Enters listing title (in UPPERCASE)."""
+    """Enters listing title (max 90 characters, in UPPERCASE)."""
     if not bot.d:
         return
-    title_text = str(title).strip().upper() if title else "BẤT ĐỘNG SẢN GIÁ TỐT"
-    bot.log(f"✏️ Entering Title: '{title_text[:35]}...'")
+    title_text = str(title).strip().upper()[:90] if title else "BẤT ĐỘNG SẢN GIÁ TỐT"
+    bot.log(f"✏️ Entering Title ({len(title_text)} chars): '{title_text[:40]}...'")
 
     title_elem = bot.d(resourceId="composer_v3_title")
     if not title_elem.exists:
@@ -576,7 +585,11 @@ def _set_title(bot: BaseAutomator, title: str):
         title_input = bot.d(focused=True, className="android.widget.EditText")
 
     if title_input.exists:
-        title_input.send_keys(title_text)
+        try:
+            title_input.clear_text()
+        except Exception:
+            pass
+        title_input.set_text(title_text)
     else:
         bot.d.send_keys(title_text)
 
@@ -585,17 +598,19 @@ def _set_title(bot: BaseAutomator, title: str):
 
 
 def _set_price(bot: BaseAutomator, price: Optional[Any] = None):
-    """Enters listing price with strict integer cleaning."""
+    """Enters listing price, stripping trailing zeros (e.g. 12,000,000 -> 12, 7,500 -> 75)."""
     if not bot.d:
         return
     if price is not None and str(price).strip() != "":
-        price_val = re.sub(r'[^\d]', '', str(price))
+        # Extract digits first, then remove all trailing zeros (e.g. 12,000,000 -> 12; 7,500 -> 75)
+        digits_only = re.sub(r'[^\d]', '', str(price))
+        price_val = digits_only.rstrip('0')
         if not price_val:
-            price_val = str(price)
+            price_val = digits_only or "1"
     else:
-        price_val = str(randint(1, 1000))
+        price_val = str(randint(1, 100))
 
-    bot.log(f"💰 Entering Price: {price_val}...")
+    bot.log(f"💰 Entering Price: {price_val} (original: {price})...")
 
     price_elem = bot.d(resourceId="composer_v3_price")
     if not price_elem.exists:
@@ -618,7 +633,11 @@ def _set_price(bot: BaseAutomator, price: Optional[Any] = None):
         price_input = bot.d(focused=True, className="android.widget.EditText")
 
     if price_input.exists:
-        price_input.send_keys(price_val)
+        try:
+            price_input.clear_text()
+        except Exception:
+            pass
+        price_input.set_text(price_val)
     else:
         bot.d.send_keys(price_val)
 
@@ -627,7 +646,10 @@ def _set_price(bot: BaseAutomator, price: Optional[Any] = None):
 
 
 def _set_category(bot: BaseAutomator, category_name: str = "Miscellaneous", max_swipes: int = 10):
-    """Selects listing category if Category field is present on UI."""
+    """
+    Selects listing category if Category field is present on UI.
+    Supports both modal popup (with RadioButtons and Save button) and full-screen category lists.
+    """
     if not bot.d:
         return
     category_btn = bot.get_button_by_text("category", timeout=2)
@@ -641,37 +663,135 @@ def _set_category(bot: BaseAutomator, category_name: str = "Miscellaneous", max_
         return
 
     target_category = category_name or "Miscellaneous"
-    bot.log(f"🏷️ Category field found. Opening list and searching for '{target_category}'...")
+    bot.log(f"🏷️ Category field found. Opening category picker...")
     bot.swipe_widget_to_center(category_btn)
     category_btn.click()
     bot.smart_sleep(1.5)
 
-    start_time = time.time()
-    while time.time() - start_time < 5:
-        if bot.d(resourceId="mp_categories_list").exists or bot.d(text="Select Category").exists:
-            break
-        bot.smart_sleep(0.5)
+    # Category keywords for search (English and Vietnamese)
+    if target_category.lower() == "miscellaneous":
+        cat_keywords = ["miscellaneous", "linh tinh", "khác", "mục linh tinh", "hàng linh tinh"]
+    else:
+        cat_keywords = [target_category, "miscellaneous", "linh tinh", "khác"]
 
+    save_keywords = ["save", "lưu"]
+
+    def _click_save_if_present() -> bool:
+        """Helper to click 'Save' or 'Lưu' button on modal category popup."""
+        for skw in save_keywords:
+            s_btn = bot.get_button_by_text(skw, timeout=1)
+            if s_btn and s_btn.exists:
+                bot.log(f"💾 Found '{skw}' button, clicking to confirm category...")
+                s_btn.click_exists(timeout=2)
+                bot.smart_sleep(1.5)
+                return True
+            if bot.d:
+                d_save = bot.d(descriptionMatches=f"(?i)^{skw}$")
+                if d_save.exists:
+                    bot.log(f"💾 Found '{skw}' button via description, clicking...")
+                    d_save.click()
+                    bot.smart_sleep(1.5)
+                    return True
+                d_txt = bot.d(textMatches=f"(?i)^{skw}$")
+                if d_txt.exists:
+                    bot.log(f"💾 Found '{skw}' via text, clicking...")
+                    d_txt.click()
+                    bot.smart_sleep(1.5)
+                    return True
+        return False
+
+    def _check_already_checked() -> bool:
+        """Checks if target RadioButton is already checked."""
+        for kw in cat_keywords:
+            # 1. RadioButton with checked=True
+            rb_checked = bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i).*{kw}.*", checked=True)
+            if rb_checked.exists:
+                return True
+            rb_checked_txt = bot.d(className="android.widget.RadioButton", textMatches=f"(?i).*{kw}.*", checked=True)
+            if rb_checked_txt.exists:
+                return True
+            # 2. Check info attribute on any matching RadioButton
+            rb = bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i).*{kw}.*")
+            if rb.exists:
+                try:
+                    if rb.info.get("checked", False):
+                        return True
+                except Exception:
+                    pass
+        return False
+
+    def _find_and_click_radio() -> bool:
+        """Finds target RadioButton or category item and clicks it."""
+        for kw in cat_keywords:
+            # 1. RadioButton by description (e.g. content-desc="Miscellaneous, , ")
+            rb = bot.d(className="android.widget.RadioButton", descriptionMatches=f"(?i).*{kw}.*")
+            if rb.exists:
+                bot.log(f"👆 Found RadioButton matching '{kw}', clicking...")
+                rb.click()
+                bot.smart_sleep(1.0)
+                return True
+
+            # 2. RadioButton by text
+            rb_txt = bot.d(className="android.widget.RadioButton", textMatches=f"(?i).*{kw}.*")
+            if rb_txt.exists:
+                bot.log(f"👆 Found RadioButton matching '{kw}' text, clicking...")
+                rb_txt.click()
+                bot.smart_sleep(1.0)
+                return True
+
+            # 3. TextView matching kw (inside category list)
+            tv = bot.d(className="android.widget.TextView", textMatches=f"(?i).*{kw}.*")
+            if tv.exists:
+                bot.log(f"👆 Found TextView matching '{kw}', clicking...")
+                tv.click()
+                bot.smart_sleep(1.0)
+                return True
+
+            # 4. Standard button fallback
+            btn = bot.get_button_by_text(kw, timeout=0.5)
+            if btn and btn.exists:
+                bot.log(f"👆 Found Button matching '{kw}', clicking...")
+                btn.click_exists(timeout=2)
+                bot.smart_sleep(1.0)
+                return True
+        return False
+
+    # Check if category is already selected on the current view
+    if _check_already_checked():
+        bot.log(f"✔️ Category '{target_category}' is already selected (checked=True)!")
+        if _click_save_if_present():
+            bot.log("   ✔️ Category saved successfully.")
+        return
+
+    # Check and click on the current view before scrolling
+    if _find_and_click_radio():
+        bot.log(f"✔️ Selected category '{target_category}'.")
+        _click_save_if_present()
+        return
+
+    # Otherwise scroll to search for category RadioButton
     found = False
     for swipe_idx in range(max_swipes):
-        cat_node = bot.d(textMatches=f"(?i).*{target_category}.*")
-        if not cat_node.exists:
-            cat_node = bot.d(descriptionMatches=f"(?i).*{target_category}.*")
-        if not cat_node.exists:
-            cat_node = bot.get_button_by_text(target_category, timeout=1)
+        bot.log(f"🔄 Scrolling category list (Swipe {swipe_idx + 1}/{max_swipes})...")
+        sig1 = bot._get_screen_signature()
+        bot.swipe_up(scale=0.5)
+        bot.smart_sleep(1.0)
 
-        if cat_node and cat_node.exists:
-            bot.log(f"✔️ Found category '{target_category}' (Swipe {swipe_idx})! Selecting...")
-            cat_node.click_exists(timeout=3)
+        # Check if already checked after scroll
+        if _check_already_checked():
+            bot.log(f"✔️ Category '{target_category}' is already selected (checked=True)!")
+            _click_save_if_present()
             found = True
-            bot.smart_sleep(1.5)
             break
 
-        sig1 = bot._get_screen_signature()
-        bot.swipe_up(scale=0.7)
-        bot.smart_sleep(0.8)
-        sig2 = bot._get_screen_signature()
+        # Check and click after scroll
+        if _find_and_click_radio():
+            bot.log(f"✔️ Selected category '{target_category}'.")
+            _click_save_if_present()
+            found = True
+            break
 
+        sig2 = bot._get_screen_signature()
         if sig1 == sig2 and sig1 != 0:
             bot.log("🏁 Reached end of Category list.")
             break
@@ -679,12 +799,13 @@ def _set_category(bot: BaseAutomator, category_name: str = "Miscellaneous", max_
     if not found:
         bot.log(f"⚠️ Could not find category '{target_category}' after {max_swipes} swipes.")
         dump_error_view(bot, step_name=f"step_4_category_{target_category}_not_found")
-        if bot.d(text="Select Category").exists or bot.d(resourceId="mp_categories_list").exists:
-            back_btn = bot.d(description="Back")
-            if back_btn.exists:
-                back_btn.click_exists(timeout=3)
+        # Try closing popup or saving if available
+        if not _click_save_if_present():
+            close_btn = bot.d(description="Close") or bot.d(description="Back")
+            if close_btn.exists:
+                close_btn.click_exists(timeout=2)
     else:
-        bot.log(f"   ✔️ Category '{target_category}' selected.")
+        bot.log(f"   ✔️ Category '{target_category}' processed.")
 
 
 def _set_condition(bot: BaseAutomator, condition_name: str = "New", timeout: int = 5):
@@ -814,7 +935,11 @@ def _set_description(bot: BaseAutomator, description: str):
             desc_input = bot.d(focused=True, className="android.widget.EditText")
 
         if desc_input.exists:
-            desc_input.send_keys(desc_text)
+            try:
+                desc_input.clear_text()
+            except Exception:
+                pass
+            desc_input.set_text(desc_text)
         else:
             bot.d.send_keys(desc_text)
 
@@ -1335,23 +1460,28 @@ class FBGroupShareAction:
         pushed_remotes = []
         current_step = "step_0_push_media"
         try:
-            # 0. Push images to /sdcard/DCIM/Camera and trigger media scanner
-            if image_paths and self.automator.adb_client:
-                logger.info(f"Pushing {len(image_paths)} image(s) to Redroid gallery...")
+            # 0. Clean previous session media & cache, then push new images
+            if self.automator.adb_client:
+                logger.info("🧹 Cleaning previous session media & Facebook temporary cache...")
+                self.automator.adb_client.clear_media_storage()
+                self.automator.adb_client.clear_facebook_cache()
                 self.automator.adb_client.ensure_storage_ready()
                 self.automator.adb_client.grant_app_permissions("com.facebook.katana")
-                for idx, img in enumerate(image_paths):
-                    if not os.path.exists(img):
-                        logger.warning(f"Image not found on host: {img}")
-                        continue
-                    ext = Path(img).suffix.lower() or ".jpg"
-                    remote_path = f"/sdcard/DCIM/Camera/share_{idx}{ext}"
-                    if self.automator.adb_client.push_file(img, remote_path):
-                        pushed_remotes.append(remote_path)
-                        self.automator.adb_client.scan_media_file(remote_path)
-                    else:
-                        logger.error(f"Failed to push image to Redroid: {img}")
-                time.sleep(1.5)
+
+                if image_paths:
+                    logger.info(f"Pushing {len(image_paths)} image(s) to Redroid gallery...")
+                    for idx, img in enumerate(image_paths):
+                        if not os.path.exists(img):
+                            logger.warning(f"Image not found on host: {img}")
+                            continue
+                        ext = Path(img).suffix.lower() or ".jpg"
+                        remote_path = f"/sdcard/DCIM/Camera/share_{idx}{ext}"
+                        if self.automator.adb_client.push_file(img, remote_path):
+                            pushed_remotes.append(remote_path)
+                            self.automator.adb_client.scan_media_file(remote_path)
+                        else:
+                            logger.error(f"Failed to push image to Redroid: {img}")
+                    time.sleep(1.5)
 
             # Step 1: Open Group via Deeplink
             current_step = "step_1_open_facebook_group"
@@ -1423,7 +1553,7 @@ class FBGroupShareAction:
         share_groups_count: int = 20,
         custom_content: Optional[str] = None
     ) -> bool:
-        """Wrapper method executing 7-step Group Share with v1 BĐS products and AI Gemini content."""
+        """Wrapper method executing 7-step Group Share with v1 Real Estate products and Gemini AI content."""
         logger.info(f"Executing Group Share pipeline for {self.account.uid}...")
 
         category = getattr(self.account, 'category', 'real_estate') or 'real_estate'
@@ -1439,10 +1569,10 @@ class FBGroupShareAction:
             is_rental = str(product.get("transaction_type")) in ("rental", "1")
 
             if use_ai:
-                description = self.ai_service.rewrite_real_estate_post(raw_title, raw_desc, is_rental=is_rental)
-                title = raw_title[:80]
+                title, description = self.ai_service.rewrite_real_estate_listing(raw_title, raw_desc, is_rental=is_rental)
+                title = title[:90].strip()
             else:
-                title = raw_title[:80]
+                title = raw_title[:90].strip()
                 description = raw_desc
 
             images = self.v1_bridge.get_product_images(str(product.get("id")))[:5]

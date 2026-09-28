@@ -3,10 +3,11 @@
 import os
 import re
 import base64
+import json
 import logging
 import requests
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, Dict, Any
 
 from src.db.repository import SettingRepository
 from src.ai.prompt_helper import AIPromptHelper
@@ -68,14 +69,22 @@ class GeminiService:
 
         return text
 
-    def rewrite_real_estate_post(self, title: str, description: str, is_rental: bool = False) -> str:
-        """Calls Gemini API to rewrite raw real estate post into SEO-optimized, policy-compliant post."""
+    def rewrite_real_estate_listing(
+        self, title: str, description: str, is_rental: bool = False
+    ) -> Tuple[str, str]:
+        """
+        Calls Gemini API to rewrite both raw real estate Title (max 90 chars) and Description.
+        Returns: (new_title, new_description)
+        """
+        fallback_title = title[:90]
+        fallback_desc = description
+
         api_key = self.get_api_key()
         if not api_key:
-            logger.warning("GEMINI_API_KEY is not set. Returning raw template title and description.")
-            return f"{title}\n\n{description}"
+            logger.warning("GEMINI_API_KEY is not set. Returning raw title and description.")
+            return fallback_title, fallback_desc
 
-        prompt = AIPromptHelper.build_real_estate_rewrite_prompt(title, description, is_rental=is_rental)
+        prompt = AIPromptHelper.build_real_estate_listing_prompt(title, description, is_rental=is_rental)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={api_key}"
 
         payload = {
@@ -87,12 +96,12 @@ class GeminiService:
             }
         }
 
-        logger.info("Sending prompt to Gemini 3.5 Flash for post rewrite...")
+        logger.info("Sending prompt to Gemini 3.5 Flash for listing rewrite (title + description)...")
         try:
             resp = requests.post(url, json=payload, timeout=25.0)
             if resp.status_code != 200:
                 logger.error(f"Gemini API returned status {resp.status_code}: {resp.text}")
-                return f"{title}\n\n{description}"
+                return fallback_title, fallback_desc
 
             data = resp.json()
             candidates = data.get("candidates", [])
@@ -100,13 +109,42 @@ class GeminiService:
                 parts = candidates[0].get("content", {}).get("parts", [])
                 if parts:
                     gen_text = parts[0].get("text", "").strip()
-                    cleaned = self._clean_response(gen_text)
-                    logger.info("Gemini post rewrite succeeded!")
-                    return cleaned
+
+                    # 1. Parse JSON response
+                    json_match = re.search(r'\{[\s\S]*\}', gen_text)
+                    if json_match:
+                        try:
+                            parsed_json = json.loads(json_match.group(0))
+                            ai_title = str(parsed_json.get("title", "")).strip()
+                            ai_desc = str(parsed_json.get("description", "")).strip()
+
+                            # Enforce max 90 characters for title
+                            ai_title = ai_title[:90].strip() if ai_title else fallback_title
+                            ai_desc = self._clean_response(ai_desc) if ai_desc else fallback_desc
+
+                            logger.info(f"Gemini listing rewrite succeeded! Title ({len(ai_title)} chars): '{ai_title}'")
+                            return ai_title, ai_desc
+                        except Exception as parse_err:
+                            logger.warning(f"Could not parse JSON from Gemini response: {parse_err}")
+
+                    # 2. Fallback line-based parsing
+                    lines = [ln.strip() for ln in gen_text.splitlines() if ln.strip()]
+                    if len(lines) >= 2:
+                        ai_title = lines[0][:90].strip()
+                        ai_desc = self._clean_response("\n".join(lines[1:]).strip())
+                        logger.info(f"Gemini listing rewrite parsed line-by-line! Title ({len(ai_title)} chars): '{ai_title}'")
+                        return ai_title, ai_desc
+
+                    return fallback_title, self._clean_response(gen_text)
         except Exception as e:
             logger.error(f"Gemini API call failed: {e}")
 
-        return f"{title}\n\n{description}"
+        return fallback_title, fallback_desc
+
+    def rewrite_real_estate_post(self, title: str, description: str, is_rental: bool = False) -> str:
+        """Calls Gemini API to rewrite raw real estate post into SEO-optimized, policy-compliant post."""
+        _, desc = self.rewrite_real_estate_listing(title, description, is_rental=is_rental)
+        return desc
 
     def generate_discussion_from_image(self, image_path: str, custom_prompt: Optional[str] = None) -> str:
         """Calls Gemini Multimodal API to generate a post based on image content."""

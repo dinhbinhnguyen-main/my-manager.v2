@@ -283,9 +283,9 @@ class ScrcpyManager:
                 )
             return table
 
-        console.print("[bold cyan]🚀 Đang khởi động Scrcpy Supervisor (Thời gian thực)...[/bold cyan]")
-        console.print("[dim]Hệ thống sẽ tự động mở scrcpy khi container chạy và đóng scrcpy khi container dừng.[/dim]")
-        console.print("[dim]Đang kiểm tra và tự động ẩn bàn phím ảo trên tất cả container đang chạy...[/dim]")
+        console.print("[bold cyan]🚀 Starting Scrcpy Supervisor (Real-time)...[/bold cyan]")
+        console.print("[dim]Automatically launches scrcpy when container runs and closes scrcpy when stopped.[/dim]")
+        console.print("[dim]Checking and auto-hiding virtual keyboard across all running containers...[/dim]")
 
         # Pre-hide virtual keyboard on all active running containers immediately
         try:
@@ -295,7 +295,7 @@ class ScrcpyManager:
         except Exception as e:
             logger.debug(f"Pre-hiding keyboard error: {e}")
 
-        console.print("[dim]Đang giám sát các Redroid container... Nhấn Ctrl+C để thoát.[/dim]\n")
+        console.print("[dim]Monitoring Redroid containers... Press Ctrl+C to exit.[/dim]\n")
 
         try:
             with Live(generate_dashboard(), refresh_per_second=1) as live:
@@ -307,5 +307,5 @@ class ScrcpyManager:
                     live.update(generate_dashboard())
                     time.sleep(interval_seconds)
         except KeyboardInterrupt:
-            console.print("\n[yellow]Đã dừng Scrcpy Supervisor.[/yellow]")
+            console.print("\n[yellow]Scrcpy Supervisor stopped.[/yellow]")
 

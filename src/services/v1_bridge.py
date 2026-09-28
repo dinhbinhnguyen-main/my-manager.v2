@@ -260,7 +260,7 @@ class V1DatabaseBridge:
     def get_product_images(self, product_id: str) -> List[str]:
         """
         Retrieves absolute paths of image files for a specific product ID from v1_image_dir.
-        Checks with_watermark_<id> first, then source_<id>, then subdirectories.
+        Takes images strictly from the original source directory (source_*), avoiding watermark images.
         """
         image_base = Path(self._image_dir)
         valid_exts = {".jpg", ".jpeg", ".png", ".webp"}
@@ -275,27 +275,39 @@ class V1DatabaseBridge:
 
         for p_dir in target_dirs:
             if p_dir.exists():
-                wm_dir = p_dir / f"with_watermark_{product_id}"
-                src_dir = p_dir / f"source_{product_id}"
+                # 1. Prioritize source_* directory (source_<id>, source_*, etc.)
+                src_dirs = [
+                    d for d in p_dir.iterdir()
+                    if d.is_dir() and d.name.lower().startswith("source")
+                ]
+                for s_dir in src_dirs:
+                    found = [
+                        str(f) for f in sorted(s_dir.iterdir())
+                        if f.is_file() and f.suffix.lower() in valid_exts and not f.name.startswith(".")
+                    ]
+                    if found:
+                        images = found
+                        break
 
-                if wm_dir.exists() and any(f.suffix.lower() in valid_exts for f in wm_dir.iterdir() if f.is_file()):
-                    images = [str(f) for f in sorted(wm_dir.iterdir()) if f.suffix.lower() in valid_exts]
-                elif src_dir.exists() and any(f.suffix.lower() in valid_exts for f in src_dir.iterdir() if f.is_file()):
-                    images = [str(f) for f in sorted(src_dir.iterdir()) if f.suffix.lower() in valid_exts]
-                else:
-                    for root, _, files in os.walk(p_dir):
+                # 2. Fallback: scan p_dir but explicitly exclude any watermark directory
+                if not images:
+                    for root, dirs, files in os.walk(p_dir):
+                        # Filter out watermark directories in-place so os.walk does not traverse them
+                        dirs[:] = [d for d in dirs if "watermark" not in d.lower()]
                         for fname in sorted(files):
-                            if Path(fname).suffix.lower() in valid_exts:
+                            if not fname.startswith(".") and Path(fname).suffix.lower() in valid_exts:
                                 images.append(str(Path(root) / fname))
+
                 if images:
                     break
 
-        # Global fallback: if product dir had no images, grab any sample images from image_base
+        # Global fallback: if product dir had no images, grab sample images from image_base (excluding watermark)
         if not images and image_base.exists():
             logger.warning(f"No images found in product dir '{product_id}', searching global image_base '{image_base}'...")
-            for root, _, files in os.walk(image_base):
+            for root, dirs, files in os.walk(image_base):
+                dirs[:] = [d for d in dirs if "watermark" not in d.lower()]
                 for fname in sorted(files):
-                    if Path(fname).suffix.lower() in valid_exts:
+                    if not fname.startswith(".") and Path(fname).suffix.lower() in valid_exts:
                         images.append(str(Path(root) / fname))
                         if len(images) >= 5:
                             break
@@ -303,7 +315,7 @@ class V1DatabaseBridge:
                     break
 
         images.sort()
-        logger.info(f"Found {len(images)} images for product ID '{product_id}'")
+        logger.info(f"Found {len(images)} source images for product ID '{product_id}'")
         return images
 
     def get_template(

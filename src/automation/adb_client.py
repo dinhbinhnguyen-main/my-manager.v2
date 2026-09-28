@@ -99,6 +99,29 @@ class ADBClient:
             text=True
         )
 
+    def clear_media_storage(self) -> bool:
+        """Cleans up all leftover images and videos from Redroid gallery storage and resets Android MediaStore."""
+        cmd = (
+            "su 0 sh -c \""
+            "rm -rf /sdcard/DCIM/Camera/* /sdcard/DCIM/.thumbnails/* /sdcard/Pictures/* /sdcard/Download/* /data/media/0/DCIM/Camera/* 2>/dev/null; "
+            "content delete --uri content://media/external/images/media 2>/dev/null; "
+            "content delete --uri content://media/external/video/media 2>/dev/null\""
+        )
+        res = self.execute_shell(cmd)
+        return res.returncode == 0
+
+    def clear_facebook_cache(self) -> bool:
+        """Clears Facebook temporary caches while strictly preserving user credentials and login sessions."""
+        self.stop_app("com.facebook.katana")
+        cmd = (
+            "su 0 sh -c \""
+            "rm -rf /data/data/com.facebook.katana/cache/* 2>/dev/null; "
+            "rm -rf /data/user/0/com.facebook.katana/cache/* 2>/dev/null; "
+            "rm -rf /sdcard/Android/data/com.facebook.katana/cache/* 2>/dev/null\""
+        )
+        res = self.execute_shell(cmd)
+        return res.returncode == 0
+
     def ensure_storage_ready(self) -> bool:
         """Ensures /sdcard/DCIM/Camera, Pictures, Download directories exist with open 777 permissions and proper media ownership."""
         cmd = (

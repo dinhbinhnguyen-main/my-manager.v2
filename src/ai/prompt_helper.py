@@ -88,3 +88,63 @@ DỮ LIỆU BẤT ĐỘNG SẢN GỐC:
 
 CHỈ TRẢ VỀ DUY NHẤT BÀI ĐĂNG HOÀN CHỈNH (Không lời chào, không giải thích thêm)."""
         return prompt
+
+    @staticmethod
+    def build_real_estate_listing_prompt(
+        raw_title: str,
+        raw_desc: str,
+        is_rental: bool = False
+    ) -> str:
+        angle = random.choice(REAL_ESTATE_ANGLES)
+        cliches_sample = ", ".join([f'"{c}"' for c in random.sample(FORBIDDEN_CLICHES, min(6, len(FORBIDDEN_CLICHES)))])
+        sample_icons = " ".join(random.sample(RANDOM_ICONS_POOL, min(3, len(RANDOM_ICONS_POOL))))
+
+        contact_rule = (
+            '4. Kêu gọi liên hệ (BẮT BUỘC): Cuối bài luôn phải có đầy đủ thông tin liên hệ chuẩn xác sau: '
+            '"LH: 0375 155 525 (Zalo, WhatsApp) | Telegram: @dinhbinhnguyen". '
+            'Tuyệt đối không tự ý bịa số điện thoại khác hay bỏ thông tin Telegram.'
+        )
+
+        if is_rental:
+            rental_rule = "- QUY ĐỊNH PHÁP LÝ (BẮT BUỘC): Đây là bài đăng CHO THUÊ BĐS. TUYỆT ĐỐI KHÔNG nhắc đến bất kỳ vấn đề pháp lý mua bán hay quyền sở hữu nào (như: mua bán vi bằng, sổ riêng xây dựng, sổ hồng, sổ đỏ, công chứng sang tên, đất thổ cư, quy hoạch...). Chỉ tập trung vào công năng, nội thất, tiện ích sinh hoạt, vị trí và giá thuê."
+        else:
+            rental_rule = "- QUY ĐỊNH PHÁP LÝ (BẮT BUỘC): Đây là bài đăng MUA BÁN BĐS. Trình bày rõ diện tích, vị trí, pháp lý nếu có."
+
+        prompt = f"""Bạn là chuyên gia viết bài BĐS chuẩn SEO Facebook, tuân thủ nghiêm ngặt chính sách và thuật toán chống spam của Meta.
+
+Nhiệm vụ: Viết lại tin BĐS sau thành TIÊU ĐỀ (Title) và MÔ TẢ (Description) bài đăng Facebook.
+Góc nhìn thể hiện: {angle['name']} ({angle['description']}).
+
+YÊU CẦU TIÊU ĐỀ (Title):
+1. Độ dài: Tối đa 90 ký tự (BẮT BUỘC <= 90 ký tự, đếm cả khoảng trắng, tuyệt đối không viết dài hơn 90 ký tự).
+2. Nội dung: Hấp dẫn, nêu bật [Loại BĐS tiếng Việt] + [Vị trí/Quận/Đường] + [Điểm sáng chính].
+3. Chuẩn SEO: Viết tự nhiên, không chứa icon, không viết hoa toàn bộ (ALL CAPS), không giật tít sáo rỗng.
+
+YÊU CẦU MÔ TẢ (Description):
+1. Độ dài & Bố cục: Ngắn gọn (dưới 100 từ), 3-5 dòng/gạch đầu dòng ngắt quãng thoáng mắt, tối ưu hiển thị trên điện thoại.
+2. Chuẩn SEO Facebook: Dòng đầu nêu rõ [Loại BĐS tiếng Việt] + [Vị trí/Quận/Đường] + Điểm sáng chính để tối ưu tìm kiếm trên Facebook.
+3. Thân bài: Đi thẳng vào thông tin người mua/thuê cần (diện tích, kết cấu, tiện ích nổi bật, giá bán/thuê). Giữ đúng thông số gốc, bỏ mục trống/0/mã tin/PID.
+{contact_rule}
+5. Cuối bài: Kèm đúng 3-4 hashtag chuẩn SEO (ví dụ: #nhadep #bds_khuvuc #muabannhadat).
+
+CHỐNG SPAM & TUÂN THỦ CHÍNH SÁCH FACEBOOK:
+- CẤM TIẾNG ANH / TỪ LAI ENUM: Tuyệt đối KHÔNG dùng các từ tiếng Anh như "TOWN_HOUSE", "TOWNHOUSE", "HOMESTAY", "VILLA" nếu có từ tiếng Việt tương đương ("Nhà phố", "Căn hộ", "Biệt thự", "Đất nền", "Mặt bằng kinh doanh"). Toàn bộ bài đăng phải viết bằng 100% tiếng Việt tự nhiên.
+- CẤM TỪ SÁO RỖNG & GIẬT TÍT: Không dùng {cliches_sample}.
+- CẤM TỪ TIÊU CỰC / VI PHẠM TÀI CHÍNH: Tuyệt đối không dùng "vỡ nợ", "cắt lỗ", "bán tháo", "ngộp", "phát mãi", "cam kết lời".
+- CẤM MỒI TƯƠNG TÁC (Engagement Bait): Không dùng "chia sẻ ngay", "tag bạn bè", "thả tim", "chấm bài".
+- CẤM ĐỊNH DẠNG SPAM: Không dùng markdown (**), không viết hoa toàn bộ (ALL CAPS), chỉ dùng 2-3 icon nhẹ nhàng ({sample_icons}).
+{rental_rule}
+
+DỮ LIỆU BẤT ĐỘNG SẢN GỐC:
+- Tiêu đề gốc: {raw_title}
+- Mô tả gốc: {raw_desc}
+
+ĐỊNH DẠNG TRẢ VỀ:
+Bắt buộc trả về đúng định dạng JSON duy nhất (không có lời mở đầu hay giải thích thêm):
+```json
+{{
+  "title": "Tiêu đề dưới 90 ký tự",
+  "description": "Nội dung bài viết đầy đủ..."
+}}
+```"""
+        return prompt

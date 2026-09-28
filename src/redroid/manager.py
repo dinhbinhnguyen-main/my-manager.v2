@@ -509,25 +509,25 @@ class RedroidManager:
                 acc = AccountRepository.get_by_uid(acc_uid) if acc_uid else None
                 if acc and auto_start:
                     logger.info(
-                        f"Tài khoản UID '{acc_uid}' ({acc.username}) chưa có máy ảo Redroid. "
-                        f"Đang tự động khởi tạo máy ảo mới và cài đặt APK..."
+                        f"Account UID '{acc_uid}' ({acc.username}) has no Redroid container yet. "
+                        f"Auto-provisioning a new container and installing APK..."
                     )
                     try:
                         inst = self.create_instance(account_uid=acc_uid, apk_path=apk_path)
                         AccountRepository.bind_container(acc_uid, inst.container_id, inst.device_profile_id or "")
-                        logger.info(f"Đã tự động khởi tạo thành công máy ảo cho UID '{acc_uid}' (Port {inst.adb_port}) và cài đặt APK.")
+                        logger.info(f"Successfully auto-provisioned container for UID '{acc_uid}' (Port {inst.adb_port}) and installed APK.")
                         return True
                     except Exception as e:
-                        logger.error(f"Tự động tạo máy ảo cho UID '{acc_uid}' thất bại: {e}")
+                        logger.error(f"Failed to auto-provision container for UID '{acc_uid}': {e}")
                         return False
                 elif acc:
                     logger.error(
-                        f"Tài khoản UID '{acc_uid}' ({acc.username}) chưa được khởi tạo máy ảo Redroid trong Docker. "
-                        f"Vui lòng tạo máy ảo trước bằng lệnh: python main-cli.py redroid create --uid {acc_uid}"
+                        f"Account UID '{acc_uid}' ({acc.username}) has no Redroid container in Docker. "
+                        f"Please create one first using: python main-cli.py redroid create --uid {acc_uid}"
                     )
                     return False
                 else:
-                    logger.error(f"Không tìm thấy máy ảo Redroid hoặc tài khoản tương ứng với mục tiêu '{target}'.")
+                    logger.error(f"Could not find Redroid instance or account matching target '{target}'.")
                     return False
         else:
             c_name = inst.container_name
@@ -537,15 +537,15 @@ class RedroidManager:
         if live_status != "running":
             if auto_start:
                 if live_status == "not_found" and acc_uid:
-                    logger.info(f"Container '{c_name}' không tồn tại trong Docker. Đang tự động tạo lại máy ảo...")
+                    logger.info(f"Container '{c_name}' does not exist in Docker. Auto-recreating container...")
                     try:
                         from src.db.repository import AccountRepository
                         inst = self.create_instance(account_uid=acc_uid, apk_path=apk_path)
                         AccountRepository.bind_container(acc_uid, inst.container_id, inst.device_profile_id or "")
-                        logger.info(f"Đã tự động tạo lại thành công máy ảo cho UID '{acc_uid}' (Port {inst.adb_port}) và cài đặt APK.")
+                        logger.info(f"Successfully auto-recreated container for UID '{acc_uid}' (Port {inst.adb_port}) and installed APK.")
                         return True
                     except Exception as e:
-                        logger.error(f"Tạo lại máy ảo cho UID '{acc_uid}' thất bại: {e}")
+                        logger.error(f"Failed to auto-recreate container for UID '{acc_uid}': {e}")
                         return False
 
                 logger.info(f"Container '{c_name}' is currently stopped. Auto-starting it to install APK...")
@@ -657,14 +657,14 @@ class RedroidManager:
             from src.db.repository import AccountRepository
             acc = AccountRepository.get_by_uid(acc_uid) if acc_uid else None
             if acc:
-                logger.info(f"Container '{c_name}' chưa có trong Docker. Đang tự động khởi tạo máy ảo mới cho UID '{acc_uid}' ({acc.username})...")
+                logger.info(f"Container '{c_name}' does not exist in Docker. Auto-provisioning new container for UID '{acc_uid}' ({acc.username})...")
                 new_inst = self.create_instance(account_uid=acc_uid, proxy_url=proxy_url)
                 AccountRepository.bind_container(acc_uid, new_inst.container_id, new_inst.device_profile_id or "")
-                logger.info(f"Đã tự động khởi tạo thành công máy ảo cho UID '{acc_uid}' (Port {new_inst.adb_port}).")
+                logger.info(f"Successfully auto-provisioned container for UID '{acc_uid}' (Port {new_inst.adb_port}).")
                 return
             else:
                 uid_hint = f" --uid {acc_uid}" if acc_uid else ""
-                msg = f"Container '{c_name}' không tồn tại trong Docker. Vui lòng tạo máy ảo trước bằng lệnh: python main-cli.py redroid create{uid_hint}"
+                msg = f"Container '{c_name}' does not exist in Docker. Please create it first using: python main-cli.py redroid create{uid_hint}"
                 logger.error(msg)
                 raise RuntimeError(msg)
 

@@ -18,9 +18,32 @@ class BaseAutomator:
         self.adb_client = ADBClient(port=adb_port)
         self.device: Optional[u2.Device] = None
 
-    def log(self, message: str):
-        """Unified logging method compatible with v1 scripts."""
-        logger.info(message)
+    def log(self, message: str, level: Optional[str] = None):
+        """Unified logging method compatible with v1 scripts, routing to semantic log levels."""
+        if level:
+            lvl = level.lower()
+            if lvl == "success":
+                logger.success(message) if hasattr(logger, "success") else logger.info(message)
+                return
+            elif lvl in ("error", "failed"):
+                logger.error(message)
+                return
+            elif lvl in ("warning", "warn"):
+                logger.warning(message)
+                return
+            elif lvl == "debug":
+                logger.debug(message)
+                return
+
+        msg_lower = message.lower()
+        if any(k in message for k in ["❌", "✖"]) or any(k in msg_lower for k in ["failed", "error:"]):
+            logger.error(message)
+        elif "⚠️" in message or "warning" in msg_lower or "warn" in msg_lower:
+            logger.warning(message)
+        elif any(k in message for k in ["✔️", "✔", "✅"]) or any(k in msg_lower for k in ["successfully", "succeeded", "completed"]):
+            logger.success(message) if hasattr(logger, "success") else logger.info(message)
+        else:
+            logger.info(message)
 
     def initialize(self, max_retries: int = 5, retry_delay: float = 3.0) -> bool:
         """Connects ADB and initializes UIAutomator2 driver with background watchers, retrying until Android framework is ready."""

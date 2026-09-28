@@ -251,9 +251,9 @@ def progress_cmd(
 
             p_summary = (
                 f"[bold white]Total Registered Proxies:[/bold white] {len(all_proxies)}  |  "
-                f"[bold green]Available (Rảnh):[/bold green] {len(avail_p)}  |  "
-                f"[bold blue]Working (Bận):[/bold blue] {len(work_p)}  |  "
-                f"[bold red]Unavailable (Lỗi):[/bold red] {len(unavail_p)}"
+                f"[bold green]Available:[/bold green] {len(avail_p)}  |  "
+                f"[bold blue]Busy/Working:[/bold blue] {len(work_p)}  |  "
+                f"[bold red]Unavailable/Error:[/bold red] {len(unavail_p)}"
             )
             proxy_panel = Panel(p_summary, title="🌐 Proxy Pool Real-Time Status", style="bright_magenta")
 
@@ -372,10 +372,10 @@ ACTION_REGISTRY = {
     "login": {
         "name": "login",
         "aliases": ["fb_login"],
-        "summary": "Tự động đăng nhập tài khoản Facebook & vượt 2FA TOTP",
-        "description": "Tự động mở ứng dụng Facebook, nhập UID/Password và tự động lấy mã OTP từ 2FA secret key lưu trong DB để đăng nhập và giữ phiên.",
+        "summary": "Automated Facebook login & 2FA TOTP bypass",
+        "description": "Launches Facebook app, enters UID/Password, and generates OTP code from DB 2FA secret key to log in and preserve session.",
         "params": [
-            {"name": "None", "type": "N/A", "required": False, "default": "N/A", "desc": "Sử dụng dữ liệu UID, Password, 2FA lưu trực tiếp trong DB Account."}
+            {"name": "None", "type": "N/A", "required": False, "default": "N/A", "desc": "Uses UID, Password, and 2FA secret stored in DB Account."}
         ],
         "single_cli": 'python main-cli.py run action --action login --uids "61599900011122"',
         "script_json": '{"action": "login"}',
@@ -383,13 +383,13 @@ ACTION_REGISTRY = {
     "scroll_feed": {
         "name": "scroll_feed",
         "aliases": ["warmup", "scroll", "fb_scroll_feed"],
-        "summary": "Nuôi nick: Lướt Newfeed mô phỏng người thật, đọc bài viết, thả tim & xem bình luận",
-        "description": "Tự động mở Facebook Feed, cuộn trang ngẫu nhiên (lên/xuống), tự động bấm 'Xem thêm', thả tim/like bài viết, mở xem bình luận ngẫu nhiên để tăng độ trust tuyệt đối cho tài khoản.",
+        "summary": "Account Nurturing: Human-like feed browsing, reading posts, reacting & viewing comments",
+        "description": "Browses Facebook Feed, randomly scrolls up/down, clicks 'See more', reacts to posts, and explores comments to boost account trust score.",
         "params": [
-            {"name": "max_swipes", "type": "int", "required": False, "default": "20", "desc": "Tổng số lần vuốt cuộn Newfeed"},
-            {"name": "min_delay", "type": "float", "required": False, "default": "3.0", "desc": "Thời gian dừng đọc bài viết tối thiểu (giây)"},
-            {"name": "max_delay", "type": "float", "required": False, "default": "8.0", "desc": "Thời gian dừng đọc bài viết tối đa (giây)"},
-            {"name": "max_likes", "type": "int", "required": False, "default": "3", "desc": "Số lượng thả tim/like ngẫu nhiên tối đa"}
+            {"name": "max_swipes", "type": "int", "required": False, "default": "20", "desc": "Total number of feed scroll swipes"},
+            {"name": "min_delay", "type": "float", "required": False, "default": "3.0", "desc": "Minimum post reading delay (seconds)"},
+            {"name": "max_delay", "type": "float", "required": False, "default": "8.0", "desc": "Maximum post reading delay (seconds)"},
+            {"name": "max_likes", "type": "int", "required": False, "default": "3", "desc": "Maximum random post likes/reactions"}
         ],
         "single_cli": 'python main-cli.py run action --action scroll_feed --uids "61599900011122"',
         "script_json": '{"action": "scroll_feed", "params": {"max_swipes": 30, "min_delay": 3.0, "max_delay": 8.0, "max_likes": 3}}',
@@ -397,11 +397,11 @@ ACTION_REGISTRY = {
     "marketplace": {
         "name": "marketplace",
         "aliases": ["marketplace_post", "fb_marketplace"],
-        "summary": "Đăng bài niêm yết BĐS lên Marketplace + AI Gemini",
-        "description": "Tự động lấy dữ liệu BĐS mới nhất từ my-manager.v1 DB, dùng AI Gemini 3.5 viết lại Tiêu đề/Nội dung chuẩn SEO Meta chống spam, đẩy ảnh vào Redroid gallery và niêm yết lên Marketplace.",
+        "summary": "List Real Estate on Facebook Marketplace with Gemini AI",
+        "description": "Fetches latest real estate listing from v1 DB, rewrites Title & Description with Gemini AI adhering to Meta anti-spam policies, pushes photos to gallery and lists on Marketplace.",
         "params": [
-            {"name": "transaction_type", "type": "str", "required": False, "default": '"sale"', "desc": "Loại giao dịch: 'sale' (Bán) hoặc 'rent' (Cho thuê)"},
-            {"name": "use_ai", "type": "bool", "required": False, "default": "true", "desc": "Tự động gọi AI Gemini viết lại mô tả BĐS chống trùng lặp"}
+            {"name": "transaction_type", "type": "str", "required": False, "default": '"sale"', "desc": "Transaction type: 'sale' or 'rent'"},
+            {"name": "use_ai", "type": "bool", "required": False, "default": "true", "desc": "Use Gemini AI to rewrite listing content and prevent duplicate flagging"}
         ],
         "single_cli": 'python main-cli.py run action --action marketplace --uids "61599900011122"',
         "script_json": '{"action": "marketplace", "params": {"transaction_type": "sale", "use_ai": true}}',
@@ -409,10 +409,10 @@ ACTION_REGISTRY = {
     "join_group": {
         "name": "join_group",
         "aliases": ["fb_join_group"],
-        "summary": "Tham gia Nhóm Facebook qua Deeplink",
-        "description": "Truy cập trực tiếp Nhóm mục tiêu qua URL Deeplink fb://group/<group_id> và tự động bấm nút Tham gia nhóm (Join).",
+        "summary": "Join Facebook Group via Deeplink",
+        "description": "Navigates directly to target group via fb://group/<group_id> deeplink and clicks Join group button.",
         "params": [
-            {"name": "group_id", "type": "str", "required": True, "default": "N/A", "desc": "ID của Nhóm Facebook (Ví dụ: '123456789')"}
+            {"name": "group_id", "type": "str", "required": True, "default": "N/A", "desc": "Target Facebook Group ID (e.g., '123456789')"}
         ],
         "single_cli": 'python main-cli.py run action --action join_group --uids "61599900011122"',
         "script_json": '{"action": "join_group", "params": {"group_id": "123456789"}}',
@@ -420,26 +420,26 @@ ACTION_REGISTRY = {
     "post_group": {
         "name": "post_group",
         "aliases": ["fb_post_group"],
-        "summary": "Đăng bài viết kèm hình ảnh vào Nhóm Facebook",
-        "description": "Truy cập Nhóm Facebook chỉ định qua Deeplink, viết văn bản bài viết và tải ảnh từ máy tính lên Nhóm.",
+        "summary": "Post text and photos into a Facebook Group",
+        "description": "Accesses specified Facebook Group via deeplink, inputs post text, and uploads images from host computer.",
         "params": [
-            {"name": "group_id", "type": "str", "required": True, "default": "N/A", "desc": "ID của Nhóm Facebook (Ví dụ: '123456789')"},
-            {"name": "content", "type": "str", "required": False, "default": '"Bài viết chia sẻ BĐS"', "desc": "Nội dung văn bản bài viết"},
-            {"name": "image_paths", "type": "list[str]", "required": False, "default": "[]", "desc": "Danh sách đường dẫn ảnh trên PC host để upload"}
+            {"name": "group_id", "type": "str", "required": True, "default": "N/A", "desc": "Target Facebook Group ID (e.g., '123456789')"},
+            {"name": "content", "type": "str", "required": False, "default": '"Real estate post"', "desc": "Post text body content"},
+            {"name": "image_paths", "type": "list[str]", "required": False, "default": "[]", "desc": "List of host image file paths to upload"}
         ],
         "single_cli": 'python main-cli.py run action --action post_group --uids "61599900011122"',
-        "script_json": '{"action": "post_group", "params": {"group_id": "123456789", "content": "Bán nhà chính chủ."}}',
+        "script_json": '{"action": "post_group", "params": {"group_id": "123456789", "content": "Selling house directly."}}',
     },
     "list_group_share": {
         "name": "list_group_share",
         "aliases": ["group_share", "fb_list_group_share"],
-        "summary": "Quy trình BĐS 7 bước: Đăng bài Nhóm & Chia sẻ chéo hàng loạt",
-        "description": "Vào nhóm chính -> Chọn 'Bạn đang bán gì' -> Tải ảnh BĐS PC lên Gallery -> AI Gemini viết lại mô tả chuẩn SEO -> Bấm Next chọn Marketplace -> Chọn danh sách Nhóm chia sẻ -> Bấm Publish.",
+        "summary": "7-step Real Estate Pipeline: Buy/Sell Group Listing & Top-Group Cross-Sharing",
+        "description": "Navigates to primary group -> Clicks 'What are you selling' -> Uploads host images to gallery -> Gemini AI rewrites listing -> Proceeds to Next and selects Marketplace -> Selects target cross-sharing groups -> Publishes listing.",
         "params": [
-            {"name": "group_ids", "type": "list[str]", "required": True, "default": "N/A", "desc": "Danh sách ID các Nhóm cần chia sẻ (Ví dụ: ['111222', '333444'])"},
-            {"name": "use_v1_product", "type": "bool", "required": False, "default": "true", "desc": "Lấy dữ liệu BĐS ngẫu nhiên từ my-manager.v1 DB"},
-            {"name": "use_ai", "type": "bool", "required": False, "default": "true", "desc": "Dùng AI Gemini 3.5 viết Tiêu đề IN HOA & Mô tả 5 góc nhìn anti-spam"},
-            {"name": "custom_content", "type": "str", "required": False, "default": "None", "desc": "Tùy chỉnh nội dung thủ công thay vì lấy từ AI V1"}
+            {"name": "group_ids", "type": "list[str]", "required": True, "default": "N/A", "desc": "List of target Group IDs for cross-sharing (e.g. ['111222', '333444'])"},
+            {"name": "use_v1_product", "type": "bool", "required": False, "default": "true", "desc": "Fetch random real estate listing from v1 DB"},
+            {"name": "use_ai", "type": "bool", "required": False, "default": "true", "desc": "Use Gemini AI to rewrite UPPERCASE Title & 5-angle anti-spam Description"},
+            {"name": "custom_content", "type": "str", "required": False, "default": "None", "desc": "Custom text body override instead of v1/AI"}
         ],
         "single_cli": 'python main-cli.py run action --action group_share --uids "61599900011122" --auto-stop',
         "script_json": '{"action": "list_group_share", "params": {"group_ids": ["111222", "333444"], "use_ai": true}}',
@@ -481,12 +481,12 @@ def actions_guide(
         console.print(p_table)
 
         # Examples
-        console.print("\n[bold green]1. Single Action CLI Execution (Chạy Đơn Tác Vụ):[/bold green]")
+        console.print("\n[bold green]1. Single Action CLI Execution:[/bold green]")
         console.print(f"  [cyan]{matched['single_cli']}[/cyan]")
 
-        console.print("\n[bold green]2. Batch Scenario Script Execution (Chạy Trong Kịch Bản Script JSON):[/bold green]")
+        console.print("\n[bold green]2. Batch Scenario Script Execution (JSON):[/bold green]")
         console.print(f"  [yellow]{matched['script_json']}[/yellow]")
-        console.print("\n  [dim]Ví dụ tạo kịch bản batch đầy đủ:[/dim]")
+        console.print("\n  [dim]Example creating a complete batch scenario:[/dim]")
         console.print(f"  [cyan]python main-cli.py automation create-batch --tag my_tag --uids \"10001\" --actions '[{matched['script_json']}]'[/cyan]\n")
         return
 
