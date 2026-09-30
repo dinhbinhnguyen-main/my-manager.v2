@@ -213,8 +213,14 @@ class RedroidManager:
         adb_port = self.find_available_adb_port()
         scrcpy_port = adb_port + 2000
         container_name = f"{DEFAULT_CONTAINER_PREFIX}{account_uid}"
-        storage_dir = DATA_DIR / "containers" / account_uid
-        storage_dir.mkdir(parents=True, exist_ok=True)
+        containers_root = DATA_DIR / "containers"
+        if containers_root.is_symlink() and not containers_root.exists():
+            # Symlink points to a path inside the Linux VM (e.g., /home/user.guest/redroid_containers)
+            vm_containers_root = Path(os.readlink(containers_root))
+            storage_dir = vm_containers_root / account_uid
+        else:
+            storage_dir = containers_root / account_uid
+            storage_dir.mkdir(parents=True, exist_ok=True)
 
         # Environment variables and build.prop parameters
         build_prop_params = device_profile.to_build_prop_dict()
@@ -735,20 +741,24 @@ class RedroidManager:
 
     def _delete_container_storage(self, storage_dir: Path):
         """Deletes container data directory on disk, bypassing root ownership created by Docker."""
-        if not storage_dir.exists():
+        parent = storage_dir.parent
+        is_vm_symlink = parent.is_symlink() and not parent.exists()
+
+        if not is_vm_symlink and not storage_dir.exists():
             return
 
         import shutil
-        # 1. Try standard Python rmtree first
-        try:
-            shutil.rmtree(storage_dir)
-            logger.info(f"Deleted container data directory at '{storage_dir}'.")
-            return
-        except (PermissionError, OSError):
-            pass
+        # 1. Try standard Python rmtree first (when storage_dir is accessible on local host)
+        if not is_vm_symlink:
+            try:
+                shutil.rmtree(storage_dir)
+                logger.info(f"Deleted container data directory at '{storage_dir}'.")
+                return
+            except (PermissionError, OSError):
+                pass
 
-        # 2. Use Docker helper to purge root-owned directory cleanly
-        parent_dir = storage_dir.parent.resolve()
+        # 2. Use Docker helper to purge root-owned or VM-resident directory cleanly
+        parent_dir = Path(os.readlink(parent)) if is_vm_symlink else parent.resolve()
         dir_name = storage_dir.name
         try:
             res = subprocess.run(
@@ -761,20 +771,21 @@ class RedroidManager:
                 capture_output=True,
                 timeout=15,
             )
-            if res.returncode == 0 and not storage_dir.exists():
-                logger.info(f"Deleted container data directory via Docker cleanup: '{storage_dir}'.")
+            if res.returncode == 0 and (is_vm_symlink or not storage_dir.exists()):
+                logger.info(f"Deleted container data directory via Docker cleanup: '{parent_dir / dir_name}'.")
                 return
         except Exception as e:
             logger.warning(f"Docker cleanup attempt failed: {e}")
 
         # 3. Fallback: try sudo rm -rf if passwordless sudo or standard cleanup
-        try:
-            subprocess.run(["sudo", "-n", "rm", "-rf", str(storage_dir)], capture_output=True)
-        except Exception:
-            pass
+        if not is_vm_symlink:
+            try:
+                subprocess.run(["sudo", "-n", "rm", "-rf", str(storage_dir)], capture_output=True)
+            except Exception:
+                pass
 
-        if storage_dir.exists():
-            logger.warning(f"Could not delete container data directory '{storage_dir}' due to root permissions.")
+            if storage_dir.exists():
+                logger.warning(f"Could not delete container data directory '{storage_dir}' due to root permissions.")
 
     def remove_instance(self, target: str):
         """Stops and removes a Redroid container, cleans DB record, releases proxy, and deletes container data directory."""

@@ -136,7 +136,16 @@ class ScrcpyManager:
             return False
 
     def get_host_clipboard(self) -> Optional[str]:
-        """Reads host clipboard using xclip across various targets and selections."""
+        """Reads host clipboard using pbpaste (macOS) or xclip (Linux)."""
+        import sys
+        if sys.platform == "darwin":
+            try:
+                res = subprocess.run(["pbpaste"], capture_output=True, text=True, timeout=1)
+                if res.returncode == 0 and res.stdout:
+                    return res.stdout
+            except Exception:
+                pass
+
         for sel in ["clipboard", "primary"]:
             for target in [None, "UTF8_STRING", "STRING", "TEXT"]:
                 cmd = ["xclip", "-selection", sel]

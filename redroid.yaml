@@ -1,0 +1,42 @@
+vmType: "vz"
+rosetta:
+  enabled: false
+
+cpus: 4
+memory: "4GiB"
+disk: "100GiB"
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+mounts:
+  - location: "~"
+    writable: true
+  - location: "/Volumes"
+    writable: true
+
+portForwards:
+  - guestSocket: "/var/run/docker.sock"
+    hostSocket: "{{.Dir}}/sock/docker.sock"
+  - guestPortRange: [5555, 5580]
+    hostPortRange: [5555, 5580]
+  - guestPortRange: [7555, 8020]
+    hostPortRange: [7555, 8020]
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y linux-modules-extra-$(uname -r) adb zram-config
+      modprobe binder_linux devices="binder,hwbinder,vndbinder" || true
+      chmod 666 /dev/binder* || true
+      echo "binder_linux" > /etc/modules-load.d/redroid.conf
+      echo 'options binder_linux devices="binder,hwbinder,vndbinder"' > /etc/modprobe.d/redroid.conf
+      if ! command -v docker >/dev/null 2>&1; then
+        curl -fsSL https://get.docker.com | sh
+      fi
+      chmod 666 /var/run/docker.sock
