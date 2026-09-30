@@ -5,11 +5,13 @@ import logging
 import subprocess
 from typing import Optional
 
+from src.core.constants import DEFAULT_ADB_START_PORT
+
 logger = logging.getLogger(__name__)
 
 
 class ADBClient:
-    def __init__(self, host: str = "127.0.0.1", port: int = 5555):
+    def __init__(self, host: str = "127.0.0.1", port: int = DEFAULT_ADB_START_PORT):
         self.host = host
         self.port = port
         self.target = f"{host}:{port}"

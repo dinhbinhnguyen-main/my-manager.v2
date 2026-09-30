@@ -31,8 +31,8 @@ if _is_arm64 and (not _env_image or "11.0.0" in _env_image):
 else:
     DEFAULT_REDROID_IMAGE = _env_image or "remote-android/redroid:11.0.0-latest"
 
-DEFAULT_ADB_START_PORT = 5555
-DEFAULT_SCRCPY_START_PORT = 8000
+DEFAULT_ADB_START_PORT = int(os.getenv("ADB_START_PORT", "6555"))
+DEFAULT_SCRCPY_START_PORT = DEFAULT_ADB_START_PORT + 2000
 DEFAULT_CONTAINER_PREFIX = "redroid_fb_"
 MAX_CONCURRENT_REDROID_CONTAINERS = 2 if _is_arm64 else 4
 

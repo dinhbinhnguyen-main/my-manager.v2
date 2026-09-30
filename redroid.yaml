@@ -19,10 +19,12 @@ mounts:
 portForwards:
   - guestSocket: "/var/run/docker.sock"
     hostSocket: "{{.Dir}}/sock/docker.sock"
-  - guestPortRange: [5555, 5580]
-    hostPortRange: [5555, 5580]
-  - guestPortRange: [7555, 8020]
-    hostPortRange: [7555, 8020]
+  - guestPortRange: [5000, 6000]
+    ignore: true
+  - guestPortRange: [6555, 6600]
+    hostPortRange: [6555, 6600]
+  - guestPortRange: [8555, 8600]
+    hostPortRange: [8555, 8600]
 
 provision:
   - mode: system

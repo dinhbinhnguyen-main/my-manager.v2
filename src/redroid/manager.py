@@ -51,10 +51,16 @@ class RedroidManager:
         except Exception:
             return False
 
-    def find_available_adb_port(self) -> int:
+    def find_available_adb_port(self, account_uid: Optional[str] = None) -> int:
         """Finds an unused ADB port starting from DEFAULT_ADB_START_PORT, checking both DB and OS socket."""
         existing = RedroidRepository.list_all()
-        used_ports = {inst.adb_port for inst in existing}
+        if account_uid:
+            for inst in existing:
+                if inst.account_uid == account_uid and inst.adb_port >= DEFAULT_ADB_START_PORT:
+                    scrcpy_port = inst.adb_port + 2000
+                    if not self._is_port_occupied(inst.adb_port) and not self._is_port_occupied(scrcpy_port):
+                        return inst.adb_port
+        used_ports = {inst.adb_port for inst in existing if not account_uid or inst.account_uid != account_uid}
         port = DEFAULT_ADB_START_PORT
         while True:
             scrcpy_port = port + 2000
@@ -210,7 +216,7 @@ class RedroidManager:
         else:
             logger.warning(f"Could not assign proxy for UID {account_uid}: {proxy_msg}")
 
-        adb_port = self.find_available_adb_port()
+        adb_port = self.find_available_adb_port(account_uid=account_uid)
         scrcpy_port = adb_port + 2000
         container_name = f"{DEFAULT_CONTAINER_PREFIX}{account_uid}"
         containers_root = DATA_DIR / "containers"
