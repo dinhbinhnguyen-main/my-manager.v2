@@ -1,10 +1,13 @@
 """Redroid Container Lifecycle Manager."""
 
 import os
+import re
 import time
+import shutil
+import zipfile
 import logging
 import subprocess
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Tuple
 import docker
 from docker.errors import NotFound, APIError
 
@@ -25,6 +28,66 @@ from src.db.repository import RedroidRepository, DeviceProfileRepository
 from src.automation.adb_client import ADBClient
 
 logger = logging.getLogger(__name__)
+
+
+def extract_apk_package_name(apk_path: str) -> Optional[str]:
+    """Extracts Android package name from an APK file using system tools or binary XML inspection."""
+    if not apk_path:
+        return None
+    p = Path(apk_path)
+    if not p.exists():
+        return None
+
+    # Method 1: apkanalyzer / aapt if available
+    for tool in ["apkanalyzer", "/opt/homebrew/bin/apkanalyzer", "aapt", "aapt2"]:
+        tool_path = shutil.which(tool) or (tool if os.path.exists(tool) else None)
+        if tool_path:
+            try:
+                if "apkanalyzer" in tool_path:
+                    res = subprocess.run(
+                        [tool_path, "manifest", "application-id", str(p)],
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
+                    )
+                    if res.returncode == 0 and res.stdout.strip():
+                        return res.stdout.strip()
+                elif "aapt" in tool_path:
+                    res = subprocess.run(
+                        [tool_path, "dump", "badging", str(p)],
+                        capture_output=True,
+                        text=True,
+                        timeout=5,
+                    )
+                    m = re.search(r"package: name='([^']+)'", res.stdout)
+                    if m:
+                        return m.group(1)
+            except Exception:
+                pass
+
+    # Method 2: Pure Python string pool extraction from AndroidManifest.xml
+    try:
+        with zipfile.ZipFile(str(p), "r") as z:
+            manifest_data = z.read("AndroidManifest.xml")
+            strings = re.findall(rb"([a-zA-Z0-9_]+(?:\.[a-zA-Z0-9_]+)+)", manifest_data)
+            for s in strings:
+                decoded = s.decode("ascii", errors="ignore")
+                if "." in decoded and not decoded.startswith(
+                    ("android.", "http", "schemas.", "androidx.", "kotlin")
+                ):
+                    if "facebook" in decoded or "katana" in decoded:
+                        return decoded
+                    if re.match(r"^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$", decoded):
+                        return decoded
+    except Exception:
+        pass
+
+    # Method 3: Heuristic fallback based on file name
+    lower_name = p.name.lower()
+    if "facebook" in lower_name or "fb" in lower_name or "katana" in lower_name:
+        return FB_KATANA_PACKAGE
+
+    return None
 
 
 from src.proxy.service import ProxyService
@@ -485,34 +548,47 @@ class RedroidManager:
             return False
 
     def _install_facebook_apk(self, adb_port: int, apk_path: Optional[str] = None):
-        """Automatically installs Facebook APK into Redroid container via ADB."""
+        """Automatically installs Facebook APK into Redroid container via ADB if not already installed."""
         target_apk = Path(apk_path) if apk_path else DEFAULT_FB_APK_PATH
         client = ADBClient(port=adb_port)
 
-        logger.info(f"Waiting for Redroid (Port {adb_port}) to finish booting before installing APK...")
+        logger.info(f"Waiting for Redroid (Port {adb_port}) to finish booting before checking APK...")
         if not client.wait_for_boot(timeout_sec=45):
             logger.warning(f"Redroid container on port {adb_port} did not complete boot in time.")
             return
 
-        if client.is_app_installed(FB_KATANA_PACKAGE):
-            logger.info(f"Facebook app ({FB_KATANA_PACKAGE}) is already installed on port {adb_port}.")
+        pkg_name = extract_apk_package_name(str(target_apk)) or FB_KATANA_PACKAGE
+        if client.is_app_installed(pkg_name):
+            logger.info(f"App package '{pkg_name}' is already installed on port {adb_port}.")
             return
 
         if not target_apk.exists():
             logger.warning(
-                f"Facebook APK not found at '{target_apk}'. "
-                f"Please place the Facebook APK at '{DEFAULT_FB_APK_PATH}' or specify --apk <path>."
+                f"APK not found at '{target_apk}'. "
+                f"Please place the APK at '{target_apk}' or specify --apk <path>."
             )
             return
 
-        logger.info(f"Installing Facebook APK '{target_apk}' on port {adb_port}...")
+        logger.info(f"Installing APK '{target_apk}' on port {adb_port}...")
         client.install_apk(str(target_apk))
 
-    def install_apk(self, target: str, apk_path: str, auto_start: bool = True) -> bool:
+    def install_apk_status(self, target: str, apk_path: str, auto_start: bool = True) -> str:
         """
         Installs an APK file onto a specified Redroid container (accepts UID, Port, Name, or ID).
-        If container is currently stopped, automatically starts it if auto_start=True.
+        - If container does not exist for an account, auto-provisions container and installs APK (returns 'created').
+        - If container exists, starts it if stopped, checks if APK is already installed:
+            - If already installed: skips installation (returns 'skipped').
+            - If not installed: installs APK (returns 'installed').
+        - On failure, returns 'failed'.
         """
+        target_apk = Path(apk_path)
+        if not target_apk.exists():
+            msg = f"APK file not found at path '{target_apk}'"
+            logger.error(msg)
+            raise FileNotFoundError(msg)
+
+        pkg_name = extract_apk_package_name(str(target_apk))
+
         c_name, acc_uid = self.resolve_target(target)
         inst = RedroidRepository.get_by_identifier(target)
         if not inst and acc_uid:
@@ -526,31 +602,38 @@ class RedroidManager:
             else:
                 from src.db.repository import AccountRepository
                 acc = AccountRepository.get_by_uid(acc_uid) if acc_uid else None
+                if not acc and not acc_uid and target:
+                    acc = AccountRepository.get_by_uid(target)
+                    if acc:
+                        acc_uid = acc.uid
+
                 if acc and auto_start:
                     logger.info(
-                        f"Account UID '{acc_uid}' ({acc.username}) has no Redroid container yet. "
+                        f"Account UID '{acc.uid}' ({acc.username}) has no Redroid container yet. "
                         f"Auto-provisioning a new container and installing APK..."
                     )
                     try:
-                        inst = self.create_instance(account_uid=acc_uid, apk_path=apk_path)
-                        AccountRepository.bind_container(acc_uid, inst.container_id, inst.device_profile_id or "")
-                        logger.info(f"Successfully auto-provisioned container for UID '{acc_uid}' (Port {inst.adb_port}) and installed APK.")
-                        return True
+                        inst = self.create_instance(account_uid=acc.uid, apk_path=str(target_apk))
+                        AccountRepository.bind_container(acc.uid, inst.container_id, inst.device_profile_id or "")
+                        logger.info(f"Successfully auto-provisioned container for UID '{acc.uid}' (Port {inst.adb_port}) and installed APK.")
+                        return "created"
                     except Exception as e:
-                        logger.error(f"Failed to auto-provision container for UID '{acc_uid}': {e}")
-                        return False
+                        logger.error(f"Failed to auto-provision container for UID '{acc.uid}': {e}")
+                        return "failed"
                 elif acc:
                     logger.error(
-                        f"Account UID '{acc_uid}' ({acc.username}) has no Redroid container in Docker. "
-                        f"Please create one first using: python main-cli.py redroid create --uid {acc_uid}"
+                        f"Account UID '{acc.uid}' ({acc.username}) has no Redroid container in Docker. "
+                        f"Please create one first using: python main-cli.py redroid create --uid {acc.uid}"
                     )
-                    return False
+                    return "failed"
                 else:
                     logger.error(f"Could not find Redroid instance or account matching target '{target}'.")
-                    return False
+                    return "failed"
         else:
             c_name = inst.container_name
             adb_port = inst.adb_port
+            if not acc_uid and inst.account_uid:
+                acc_uid = inst.account_uid
 
         live_status = self.get_live_docker_status(c_name)
         if live_status != "running":
@@ -559,48 +642,61 @@ class RedroidManager:
                     logger.info(f"Container '{c_name}' does not exist in Docker. Auto-recreating container...")
                     try:
                         from src.db.repository import AccountRepository
-                        inst = self.create_instance(account_uid=acc_uid, apk_path=apk_path)
+                        inst = self.create_instance(account_uid=acc_uid, apk_path=str(target_apk))
                         AccountRepository.bind_container(acc_uid, inst.container_id, inst.device_profile_id or "")
                         logger.info(f"Successfully auto-recreated container for UID '{acc_uid}' (Port {inst.adb_port}) and installed APK.")
-                        return True
+                        return "created"
                     except Exception as e:
                         logger.error(f"Failed to auto-recreate container for UID '{acc_uid}': {e}")
-                        return False
+                        return "failed"
 
                 logger.info(f"Container '{c_name}' is currently stopped. Auto-starting it to install APK...")
                 self.start_instance(c_name)
             else:
                 logger.error(f"Container '{c_name}' is not running.")
-                return False
-
-        target_apk = Path(apk_path)
-        if not target_apk.exists():
-            msg = f"APK file not found at path '{target_apk}'"
-            logger.error(msg)
-            raise FileNotFoundError(msg)
+                return "failed"
 
         client = ADBClient(port=adb_port)
-        logger.info(f"Connecting to container on ADB port {adb_port} to install APK '{target_apk.name}'...")
+        logger.info(f"Connecting to container on ADB port {adb_port} to check/install APK '{target_apk.name}'...")
         if not client.wait_for_boot(timeout_sec=35):
             logger.warning(f"Redroid container on port {adb_port} is not responding or did not boot in time.")
-            return False
+            return "failed"
+
+        # Check if already installed
+        if pkg_name and client.is_app_installed(pkg_name):
+            logger.info(f"Package '{pkg_name}' is already installed on container '{c_name}' (Port {adb_port}). Skipping installation.")
+            self.ensure_app_permissions(c_name, package_name=pkg_name)
+            return "skipped"
 
         logger.info(f"Installing APK '{target_apk}' on ADB port {adb_port}...")
         ok = client.install_apk(str(target_apk))
         if ok:
-            self.ensure_app_permissions(c_name)
-        return ok
+            if pkg_name:
+                self.ensure_app_permissions(c_name, package_name=pkg_name)
+            return "installed"
+        return "failed"
 
-    def install_apk_batch(self, targets: List[str], apk_path: str) -> Dict[str, bool]:
-        """Installs an APK file onto multiple Redroid containers sequentially."""
+    def install_apk(self, target: str, apk_path: str, auto_start: bool = True) -> bool:
+        """
+        Installs an APK file onto a specified Redroid container (accepts UID, Port, Name, or ID).
+        Returns True if APK was installed, container was created, or APK was already installed.
+        """
+        status = self.install_apk_status(target, apk_path=apk_path, auto_start=auto_start)
+        return status in ("created", "installed", "skipped")
+
+    def install_apk_batch(self, targets: List[str], apk_path: str) -> Dict[str, str]:
+        """
+        Installs an APK file onto multiple Redroid containers sequentially.
+        Returns a dictionary mapping target -> status ("created", "installed", "skipped", "failed").
+        """
         results = {}
         for tgt in targets:
             try:
-                ok = self.install_apk(tgt, apk_path=apk_path, auto_start=True)
-                results[tgt] = ok
+                status = self.install_apk_status(tgt, apk_path=apk_path, auto_start=True)
+                results[tgt] = status
             except Exception as e:
                 logger.error(f"Failed to install APK for target '{tgt}': {e}")
-                results[tgt] = False
+                results[tgt] = "failed"
         return results
 
     def resolve_target(self, target: str) -> Tuple[str, Optional[str]]:

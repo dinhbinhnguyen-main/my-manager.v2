@@ -94,14 +94,14 @@ python main-cli.py redroid start 61599900011122 --proxy 1
 python main-cli.py redroid start 61599900011122 --proxy "Proxy_Viettel_01"
 python main-cli.py redroid start 61599900011122 --proxy "https://proxyxoay.shop/api/getproxy.php?key=YOUR_KEY"
 
-# 📲 Cài đặt APK cho 1 container (Tự động MỞ máy ảo nếu đang dừng stopped)
+# 📲 Cài đặt APK cho 1 container / account (Tự động tạo container nếu chưa có, khởi động nếu đang dừng, bỏ qua nếu app đã cài)
 python main-cli.py redroid install 61599900011122 --apk data/apks/facebook.apk
 python main-cli.py redroid install-apk 5555 --apk /path/to/custom_app.apk
 
-# 📲 Cài đặt APK HÀNG LOẠT cho NỀN TẢNG NHIỀU PROFILE (theo danh sách UID hoặc TOÀN BỘ)
-python main-cli.py redroid install --uids "61599900011122,61599900033344" --apk data/apks/facebook.apk
+# 📲 Cài đặt APK HÀNG LOẠT cho TOÀN BỘ ACCOUNT (Tự động duyệt danh sách account, tạo Redroid container tương ứng nếu chưa có, nếu đã có thì kiểm tra xem đã cài APK chưa: đã cài thì bỏ qua, chưa cài thì tiến hành cài đặt)
 python main-cli.py redroid install --all --apk data/apks/facebook.apk
 python main-cli.py redroid install all --apk data/apks/facebook.apk
+python main-cli.py redroid install --uids "61599900011122,61599900033344" --apk data/apks/facebook.apk
 
 # ❌ Xóa hoàn toàn container khỏi Docker, DB, và XÓA THƯ MỤC LƯU TRỮ DỮ LIỆU `data/containers/<uid>` TRÊN ĐĨA
 python main-cli.py redroid remove 61599900011122

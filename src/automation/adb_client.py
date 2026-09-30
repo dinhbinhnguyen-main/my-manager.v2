@@ -51,7 +51,12 @@ class ADBClient:
             ["adb", "-s", self.target, "shell", "pm", "list", "packages", package_name],
             capture_output=True, text=True
         )
-        return package_name in res.stdout
+        packages = [
+            line.strip().replace("package:", "")
+            for line in res.stdout.splitlines()
+            if "package:" in line
+        ]
+        return package_name in packages or f"package:{package_name}" in res.stdout
 
     def install_apk(self, apk_path: str) -> bool:
         """Installs an APK file into Redroid container."""

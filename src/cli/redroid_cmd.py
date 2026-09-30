@@ -106,19 +106,23 @@ def start_container(
 def install_apk_cmd(
     target: Optional[str] = typer.Argument(None, help="Target container (FB UID, Container ID, Name, ADB Port, or 'all')"),
     uids: Optional[str] = typer.Option(None, "--uids", "-u", help="Comma-separated list of account UIDs to install APK for"),
-    install_all: bool = typer.Option(False, "--all", help="Install APK on ALL managed containers in database"),
+    install_all: bool = typer.Option(False, "--all", help="Install APK on ALL managed accounts/containers in database"),
     apk: str = typer.Option(..., "--apk", "-a", help="Path to APK file on PC host to install"),
 ):
-    """Install an APK file onto single or multiple Redroid containers (auto-starts stopped containers if needed)."""
+    """Install an APK file onto single or multiple Redroid containers (auto-creates containers for accounts if needed, skips if already installed)."""
     target_uids = []
     if install_all or target == "all":
-        instances = RedroidRepository.list_all()
-        target_uids = [inst.account_uid or inst.container_name for inst in instances if (inst.account_uid or inst.container_name)]
+        # 1. First prioritize all accounts registered in database
+        accounts = AccountRepository.list_all(limit=100000)
+        target_uids = [acc.uid for acc in accounts if acc.uid]
+
+        # 2. If no accounts, fallback to any standalone Redroid instances
         if not target_uids:
-            accounts = AccountRepository.list_all()
-            target_uids = [acc.uid for acc in accounts if acc.uid]
+            instances = RedroidRepository.list_all()
+            target_uids = [inst.account_uid or inst.container_name for inst in instances if (inst.account_uid or inst.container_name)]
+
         if not target_uids:
-            console.print("[bold red]No Redroid containers or accounts found in database.[/bold red]")
+            console.print("[bold red]No accounts or Redroid containers found in database.[/bold red]")
             return
     elif uids:
         target_uids = [u.strip() for u in uids.split(",") if u.strip()]
@@ -131,34 +135,59 @@ def install_apk_cmd(
 
     if len(target_uids) == 1:
         tgt = target_uids[0]
-        console.print(f"[cyan]Installing APK '{apk}' on container '{tgt}' (auto-starting if stopped)...[/cyan]")
+        console.print(f"[cyan]Checking account & container '{tgt}' for APK '{apk}' (auto-creating/starting if needed)...[/cyan]")
         try:
-            success = manager.install_apk(tgt, apk, auto_start=True)
-            if success:
-                console.print(f"[bold green]Successfully installed APK '{apk}' on container '{tgt}'![/bold green]")
+            status = manager.install_apk_status(tgt, apk, auto_start=True)
+            if status == "created":
+                console.print(f"[bold green]✔ Created Redroid container & installed APK '{apk}' for '{tgt}'![/bold green]")
+            elif status == "installed":
+                console.print(f"[bold green]✔ Successfully installed APK '{apk}' on container '{tgt}'![/bold green]")
+            elif status == "skipped":
+                console.print(f"[bold yellow]↷ APK '{apk}' is already installed on container '{tgt}'. Skipped.[/bold yellow]")
             else:
-                console.print(f"[bold red]Failed to install APK '{apk}' on container '{tgt}'. Check ADB logs.[/bold red]")
+                console.print(f"[bold red]✖ Failed to install APK '{apk}' on container '{tgt}'. Check ADB logs.[/bold red]")
         except Exception as e:
             console.print(f"[bold red]Error installing APK: {e}[/bold red]")
     else:
-        console.print(f"[bold cyan]Starting batch APK installation on {len(target_uids)} profiles/containers...[/bold cyan]")
+        console.print(f"[bold cyan]Checking accounts and installing APK on {len(target_uids)} target(s)...[/bold cyan]")
         results = manager.install_apk_batch(target_uids, apk_path=apk)
 
         table = Table(title=f"Batch APK Installation Results ({apk})", show_lines=True)
-        table.add_column("Target Profile / Container", style="cyan")
+        table.add_column("Account UID / Target", style="cyan")
+        table.add_column("Account Name", style="magenta")
         table.add_column("Result Status", style="bold")
 
-        success_count = 0
-        for tgt, ok in results.items():
-            if ok:
-                success_count += 1
-                status_str = "[bold green]✔ Installed Successfully[/bold green]"
+        created_count = 0
+        installed_count = 0
+        skipped_count = 0
+        failed_count = 0
+
+        for tgt, status in results.items():
+            acc = AccountRepository.get_by_uid(tgt)
+            acc_name = acc.username if acc else "-"
+            if status == "created":
+                created_count += 1
+                status_str = "[bold green]✔ Container Created & APK Installed[/bold green]"
+            elif status == "installed":
+                installed_count += 1
+                status_str = "[bold green]✔ APK Installed[/bold green]"
+            elif status == "skipped":
+                skipped_count += 1
+                status_str = "[bold yellow]↷ Skipped (Already Installed)[/bold yellow]"
             else:
+                failed_count += 1
                 status_str = "[bold red]✖ Failed / Error[/bold red]"
-            table.add_row(tgt, status_str)
+
+            table.add_row(tgt, acc_name, status_str)
 
         console.print(table)
-        console.print(f"[bold green]Completed Batch APK Install: {success_count}/{len(target_uids)} successful.[/bold green]")
+        console.print(
+            f"[bold green]Completed Batch APK Install on {len(target_uids)} targets: [/bold green]"
+            f"[green]{created_count} created[/green] | "
+            f"[green]{installed_count} installed[/green] | "
+            f"[yellow]{skipped_count} skipped[/yellow] | "
+            f"[red]{failed_count} failed[/red]"
+        )
 
 
 @app.command("remove")
