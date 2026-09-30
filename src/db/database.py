@@ -3,7 +3,7 @@
 import sqlite3
 import logging
 from contextlib import contextmanager
-from src.core.constants import DB_PATH
+from src.core.constants import DB_PATH, DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +182,7 @@ def init_db(force: bool = False):
             ("gemini_api_key", ""),
             ("v1_db_path", "/home/dinhbinhnguyen/Devs/my-manager.v1/bin/products.db"),
             ("v1_image_dir", "/home/dinhbinhnguyen/Devs/my-manager.v1/bin/images"),
+            ("container", str(DATA_DIR / "containers")),
         ]
         for name, default_val in default_settings:
             cursor.execute(

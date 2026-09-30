@@ -8,8 +8,12 @@ import zipfile
 import logging
 import subprocess
 from typing import Optional, List, Dict, Tuple
-import docker
-from docker.errors import NotFound, APIError
+try:
+    import docker
+    from docker.errors import NotFound, APIError
+except ImportError:
+    docker = None
+    NotFound = APIError = Exception
 
 from pathlib import Path
 from src.core.constants import (
@@ -24,7 +28,7 @@ from src.core.constants import (
 )
 from src.core.fingerprint import DeviceProfile, generate_device_profile
 from src.core.models import RedroidInstance
-from src.db.repository import RedroidRepository, DeviceProfileRepository
+from src.db.repository import RedroidRepository, DeviceProfileRepository, SettingRepository
 from src.automation.adb_client import ADBClient
 
 logger = logging.getLogger(__name__)
@@ -97,11 +101,37 @@ from src.redroid.proxy_configurator import ContainerProxyConfigurator
 class RedroidManager:
     def __init__(self, image: str = DEFAULT_REDROID_IMAGE):
         self.image = image
-        try:
-            self.docker_client = docker.from_env()
-        except Exception as e:
-            logger.warning(f"Could not initialize Docker client via SDK: {e}. Subprocess fallback will be used.")
+        if docker is not None:
+            try:
+                self.docker_client = docker.from_env()
+            except Exception as e:
+                logger.warning(f"Could not initialize Docker client via SDK: {e}. Subprocess fallback will be used.")
+                self.docker_client = None
+        else:
             self.docker_client = None
+
+    @staticmethod
+    def get_containers_root_path() -> Path:
+        """Returns the containers root directory from settings DB or default DATA_DIR/containers."""
+        try:
+            custom_path = SettingRepository.get("container", "").strip()
+            if custom_path:
+                return Path(custom_path)
+        except Exception as e:
+            logger.warning(f"Could not read 'container' from settings: {e}")
+        return DATA_DIR / "containers"
+
+    @classmethod
+    def get_container_storage_dir(cls, account_uid: str) -> Path:
+        """Calculates storage directory for an account container, handling VM symlinks if present."""
+        containers_root = cls.get_containers_root_path()
+        if containers_root.is_symlink() and not containers_root.exists():
+            # Symlink points to a path inside the Linux VM (e.g., /home/user.guest/redroid_containers)
+            vm_containers_root = Path(os.readlink(containers_root))
+            return vm_containers_root / account_uid
+        storage_dir = containers_root / account_uid
+        storage_dir.mkdir(parents=True, exist_ok=True)
+        return storage_dir
 
     @staticmethod
     def _is_port_occupied(port: int) -> bool:
@@ -282,14 +312,7 @@ class RedroidManager:
         adb_port = self.find_available_adb_port(account_uid=account_uid)
         scrcpy_port = adb_port + 2000
         container_name = f"{DEFAULT_CONTAINER_PREFIX}{account_uid}"
-        containers_root = DATA_DIR / "containers"
-        if containers_root.is_symlink() and not containers_root.exists():
-            # Symlink points to a path inside the Linux VM (e.g., /home/user.guest/redroid_containers)
-            vm_containers_root = Path(os.readlink(containers_root))
-            storage_dir = vm_containers_root / account_uid
-        else:
-            storage_dir = containers_root / account_uid
-            storage_dir.mkdir(parents=True, exist_ok=True)
+        storage_dir = self.get_container_storage_dir(account_uid)
 
         # Environment variables and build.prop parameters
         build_prop_params = device_profile.to_build_prop_dict()
@@ -902,7 +925,7 @@ class RedroidManager:
         subprocess.run(["docker", "rm", "-f", c_name], capture_output=True)
         if acc_uid:
             ProxyService.release_proxy(acc_uid)
-            storage_dir = DATA_DIR / "containers" / acc_uid
+            storage_dir = self.get_container_storage_dir(acc_uid)
             self._delete_container_storage(storage_dir)
 
         RedroidRepository.delete_by_container(c_name)

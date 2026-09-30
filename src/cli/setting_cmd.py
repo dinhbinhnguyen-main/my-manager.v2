@@ -7,7 +7,7 @@ from typing import Optional
 
 from src.db.repository import SettingRepository
 
-app = typer.Typer(help="Manage application settings (Gemini API Key, v1 DB Path, v1 Image Dir).")
+app = typer.Typer(help="Manage application settings (container storage path, Gemini API Key, v1 DB Path, v1 Image Dir).")
 console = Console()
 
 
@@ -35,7 +35,7 @@ def list_settings():
 
 @app.command("set")
 def set_setting(
-    name: str = typer.Option(..., help="Setting name (e.g. gemini_api_key, v1_db_path, v1_image_dir)"),
+    name: str = typer.Option(..., help="Setting name (e.g. container, gemini_api_key, v1_db_path, v1_image_dir)"),
     value: str = typer.Option(..., help="Setting string value"),
 ):
     """Set or update a configuration setting."""

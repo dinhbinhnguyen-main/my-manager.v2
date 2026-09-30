@@ -128,7 +128,7 @@ def delete_account(
         docker_mgr.remove_instance(uid)
 
         # Fallback disk cleanup if directory still exists
-        storage_dir = DATA_DIR / "containers" / uid
+        storage_dir = docker_mgr.get_container_storage_dir(uid)
         if storage_dir.exists():
             docker_mgr._delete_container_storage(storage_dir)
 
