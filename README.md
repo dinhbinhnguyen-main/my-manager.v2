@@ -106,3 +106,6 @@ my-manager.v2/
         ├── proxy_cmd.py
         └── run_cmd.py
 ```
+
+## MACOS start
+mm-start
