@@ -865,7 +865,7 @@ class RedroidManager:
                 logger.warning(f"Could not assign proxy when starting container '{c_name}': {proxy_msg}")
 
     def _delete_container_storage(self, storage_dir: Path):
-        """Deletes container data directory on disk, bypassing root ownership created by Docker."""
+        """Deletes container data directory on disk, bypassing root/read-only ownership created by Android/Docker."""
         parent = storage_dir.parent
         is_vm_symlink = parent.is_symlink() and not parent.exists()
 
@@ -873,13 +873,28 @@ class RedroidManager:
             return
 
         import shutil
-        # 1. Try standard Python rmtree first (when storage_dir is accessible on local host)
+        import stat
+
+        # Helper to make files/folders writable when encountering PermissionError in rmtree
+        def _onerror_chmod(func, path, exc_info):
+            try:
+                os.chmod(path, stat.S_IRWXU | stat.S_IRWXG | stat.S_IRWXO)
+                func(path)
+            except Exception:
+                pass
+
+        # 1. Try standard host cleanup first: ensure write permissions on all subdirectories (e.g. lib-compressed)
         if not is_vm_symlink:
             try:
-                shutil.rmtree(storage_dir)
-                logger.info(f"Deleted container data directory at '{storage_dir}'.")
-                return
-            except (PermissionError, OSError):
+                subprocess.run(["chmod", "-R", "u+rwX", str(storage_dir)], capture_output=True)
+                if sys.version_info >= (3, 12):
+                    shutil.rmtree(storage_dir, on_exc=lambda func, path, exc: _onerror_chmod(func, path, None))
+                else:
+                    shutil.rmtree(storage_dir, onerror=_onerror_chmod)
+                if not storage_dir.exists():
+                    logger.info(f"Deleted container data directory at '{storage_dir}'.")
+                    return
+            except Exception:
                 pass
 
         # 2. Use Docker helper to purge root-owned or VM-resident directory cleanly
@@ -891,10 +906,10 @@ class RedroidManager:
                     "docker", "run", "--rm",
                     "-v", f"{parent_dir}:/parent",
                     "alpine:latest",
-                    "rm", "-rf", f"/parent/{dir_name}"
+                    "sh", "-c", f"chmod -R 777 /parent/{dir_name} 2>/dev/null || true; rm -rf /parent/{dir_name}"
                 ],
                 capture_output=True,
-                timeout=15,
+                timeout=20,
             )
             if res.returncode == 0 and (is_vm_symlink or not storage_dir.exists()):
                 logger.info(f"Deleted container data directory via Docker cleanup: '{parent_dir / dir_name}'.")
@@ -905,6 +920,7 @@ class RedroidManager:
         # 3. Fallback: try sudo rm -rf if passwordless sudo or standard cleanup
         if not is_vm_symlink:
             try:
+                subprocess.run(["sudo", "-n", "chmod", "-R", "777", str(storage_dir)], capture_output=True)
                 subprocess.run(["sudo", "-n", "rm", "-rf", str(storage_dir)], capture_output=True)
             except Exception:
                 pass

@@ -14,7 +14,7 @@ class TestRedroidEviction(unittest.TestCase):
 
     def test_evict_oldest_idle_container_when_under_limit(self):
         manager = RedroidManager()
-        with patch.object(manager, "get_total_running_containers", return_value=3):
+        with patch.object(manager, "get_total_running_containers", return_value=max(0, MAX_CONCURRENT_REDROID_CONTAINERS - 1)):
             res = manager.evict_oldest_idle_container_if_needed()
             self.assertTrue(res)
 
