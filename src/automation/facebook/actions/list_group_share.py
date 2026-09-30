@@ -1533,14 +1533,92 @@ def select_target_groups(
     return len(clicked_groups)
 
 
+def _is_matching_location(desc: str) -> bool:
+    """
+    Mandatory check: Group title/desc must contain 'đà lạt' or 'lâm đồng'.
+    Supports accented and unaccented variations.
+    """
+    text = desc.lower()
+    location_keywords = ["đà lạt", "da lat", "dalat", "lâm đồng", "lam dong", "lamdong"]
+    return any(loc in text for loc in location_keywords)
+
+
+def _is_matching_transaction_type(desc: str, transaction_type: str = "rental") -> bool:
+    """
+    Checks if group title matches the account's transaction type:
+    - Rental: ["thuê", "căn hộ", "sang nhượng", "thue", "can ho", "sang nhuong"]
+    - Sale: ["mua", "bán", "ban"]
+    """
+    text = desc.lower()
+    trans_clean = str(transaction_type or "rental").lower().strip()
+
+    if trans_clean in ("rental", "rent", "thue", "cho_thue"):
+        rental_kws = ["thuê", "căn hộ", "sang nhượng", "thue", "can ho", "sang nhuong"]
+        return any(kw in text for kw in rental_kws)
+    elif trans_clean in ("sale", "ban", "mua", "buy", "buy_sell"):
+        sale_kws = ["mua", "bán"]
+        if any(kw in text for kw in sale_kws):
+            return True
+        if re.search(r'\b(mua|ban)\b', text):
+            return True
+        return False
+
+    return False
+
+
+def filter_and_rank_groups_by_transaction_type(
+    collected_groups: Dict[str, int],
+    transaction_type: str = "rental",
+    min_members: int = 0
+) -> List[tuple]:
+    """
+    Filters and ranks groups based on:
+    1. Mandatory: Group title must contain 'đà lạt' or 'lâm đồng'.
+    2. Minimum members threshold (count >= min_members).
+    3. Transaction type priority:
+       - rental -> keywords in ['thuê', 'căn hộ', 'sang nhượng']
+       - sale   -> keywords in ['mua', 'bán']
+    4. Sorter: Prioritized matching groups first, then secondary location-matching groups,
+       all sorted descending by member count.
+
+    Returns a list of tuples: (group_desc, member_count, is_transaction_priority_match)
+    """
+    # 1. Filter by mandatory location & min_members
+    location_matched = {
+        desc: count for desc, count in collected_groups.items()
+        if _is_matching_location(desc) and count >= min_members
+    }
+
+    if not location_matched:
+        return []
+
+    # 2. Separate into priority (matches transaction_type) and secondary (location matched only)
+    priority_groups = []
+    secondary_groups = []
+
+    for desc, count in location_matched.items():
+        if _is_matching_transaction_type(desc, transaction_type):
+            priority_groups.append((desc, count, True))
+        else:
+            secondary_groups.append((desc, count, False))
+
+    # Sort each group descending by member count
+    priority_groups.sort(key=lambda x: x[1], reverse=True)
+    secondary_groups.sort(key=lambda x: x[1], reverse=True)
+
+    # Combine: priority groups first, then remaining location-matched groups
+    return priority_groups + secondary_groups
+
+
 def list_in_more_places(
     bot: BaseAutomator, 
-    share_groups_count: int = 20, 
+    share_groups_count: int = 5, 
     max_swipes: int = 5,
-    min_members: int = 0
+    min_members: int = 0,
+    transaction_type: str = "rental"
 ) -> int:
-    """STEP 6: Selects Marketplace and highest-member groups."""
-    bot.log(f"📋 [Step 6] Starting Marketplace and up to {share_groups_count} groups selection...")
+    """STEP 6: Selects Marketplace and target groups matching location and transaction type."""
+    bot.log(f"📋 [Step 6] Starting Marketplace and up to {share_groups_count} groups selection (Transaction Type: '{transaction_type}')...")
 
     if not wait_for_group_list(bot, timeout=10):
         bot.log("⚠️ Group list screen not fully recognized, continuing with available elements...")
@@ -1558,20 +1636,23 @@ def list_in_more_places(
         bot.log("ℹ️ No additional groups found in the list. Skipping group selection.")
         return 0
 
-    filtered_groups = {
-        name: count for name, count in collected_groups.items() 
-        if count >= min_members
-    }
-    if not filtered_groups:
-        filtered_groups = collected_groups
+    ranked_groups = filter_and_rank_groups_by_transaction_type(
+        collected_groups,
+        transaction_type=transaction_type,
+        min_members=min_members
+    )
 
-    sorted_groups = sorted(filtered_groups.items(), key=lambda item: item[1], reverse=True)
-    top_groups = dict(sorted_groups[:target_count])
-    target_descs = set(top_groups.keys())
+    if not ranked_groups:
+        bot.log("⚠️ No groups matched mandatory location ('đà lạt' or 'lâm đồng'). Skipping group selection.")
+        return 0
 
-    bot.log(f"📋 Selected Top {len(target_descs)} group(s) with highest member count:")
-    for idx, (name, count) in enumerate(top_groups.items(), start=1):
-        bot.log(f"   {idx}. {name[:45]} ({count:,} members)")
+    top_groups_list = ranked_groups[:target_count]
+    target_descs = {desc for desc, count, is_match in top_groups_list}
+
+    bot.log(f"📋 Selected Top {len(target_descs)} group(s) matching criteria (Transaction Type: '{transaction_type}'):")
+    for idx, (name, count, is_match) in enumerate(top_groups_list, start=1):
+        tag = "⭐ [Ưu tiên]" if is_match else "📍 [Đà Lạt/Lâm Đồng]"
+        bot.log(f"   {idx}. {tag} {name[:45]} ({count:,} members)")
 
     selected_count = select_target_groups(bot, target_descs, max_swipes=max_swipes, click_delay=0.8)
     bot.log(f"✔️ Completed selecting {selected_count} group(s).")
@@ -1665,7 +1746,8 @@ class FBGroupShareAction:
         category: str = "Miscellaneous",
         condition: str = "New",
         location: str = "Da Lat",
-        max_share_groups: int = 20
+        max_share_groups: int = 5,
+        transaction_type: Optional[str] = None
     ) -> bool:
         """Executes full 7-step Buy/Sell Group Listing & Top-Group Cross Sharing pipeline."""
         logger.info(f"Starting 7-Step Group Share pipeline for {self.account.uid} on Group '{group_id}'...")
@@ -1736,7 +1818,13 @@ class FBGroupShareAction:
             if has_next:
                 # Step 6: Select Marketplace & Top Groups
                 current_step = "step_6_list_in_more_places"
-                list_in_more_places(self.automator, share_groups_count=max_share_groups, max_swipes=5)
+                trans_type = transaction_type or getattr(self.account, 'transaction_type', 'rental') or 'rental'
+                list_in_more_places(
+                    self.automator,
+                    share_groups_count=max_share_groups,
+                    max_swipes=5,
+                    transaction_type=trans_type
+                )
 
             # Step 7: Click Publish
             current_step = "step_7_click_publish_or_done"
@@ -1764,7 +1852,7 @@ class FBGroupShareAction:
         group_ids: List[str],
         use_v1_product: bool = True,
         use_ai: bool = True,
-        share_groups_count: int = 20,
+        share_groups_count: int = 5,
         custom_content: Optional[str] = None
     ) -> bool:
         """Wrapper method executing 7-step Group Share with v1 Real Estate products and Gemini AI content."""
@@ -1828,5 +1916,6 @@ class FBGroupShareAction:
             category="Miscellaneous",
             condition="New",
             location="Da Lat",
-            max_share_groups=share_groups_count
+            max_share_groups=share_groups_count,
+            transaction_type=trans_type
         )
