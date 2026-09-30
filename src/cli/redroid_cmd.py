@@ -113,7 +113,13 @@ def install_apk_cmd(
     target_uids = []
     if install_all or target == "all":
         instances = RedroidRepository.list_all()
-        target_uids = [inst.account_uid or inst.container_name for inst in instances]
+        target_uids = [inst.account_uid or inst.container_name for inst in instances if (inst.account_uid or inst.container_name)]
+        if not target_uids:
+            accounts = AccountRepository.list_all()
+            target_uids = [acc.uid for acc in accounts if acc.uid]
+        if not target_uids:
+            console.print("[bold red]No Redroid containers or accounts found in database.[/bold red]")
+            return
     elif uids:
         target_uids = [u.strip() for u in uids.split(",") if u.strip()]
     elif target:
