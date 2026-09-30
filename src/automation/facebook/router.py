@@ -62,13 +62,16 @@ class FBActionRouter:
             return act.execute(group_id=str(group_id), content=content, image_paths=images)
 
         elif action in ["join_group", "fb_join_group"]:
+            keyword = params.get("keyword")
             group_id = params.get("group_id")
-            if not group_id:
-                logger.error("Missing required parameter 'group_id' for join_group action.")
+            group_count = int(params.get("group_count", 3))
+
+            if not keyword and not group_id:
+                logger.error("Missing required parameter 'keyword' or 'group_id' for join_group action.")
                 return False
 
             act = FBJoinGroupAction(automator, account)
-            return act.execute(group_id=str(group_id))
+            return act.execute(keyword=keyword, group_count=group_count, group_id=str(group_id) if group_id else None)
 
         elif action in ["group_share", "list_group_share", "fb_list_group_share"]:
             group_ids = params.get("group_ids", [])

@@ -66,19 +66,26 @@ class RedroidManager:
                 return port
             port += 1
 
-    def get_total_running_containers(self) -> int:
-        """Returns the count of currently running Redroid containers in Docker."""
+    def get_running_container_names(self) -> set:
+        """Returns the set of container names currently running in Docker in a single fast query."""
         try:
             res = subprocess.run(
                 ["docker", "ps", "--filter", f"name={DEFAULT_CONTAINER_PREFIX}", "--format", "{{.Names}}"],
                 capture_output=True,
                 text=True,
+                timeout=2,
             )
             if res.returncode == 0:
-                running_list = [n.strip() for n in res.stdout.splitlines() if n.strip()]
-                return len(running_list)
+                return {n.strip() for n in res.stdout.splitlines() if n.strip()}
         except Exception as e:
             logger.warning(f"Error checking live running Docker containers: {e}")
+        return set()
+
+    def get_total_running_containers(self) -> int:
+        """Returns the count of currently running Redroid containers in Docker."""
+        names = self.get_running_container_names()
+        if names:
+            return len(names)
 
         all_insts = RedroidRepository.list_all()
         return sum(1 for inst in all_insts if self.get_live_docker_status(inst.container_name) == "running")

@@ -173,6 +173,8 @@ def check_container_ip(
     import requests
 
     instances = RedroidRepository.list_all()
+    running_names = manager.get_running_container_names()
+
     if target:
         instances = [
             i for i in instances
@@ -187,9 +189,12 @@ def check_container_ip(
             except ValueError:
                 console.print(f"[bold red]No matching container found for target '{target}'.[/bold red]")
                 return
+    else:
+        # Default: only check active running containers to prevent ADB connection resets
+        instances = [i for i in instances if i.container_name in running_names]
 
     if not instances:
-        console.print("[bold yellow]No Redroid containers registered in database.[/bold yellow]")
+        console.print("[bold yellow]No active running Redroid containers found to check.[/bold yellow]")
         return
 
     table = Table(title="Redroid Outbound IP & Proxy Verification", show_lines=True)
@@ -430,7 +435,9 @@ def scrcpy_cmd(
 
     # 3. Action: One-off sync and table print if --once is requested
     if once:
-        res = scrcpy_mgr.sync_auto_scrcpy()
+        running_containers = manager.get_running_container_names()
+        scrcpy_pids = scrcpy_mgr.get_running_scrcpy_pids()
+        res = scrcpy_mgr.sync_auto_scrcpy(running_containers=running_containers, scrcpy_pids=scrcpy_pids)
         console.print(f"[bold cyan]Scrcpy Process Auto-Sync Completed:[/bold cyan] Opened={res['opened']}, Closed={res['closed']}, Active Running Containers={res['running_containers']}")
 
         table = Table(title="Redroid Container Scrcpy Process Status", show_lines=True)
@@ -439,21 +446,20 @@ def scrcpy_cmd(
         table.add_column("FB UID", style="green")
         table.add_column("Container Status", style="bold")
         table.add_column("Scrcpy GUI Status", style="bold white")
-        table.add_column("Bàn Phím Ảo (IME)", style="bold")
+        table.add_column("Virtual Keyboard", style="bold")
 
         instances = RedroidRepository.list_all()
-        scrcpy_pids = scrcpy_mgr.get_running_scrcpy_pids()
 
         for inst in instances:
-            live_status = manager.get_live_docker_status(inst.container_name)
+            live_status = "running" if inst.container_name in running_containers else "stopped"
             pids = scrcpy_pids.get(inst.adb_port, [])
 
             c_status = "[bold green]● running[/bold green]" if live_status == "running" else "[yellow]■ stopped[/yellow]"
             s_status = f"[bold green]▶ OPEN (PID: {', '.join(map(str, pids))})[/bold green]" if pids else "[dim white]⏹ CLOSED[/dim white]"
             
             if live_status == "running":
-                is_hidden = manager.is_virtual_keyboard_hidden(inst.container_name)
-                kb_status = "[bold green]✔ ĐÃ ẨN[/bold green]" if is_hidden else "[bold yellow]⚠ HIỂN THỊ[/bold yellow]"
+                is_hidden = inst.container_name in scrcpy_mgr._keyboard_hidden_targets
+                kb_status = "[bold green]✔ DISABLED[/bold green]" if is_hidden else "[bold yellow]⚠ ENABLED[/bold yellow]"
             else:
                 kb_status = "[dim]-[/dim]"
 

@@ -1,4 +1,4 @@
-"""Scrcpy Process Supervisor for Redroid Containers."""
+"""Scrcpy Process Supervisor for Redroid Containers - High Performance Version."""
 
 import os
 import re
@@ -7,7 +7,7 @@ import signal
 import logging
 import subprocess
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Set
 from pathlib import Path
 from rich.console import Console
 from rich.table import Table
@@ -24,11 +24,13 @@ class ScrcpyManager:
 
     def __init__(self):
         self.docker_mgr = RedroidManager()
-        self._keyboard_hidden_targets: set = set()
+        self._keyboard_hidden_targets: Set[str] = set()
 
     def hide_virtual_keyboard(self, target: Any) -> bool:
         """Disables virtual on-screen soft keyboard for target container/port."""
         target_str = str(target)
+        if target_str in self._keyboard_hidden_targets:
+            return True
         ok = self.docker_mgr.hide_virtual_keyboard(target_str)
         if ok:
             self._keyboard_hidden_targets.add(target_str)
@@ -46,7 +48,7 @@ class ScrcpyManager:
         """Returns a mapping of {adb_port: [pid_1, pid_2, ...]} for active scrcpy processes."""
         port_to_pids: Dict[int, List[int]] = {}
         try:
-            res = subprocess.run(["ps", "-eo", "pid,args"], capture_output=True, text=True)
+            res = subprocess.run(["ps", "-eo", "pid,args"], capture_output=True, text=True, timeout=2)
             for line in res.stdout.splitlines():
                 if "scrcpy" in line and "defunct" not in line and "grep" not in line:
                     parts = line.strip().split(None, 1)
@@ -63,28 +65,28 @@ class ScrcpyManager:
 
     def open_scrcpy(self, adb_port: int, window_title: Optional[str] = None) -> bool:
         """Launches a scrcpy window for a given ADB port if not already open."""
-        # Always ensure virtual keyboard is disabled for this container
-        self.hide_virtual_keyboard(adb_port)
-
         pids = self.get_running_scrcpy_pids().get(adb_port, [])
         if pids:
-            logger.info(f"scrcpy already running for port {adb_port} (PID: {pids}). Ensured virtual keyboard is hidden.")
+            logger.debug(f"scrcpy already running for port {adb_port} (PID: {pids}).")
             return True
 
+        # Ensure virtual keyboard is disabled
+        self.hide_virtual_keyboard(adb_port)
+
         adb_target = f"127.0.0.1:{adb_port}"
-        # Ensure ADB target connected
+        # Connect ADB target with short timeout
         try:
-            subprocess.run(["adb", "connect", adb_target], capture_output=True, timeout=5)
+            subprocess.run(["adb", "connect", adb_target], capture_output=True, timeout=2)
         except Exception:
             return False
 
-        # Check if adb is responsive and ready
+        # Fast check if adb is ready
         try:
             state_res = subprocess.run(
                 ["adb", "-s", adb_target, "get-state"],
                 capture_output=True,
                 text=True,
-                timeout=5,
+                timeout=2,
             )
             if "device" not in state_res.stdout:
                 logger.debug(f"ADB device {adb_target} not ready (state='{state_res.stdout.strip()}'). Skipping scrcpy launch.")
@@ -184,10 +186,19 @@ class ScrcpyManager:
                 logger.warning(f"Failed to terminate scrcpy PID {pid}: {e}")
         return killed
 
-    def sync_auto_scrcpy(self) -> Dict[str, Any]:
-        """Auto opens scrcpy for running containers and auto closes scrcpy for stopped containers."""
+    def sync_auto_scrcpy(
+        self,
+        running_containers: Optional[Set[str]] = None,
+        scrcpy_pids: Optional[Dict[int, List[int]]] = None
+    ) -> Dict[str, Any]:
+        """Auto opens scrcpy for running containers and auto closes scrcpy for stopped containers in O(1) in-memory checks."""
         instances = RedroidRepository.list_all()
-        scrcpy_pids = self.get_running_scrcpy_pids()
+
+        if running_containers is None:
+            running_containers = self.docker_mgr.get_running_container_names()
+
+        if scrcpy_pids is None:
+            scrcpy_pids = self.get_running_scrcpy_pids()
 
         opened = 0
         closed = 0
@@ -195,12 +206,12 @@ class ScrcpyManager:
 
         for inst in instances:
             try:
-                live_status = self.docker_mgr.get_live_docker_status(inst.container_name)
+                is_running = inst.container_name in running_containers
                 port = inst.adb_port
 
-                if live_status == "running":
+                if is_running:
                     active_ports.add(port)
-                    # Automatically ensure virtual keyboard is hidden for running container
+                    # Automatically ensure virtual keyboard is hidden for running container (once per run)
                     if inst.container_name not in self._keyboard_hidden_targets:
                         self.hide_virtual_keyboard(inst.container_name)
 
@@ -224,27 +235,23 @@ class ScrcpyManager:
 
         return {"opened": opened, "closed": closed, "running_containers": len(active_ports)}
 
-    def watch_loop(self, interval_seconds: float = 1.5):
-        """Continuously monitors Redroid processes and auto toggles scrcpy windows in real-time."""
+    def watch_loop(self, interval_seconds: float = 1.0):
+        """Continuously monitors Redroid processes and auto toggles scrcpy windows in real-time with instant in-memory rendering."""
         from rich.live import Live
 
-        def generate_dashboard() -> Table:
+        def generate_dashboard(
+            running_containers: Set[str],
+            scrcpy_pids: Dict[int, List[int]],
+            instances: list
+        ) -> Table:
             now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            instances = RedroidRepository.list_all()
-            scrcpy_pids = self.get_running_scrcpy_pids()
 
-            running_containers_count = 0
-            open_scrcpy_count = 0
-
-            for inst in instances:
-                if self.docker_mgr.get_live_docker_status(inst.container_name) == "running":
-                    running_containers_count += 1
-                if inst.adb_port in scrcpy_pids:
-                    open_scrcpy_count += 1
+            running_containers_count = sum(1 for inst in instances if inst.container_name in running_containers)
+            open_scrcpy_count = sum(1 for inst in instances if inst.adb_port in scrcpy_pids)
 
             table = Table(
-                title=f"🖥  [bold cyan]Redroid Container & Scrcpy Live Supervisor[/bold cyan] (Thời gian thực) — [yellow]{now_str}[/yellow]\n"
-                      f"[dim]Containers chạy: [green]{running_containers_count}[/green] | Cửa sổ Scrcpy: [green]{open_scrcpy_count}[/green] | Nhấn [red]Ctrl+C[/red] để thoát[/dim]",
+                title=f"🖥  [bold cyan]Redroid Container & Scrcpy Live Supervisor[/bold cyan] (Real-time) — [yellow]{now_str}[/yellow]\n"
+                      f"[dim]Running Containers: [green]{running_containers_count}[/green] | Open Scrcpy Windows: [green]{open_scrcpy_count}[/green] | Press [red]Ctrl+C[/red] to exit[/dim]",
                 expand=True,
                 show_lines=True,
             )
@@ -256,7 +263,7 @@ class ScrcpyManager:
             table.add_column("Scrcpy GUI Status", style="bold", width=30)
 
             for inst in instances:
-                live_status = self.docker_mgr.get_live_docker_status(inst.container_name)
+                live_status = "running" if inst.container_name in running_containers else "stopped"
                 pids = scrcpy_pids.get(inst.adb_port, [])
 
                 if live_status == "running":
@@ -266,12 +273,12 @@ class ScrcpyManager:
 
                 if pids:
                     pid_str = ", ".join(map(str, pids))
-                    s_status = f"[bold bright_green]▶ ĐANG MỞ (PID: {pid_str})[/bold bright_green]"
+                    s_status = f"[bold bright_green]▶ OPEN (PID: {pid_str})[/bold bright_green]"
                 else:
                     if live_status == "running":
-                        s_status = "[bold yellow]⏳ ĐANG KẾT NỐI...[/bold yellow]"
+                        s_status = "[bold yellow]⏳ CONNECTING...[/bold yellow]"
                     else:
-                        s_status = "[dim white]⏹ ĐÃ ĐÓNG[/dim white]"
+                        s_status = "[dim white]⏹ CLOSED[/dim white]"
 
                 table.add_row(
                     inst.container_id[:12] if inst.container_id else "-",
@@ -283,29 +290,30 @@ class ScrcpyManager:
                 )
             return table
 
-        console.print("[bold cyan]🚀 Starting Scrcpy Supervisor (Real-time)...[/bold cyan]")
-        console.print("[dim]Automatically launches scrcpy when container runs and closes scrcpy when stopped.[/dim]")
-        console.print("[dim]Checking and auto-hiding virtual keyboard across all running containers...[/dim]")
-
-        # Pre-hide virtual keyboard on all active running containers immediately
-        try:
-            running_insts = [i for i in RedroidRepository.list_all() if self.docker_mgr.get_live_docker_status(i.container_name) == "running"]
-            for r_inst in running_insts:
-                self.hide_virtual_keyboard(r_inst.container_name)
-        except Exception as e:
-            logger.debug(f"Pre-hiding keyboard error: {e}")
-
+        console.print("[bold cyan]🚀 Starting Scrcpy Supervisor (Ultra-Fast Real-Time Monitor)...[/bold cyan]")
         console.print("[dim]Monitoring Redroid containers... Press Ctrl+C to exit.[/dim]\n")
 
+        # Initial fast snapshot
+        init_instances = RedroidRepository.list_all()
+        init_running = self.docker_mgr.get_running_container_names()
+        init_pids = self.get_running_scrcpy_pids()
+
         try:
-            with Live(generate_dashboard(), refresh_per_second=1) as live:
+            with Live(generate_dashboard(init_running, init_pids, init_instances), refresh_per_second=2) as live:
                 while True:
+                    # 1. Fetch live system states in only 2 fast calls total
+                    instances = RedroidRepository.list_all()
+                    running_containers = self.docker_mgr.get_running_container_names()
+                    scrcpy_pids = self.get_running_scrcpy_pids()
+
+                    # 2. Sync scrcpy processes
                     try:
-                        self.sync_auto_scrcpy()
+                        self.sync_auto_scrcpy(running_containers=running_containers, scrcpy_pids=scrcpy_pids)
                     except Exception as e:
                         logger.warning(f"Supervisor sync cycle encountered an error: {e}")
-                    live.update(generate_dashboard())
+
+                    # 3. Update dashboard in-memory (0ms lag)
+                    live.update(generate_dashboard(running_containers, scrcpy_pids, instances))
                     time.sleep(interval_seconds)
         except KeyboardInterrupt:
             console.print("\n[yellow]Scrcpy Supervisor stopped.[/yellow]")
-

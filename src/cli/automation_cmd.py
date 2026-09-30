@@ -409,13 +409,15 @@ ACTION_REGISTRY = {
     "join_group": {
         "name": "join_group",
         "aliases": ["fb_join_group"],
-        "summary": "Join Facebook Group via Deeplink",
-        "description": "Navigates directly to target group via fb://group/<group_id> deeplink and clicks Join group button.",
+        "summary": "Join Facebook Groups by Keyword or Deeplink",
+        "description": "Searches Facebook Groups by keyword and automatically joins up to group_count groups, or joins directly via group_id.",
         "params": [
-            {"name": "group_id", "type": "str", "required": True, "default": "N/A", "desc": "Target Facebook Group ID (e.g., '123456789')"}
+            {"name": "keyword", "type": "str", "required": False, "default": "N/A", "desc": "Search keyword for finding groups (e.g., 'bán nhà đà lạt')"},
+            {"name": "group_count", "type": "int", "required": False, "default": "3", "desc": "Number of groups to join when searching by keyword"},
+            {"name": "group_id", "type": "str", "required": False, "default": "N/A", "desc": "Target Facebook Group ID for direct join (e.g., '123456789')"}
         ],
         "single_cli": 'python main-cli.py run action --action join_group --uids "61599900011122"',
-        "script_json": '{"action": "join_group", "params": {"group_id": "123456789"}}',
+        "script_json": '{"action": "join_group", "params": {"keyword": "bán nhà đà lạt", "group_count": 3}}',
     },
     "post_group": {
         "name": "post_group",
