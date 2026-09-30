@@ -62,7 +62,9 @@ htmlcov/
 /local.db*
 
 # User requested ignores
+/data/containers
 /data/containers/
+/data/containers*
 /data/logs/
 /data/manager.db*
 
