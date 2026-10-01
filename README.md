@@ -107,5 +107,14 @@ my-manager.v2/
         └── run_cmd.py
 ```
 
-## MACOS start
+## MACOS Commands
+
+- **Khởi động môi trường (VM, Docker, Conda):**
+```bash
 mm-start
+```
+
+- **Tắt máy ảo để giải phóng CPU & RAM cho Mac:**
+```bash
+mm-stop
+```
