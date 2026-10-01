@@ -7,6 +7,8 @@ import shutil
 import zipfile
 import logging
 import subprocess
+import sys
+import platform
 from typing import Optional, List, Dict, Tuple
 try:
     import docker
@@ -129,6 +131,8 @@ class RedroidManager:
             # Symlink points to a path inside the Linux VM (e.g., /home/user.guest/redroid_containers)
             vm_containers_root = Path(os.readlink(containers_root))
             return vm_containers_root / account_uid
+        if platform.system() == "Darwin" and str(containers_root).startswith("/home/"):
+            return containers_root / account_uid
         storage_dir = containers_root / account_uid
         storage_dir.mkdir(parents=True, exist_ok=True)
         return storage_dir
@@ -867,9 +871,9 @@ class RedroidManager:
     def _delete_container_storage(self, storage_dir: Path):
         """Deletes container data directory on disk, bypassing root/read-only ownership created by Android/Docker."""
         parent = storage_dir.parent
-        is_vm_symlink = parent.is_symlink() and not parent.exists()
+        is_vm_path = (parent.is_symlink() and not parent.exists()) or (platform.system() == "Darwin" and str(storage_dir).startswith("/home/"))
 
-        if not is_vm_symlink and not storage_dir.exists():
+        if not is_vm_path and not storage_dir.exists():
             return
 
         import shutil
@@ -884,7 +888,7 @@ class RedroidManager:
                 pass
 
         # 1. Try standard host cleanup first: ensure write permissions on all subdirectories (e.g. lib-compressed)
-        if not is_vm_symlink:
+        if not is_vm_path:
             try:
                 subprocess.run(["chmod", "-R", "u+rwX", str(storage_dir)], capture_output=True)
                 if sys.version_info >= (3, 12):
@@ -898,7 +902,7 @@ class RedroidManager:
                 pass
 
         # 2. Use Docker helper to purge root-owned or VM-resident directory cleanly
-        parent_dir = Path(os.readlink(parent)) if is_vm_symlink else parent.resolve()
+        parent_dir = Path(os.readlink(parent)) if (parent.is_symlink() and not parent.exists()) else parent
         dir_name = storage_dir.name
         try:
             res = subprocess.run(
@@ -911,14 +915,14 @@ class RedroidManager:
                 capture_output=True,
                 timeout=20,
             )
-            if res.returncode == 0 and (is_vm_symlink or not storage_dir.exists()):
+            if res.returncode == 0:
                 logger.info(f"Deleted container data directory via Docker cleanup: '{parent_dir / dir_name}'.")
                 return
         except Exception as e:
             logger.warning(f"Docker cleanup attempt failed: {e}")
 
         # 3. Fallback: try sudo rm -rf if passwordless sudo or standard cleanup
-        if not is_vm_symlink:
+        if not is_vm_path:
             try:
                 subprocess.run(["sudo", "-n", "chmod", "-R", "777", str(storage_dir)], capture_output=True)
                 subprocess.run(["sudo", "-n", "rm", "-rf", str(storage_dir)], capture_output=True)
