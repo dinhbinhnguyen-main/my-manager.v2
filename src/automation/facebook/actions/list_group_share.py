@@ -444,12 +444,16 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
 
         # CASE B: Camera Roll / Gallery opened successfully
         if bot.d:
-            cam_box = bot.d(descriptionMatches="(?i).*Photo taken on.*")
+            cam_box = bot.d(descriptionMatches=r"(?i).*Photo.*taken on.*|.*Photo taken on.*|.*Ảnh.*chụp.*")
+            if not cam_box.exists:
+                cam_box = bot.d(descriptionMatches=r"(?i)^Photo, item \d+.*")
+            if not cam_box.exists:
+                cam_box = bot.d(className="android.widget.Button", descriptionMatches=r"(?i)^Photo.*|^Ảnh.*")
             if not cam_box.exists:
                 cam_box = bot.d(resourceIdMatches=".*camera_roll_image.*")
             if not cam_box.exists:
                 cam_box = bot.d(className="android.widget.CheckBox")
-            grid = bot.get_elements_by_widget("android.widget.GridView", timeout=1)
+            grid = bot.get_elements_by_widget("android.widget.GridView", timeout=1) or (bot.d(className="android.widget.GridView") if bot.d else None)
 
             if (cam_box.exists and cam_box.count > 0) or (grid and grid.exists):
                 bot.log("✔️ Gallery / Camera Roll is now open and ready!")
@@ -475,8 +479,25 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
     photos_found = False
     selected_count = 0
 
+    def _is_back_on_listing_form() -> bool:
+        if not bot.d:
+            return False
+        return (
+            bot.d(resourceId="composer_v3_title").exists or
+            bot.d(descriptionMatches=r"(?i)^Title.*").exists or
+            bot.d(textMatches=r"(?i)^Title.*|^Tiêu đề.*").exists or
+            bot.d(resourceId="composer_v3_price").exists or
+            bot.d(textMatches=r"(?i)^Price.*|^Giá.*").exists or
+            bot.d(textMatches=r"(?i).*What are you selling.*|.*Bạn đang bán gì.*").exists
+        )
+
     def _click_next_confirm() -> bool:
         bot.smart_sleep(1.0)
+        # Check if already navigated back to listing form directly (e.g. Single-select photo mode)
+        if _is_back_on_listing_form():
+            bot.log("ℹ️ Already returned to main listing form after photo selection.")
+            return True
+
         # 1. By resourceId
         next_btn = bot.d(resourceId="marketplace_camera_roll_android_next_button")
         if next_btn.exists:
@@ -486,7 +507,7 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
             return True
 
         # 2. By description
-        next_btn = bot.d(descriptionMatches="(?i)^(Next|Tiếp|Done|Xong|Add|Thêm)$")
+        next_btn = bot.d(descriptionMatches=r"(?i)^(Next|Tiếp|Done|Xong|Add|Thêm|Add\s*\(\d+\)|Thêm\s*\(\d+\))$")
         if next_btn.exists:
             bot.log("👆 Clicking Next / Confirm button (via description)...")
             next_btn.click_exists(timeout=5)
@@ -501,12 +522,17 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                 btn.click_exists(timeout=5)
                 bot.smart_sleep(2.0)
                 return True
-            btn_txt = bot.d(textMatches=f"(?i)^{kw}$")
+            btn_txt = bot.d(textMatches=rf"(?i)^{kw}(\s*\(\d+\))?$")
             if btn_txt.exists:
                 bot.log(f"👆 Clicking text '{kw}' to confirm photos...")
                 btn_txt.click()
                 bot.smart_sleep(2.0)
                 return True
+
+        # Final check if back on main form
+        if _is_back_on_listing_form():
+            bot.log("ℹ️ Confirmed return to listing form.")
+            return True
         return False
 
     def _has_selected_photos() -> bool:
@@ -535,7 +561,12 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
         # Check 4: ImageView with selected=True
         if bot.d(className="android.widget.ImageView", selected=True).exists:
             return True
-        # Check 5: Check if selection badge (e.g. text='1') exists inside camera roll
+        # Check 5: Button with selected=True or checked=True
+        if bot.d(className="android.widget.Button", descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*", selected=True).exists:
+            return True
+        if bot.d(className="android.widget.Button", descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*", checked=True).exists:
+            return True
+        # Check 6: Check if selection badge (e.g. text='1') exists inside camera roll
         if bot.d(className="android.view.ViewGroup", textMatches=r"^[1-9]\d*$", selected=True).exists:
             return True
         if bot.d(className="android.view.ViewGroup", textMatches=r"^[1-9]\d*$").exists:
@@ -560,8 +591,16 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
             bot.log("✔️ Completed Step 3 (Confirmed already-selected photos).")
             return True
 
-        # 1. Try detecting standard Katana camera roll photos (ViewGroup / CheckBox)
-        camera_images = bot.d(descriptionMatches="(?i).*Photo taken on.*")
+        # 1. Try detecting standard Katana camera roll photos (ViewGroup / CheckBox / Button with description)
+        camera_images = bot.d(descriptionMatches=r"(?i).*Photo.*taken on.*")
+        if not camera_images.exists:
+            camera_images = bot.d(descriptionMatches=r"(?i).*Photo taken on.*")
+        if not camera_images.exists:
+            camera_images = bot.d(descriptionMatches=r"(?i).*Ảnh.*chụp.*")
+        if not camera_images.exists:
+            camera_images = bot.d(descriptionMatches=r"(?i)^Photo, item \d+.*")
+        if not camera_images.exists:
+            camera_images = bot.d(className="android.widget.Button", descriptionMatches=r"(?i)^Photo.*|^Ảnh.*")
         if not camera_images.exists:
             camera_images = bot.d(resourceIdMatches=".*camera_roll_image.*")
         if not camera_images.exists:
@@ -591,28 +630,37 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
             photos_found = True
             break
 
-        # 2. Try legacy GridView
-        grid_view = bot.get_elements_by_widget("android.widget.GridView", timeout=1)
+        # 2. Try legacy / modern GridView
+        grid_view = bot.get_elements_by_widget("android.widget.GridView", timeout=1) or (bot.d(className="android.widget.GridView") if bot.d else None)
         if grid_view and grid_view.exists:
-            photo_widgets = bot.get_interactable_from_parent(
-                grid_view[0], 
-                "android.view.ViewGroup", 
-                text="photo", 
-                timeout=5
-            )
-            if photo_widgets and photo_widgets.count > 0:
+            # 2a. Try finding buttons / views with photo description inside GridView
+            photo_widgets = bot.d(className="android.widget.Button", descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*")
+            if not photo_widgets.exists:
+                photo_widgets = bot.d(descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*")
+            if not photo_widgets.exists:
+                # 2b. Fallback to get_interactable_from_parent with text="photo"
+                photo_widgets = bot.get_interactable_from_parent(
+                    grid_view[0] if hasattr(grid_view, '__getitem__') else grid_view, 
+                    "android.view.ViewGroup", 
+                    text="photo", 
+                    timeout=5
+                )
+
+            if photo_widgets and photo_widgets.exists and photo_widgets.count > 0:
                 count = photo_widgets.count
                 actual_num = min(count, photo_num)
                 bot.log(f"📸 Found {count} photos in GridView. Selecting {actual_num} photos...")
                 for i in reversed(range(actual_num)):
                     try:
                         pw = photo_widgets[i]
-                        if pw.info.get("selected") or pw.info.get("checked"):
+                        info = pw.info
+                        if info.get("selected") or info.get("checked"):
                             bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
                             selected_count += 1
                             continue
                         pw.click_exists(timeout=3)
                         selected_count += 1
+                        bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (GridView)")
                         bot.smart_sleep(0.5)
                     except Exception as ce:
                         logger.debug(f"Error clicking photo {i}: {ce}")
@@ -1467,17 +1515,50 @@ def collect_available_groups(
     return collected_groups
 
 
+def scroll_to_top_of_list(bot: BaseAutomator, max_swipes: int = 6):
+    """Scrolls group list back to the top."""
+    if not bot.d:
+        return
+    try:
+        w, h = bot.d.window_size()
+        for _ in range(max_swipes):
+            bot.d.swipe(w // 2, int(h * 0.3), w // 2, int(h * 0.8), steps=15)
+            bot.smart_sleep(0.4)
+    except Exception as e:
+        logger.debug(f"Error scrolling to top: {e}")
+
+
 def select_target_groups(
     bot: BaseAutomator, 
     target_descs: Set[str], 
     max_swipes: int = 10, 
     click_delay: float = 0.8
 ) -> int:
-    """Scrolls back up and checks target group checkboxes."""
+    """Scrolls from top to bottom and checks target group checkboxes."""
     clicked_groups: Set[str] = set()
     total_target = len(target_descs)
     bot.log(f"🎯 Selecting {total_target} target group(s)...")
 
+    # 1. Scroll back to top before starting selection
+    scroll_to_top_of_list(bot, max_swipes=6)
+    bot.smart_sleep(1.0)
+
+    def _find_target_match(box_desc: str) -> Optional[str]:
+        if not box_desc:
+            return None
+        # Exact match
+        if box_desc in target_descs:
+            return box_desc
+        # Normalized match (by group name before member count/commas)
+        box_clean = box_desc.split(',')[0].strip().lower()
+        if len(box_clean) >= 5:
+            for t in target_descs:
+                t_clean = t.split(',')[0].strip().lower()
+                if t_clean and (t_clean in box_clean or box_clean in t_clean):
+                    return t
+        return None
+
+    # 2. Select from top to bottom
     for swipe_idx in range(max_swipes):
         checkboxes = bot.get_elements_by_widget("android.widget.CheckBox", timeout=2)
 
@@ -1488,13 +1569,14 @@ def select_target_groups(
                     desc = box.info.get('contentDescription', '') or box.info.get('text', '')
                     is_checked = box.info.get('checked', False)
 
-                    if desc in target_descs and desc not in clicked_groups:
+                    matched_target = _find_target_match(desc)
+                    if matched_target and matched_target not in clicked_groups:
                         if not is_checked:
                             box.click_exists(timeout=3)
                             bot.smart_sleep(click_delay)
 
-                        clicked_groups.add(desc)
-                        bot.log(f"✔️ Selected group ({len(clicked_groups)}/{total_target}): {desc[:40]}...")
+                        clicked_groups.add(matched_target)
+                        bot.log(f"✔️ Selected group ({len(clicked_groups)}/{total_target}): {matched_target[:40]}...")
                 except Exception as e:
                     logger.debug(f"Error interacting with checkbox: {e}")
 
@@ -1507,13 +1589,14 @@ def select_target_groups(
                         desc = box.info.get('contentDescription', '') or box.info.get('text', '')
                         is_checked = box.info.get('checked', False)
 
-                        if desc in target_descs and desc not in clicked_groups:
+                        matched_target = _find_target_match(desc)
+                        if matched_target and matched_target not in clicked_groups:
                             if not is_checked:
                                 box.click_exists(timeout=3)
                                 bot.smart_sleep(click_delay)
 
-                            clicked_groups.add(desc)
-                            bot.log(f"✔️ Selected group ({len(clicked_groups)}/{total_target}): {desc[:40]}...")
+                            clicked_groups.add(matched_target)
+                            bot.log(f"✔️ Selected group ({len(clicked_groups)}/{total_target}): {matched_target[:40]}...")
                     except Exception:
                         pass
 
@@ -1522,12 +1605,12 @@ def select_target_groups(
             break
 
         sig1 = bot._get_screen_signature()
-        bot.swipe_down(scale=0.8)
+        bot.swipe_up(scale=0.8)
         bot.smart_sleep(1.0)
         sig2 = bot._get_screen_signature()
 
         if sig1 == sig2 and sig1 != 0:
-            bot.log("🏁 Scrolled back to top of group list.")
+            bot.log("🏁 Reached the end of group list.")
             break
 
     return len(clicked_groups)
@@ -1654,7 +1737,7 @@ def list_in_more_places(
         tag = "⭐ [Ưu tiên]" if is_match else "📍 [Đà Lạt/Lâm Đồng]"
         bot.log(f"   {idx}. {tag} {name[:45]} ({count:,} members)")
 
-    selected_count = select_target_groups(bot, target_descs, max_swipes=max_swipes, click_delay=0.8)
+    selected_count = select_target_groups(bot, target_descs, max_swipes=max(max_swipes + 2, 8), click_delay=0.8)
     bot.log(f"✔️ Completed selecting {selected_count} group(s).")
     return selected_count
 

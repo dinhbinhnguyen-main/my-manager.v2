@@ -441,6 +441,7 @@ ACTION_REGISTRY = {
             {"name": "group_ids", "type": "list[str]", "required": True, "default": "N/A", "desc": "List of target Group IDs for cross-sharing (e.g. ['111222', '333444'])"},
             {"name": "use_v1_product", "type": "bool", "required": False, "default": "true", "desc": "Fetch random real estate listing from v1 DB"},
             {"name": "use_ai", "type": "bool", "required": False, "default": "true", "desc": "Use Gemini AI to rewrite UPPERCASE Title & 5-angle anti-spam Description"},
+            {"name": "share_groups_count", "type": "int", "required": False, "default": "20", "desc": "Limit max cross-share groups (e.g. 5, 10, or 0 to skip). Alias: max_share_groups"},
             {"name": "custom_content", "type": "str", "required": False, "default": "None", "desc": "Custom text body override instead of v1/AI"}
         ],
         "single_cli": 'python main-cli.py run action --action group_share --uids "61599900011122" --auto-stop',
