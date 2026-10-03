@@ -74,4 +74,3 @@ htmlcov/
 *.apk
 /test
 
-tests/dumps
