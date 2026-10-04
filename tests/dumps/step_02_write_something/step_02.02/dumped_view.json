@@ -1,10 +1,10 @@
 {
-  "device": "127.0.0.1:6630",
-  "timestamp": "20261003_213552",
+  "device": "127.0.0.1:6561",
+  "timestamp": "20261003_203024",
   "app_current": {
     "package": "com.facebook.katana",
-    "activity": ".LoginActivity",
-    "pid": 1384
+    "activity": "com.facebook.composer.activity.ComposerActivity",
+    "pid": 1125
   },
   "total_elements": 74,
   "elements": [
@@ -273,28 +273,6 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.widget.HorizontalScrollView",
-      "short_class": "HorizontalScrollView",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": true,
-      "bounds": "[0,63][1080,1794]",
-      "center": [
-        540,
-        928
-      ],
-      "size": [
-        1080,
-        1731
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
       "class": "android.widget.FrameLayout",
       "short_class": "FrameLayout",
       "resource_id": "com.facebook.katana:id/(name removed)",
@@ -317,74 +295,8 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,63][1080,1794]",
-      "center": [
-        540,
-        928
-      ],
-      "size": [
-        1080,
-        1731
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "androidx.viewpager.widget.ViewPager",
-      "short_class": "ViewPager",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": true,
-      "bounds": "[0,63][1080,1794]",
-      "center": [
-        540,
-        928
-      ],
-      "size": [
-        1080,
-        1731
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "android:id/content",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,63][1080,1794]",
-      "center": [
-        540,
-        928
-      ],
-      "size": [
-        1080,
-        1731
-      ],
-      "suggested_selector": "d(resourceId=\"android:id/content\")",
-      "xpath": "//*[@resource-id=\"android:id/content\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
       "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
       "content_desc": "",
@@ -414,39 +326,61 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,63][1080,1794]",
+      "bounds": "[0,63][1080,179]",
       "center": [
         540,
-        928
+        121
       ],
       "size": [
         1080,
-        1731
+        116
       ],
       "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "androidx.recyclerview.widget.RecyclerView",
-      "short_class": "RecyclerView",
-      "resource_id": "android:id/list",
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
       "text": "",
-      "content_desc": "",
+      "content_desc": "Close",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[26,74][121,169]",
+      "center": [
+        73,
+        121
+      ],
+      "size": [
+        95,
+        95
+      ],
+      "suggested_selector": "d(description=\"Close\")",
+      "xpath": "//*[@content-desc=\"Close\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "CHO THUÊ NHÀ NGUYÊN CĂN ĐÀ LẠT ✅",
+      "content_desc": "CHO THUÊ NHÀ NGUYÊN CĂN ĐÀ LẠT ✅",
       "clickable": false,
       "enabled": true,
       "checked": false,
-      "scrollable": true,
-      "bounds": "[0,63][1080,1794]",
+      "scrollable": false,
+      "bounds": "[145,69][933,126]",
       "center": [
-        540,
-        928
+        539,
+        97
       ],
       "size": [
-        1080,
-        1731
+        788,
+        57
       ],
-      "suggested_selector": "d(resourceId=\"android:id/list\")",
-      "xpath": "//*[@resource-id=\"android:id/list\"]"
+      "suggested_selector": "d(text=\"CHO THUÊ NHÀ NGUYÊN CĂN ĐÀ LẠT ✅\")",
+      "xpath": "//*[@text=\"CHO THUÊ NHÀ NGUYÊN CĂN ĐÀ LẠT ✅\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -454,439 +388,219 @@
       "resource_id": "",
       "text": "",
       "content_desc": "",
-      "clickable": false,
+      "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,63][1080,1600]",
+      "bounds": "[423,126][655,173]",
       "center": [
-        540,
-        831
+        539,
+        149
       ],
       "size": [
-        1080,
-        1537
+        232,
+        47
       ],
       "suggested_selector": "d(className=\"android.view.ViewGroup\")",
       "xpath": ""
     },
     {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
+      "class": "android.view.View",
+      "short_class": "View",
       "resource_id": "",
+      "text": "Public group",
+      "content_desc": "Public group",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[466,126][655,173]",
+      "center": [
+        560,
+        149
+      ],
+      "size": [
+        189,
+        47
+      ],
+      "suggested_selector": "d(text=\"Public group\")",
+      "xpath": "//*[@text=\"Public group\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
-      "content_desc": "Light yellow illustration, background image",
+      "content_desc": "Menu",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,63][1048,270]",
+      "bounds": "[969,74][1064,169]",
       "center": [
-        540,
-        166
-      ],
-      "size": [
         1016,
-        207
+        121
       ],
-      "suggested_selector": "d(description=\"Light yellow illustration, background image\")",
-      "xpath": "//*[@content-desc=\"Light yellow illustration, background image\"]"
+      "size": [
+        95,
+        95
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Trong lúc chờ hoa dã quỳ thì mình \n\nlên Đà Lạt ngắm chút vàng của Mimosa nè..",
-      "content_desc": "Trong lúc chờ hoa dã quỳ thì mình \n\nlên Đà Lạt ngắm chút vàng của Mimosa nè..",
-      "clickable": true,
+      "class": "android.widget.ScrollView",
+      "short_class": "ScrollView",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[79,63][1001,122]",
+      "bounds": "[0,179][1080,1367]",
       "center": [
         540,
-        92
-      ],
-      "size": [
-        922,
-        59
-      ],
-      "suggested_selector": "d(text=\"Trong lúc chờ hoa dã quỳ thì mình \n\nlên Đà Lạt ngắm chút vàng của Mimosa nè..\")",
-      "xpath": "//*[@text=\"Trong lúc chờ hoa dã quỳ thì mình \n\nlên Đà Lạt ngắm chút vàng của Mimosa nè..\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[42,312][634,800]",
-      "center": [
-        338,
-        556
-      ],
-      "size": [
-        592,
-        488
-      ],
-      "suggested_selector": "d(className=\"android.widget.ImageView\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[675,407][1038,722]",
-      "center": [
-        856,
-        564
-      ],
-      "size": [
-        363,
-        315
-      ],
-      "suggested_selector": "d(className=\"android.widget.ImageView\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[42,842][634,1330]",
-      "center": [
-        338,
-        1086
-      ],
-      "size": [
-        592,
-        488
-      ],
-      "suggested_selector": "d(className=\"android.widget.ImageView\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[675,764][1038,1079]",
-      "center": [
-        856,
-        921
-      ],
-      "size": [
-        363,
-        315
-      ],
-      "suggested_selector": "d(className=\"android.widget.ImageView\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[675,1121][1038,1436]",
-      "center": [
-        856,
-        1278
-      ],
-      "size": [
-        363,
-        315
-      ],
-      "suggested_selector": "d(className=\"android.widget.ImageView\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1479][1048,1595]",
-      "center": [
-        540,
-        1537
-      ],
-      "size": [
-        1016,
-        116
-      ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Like button. Double tap and hold to react to the comment.",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1479][201,1595]",
-      "center": [
-        116,
-        1537
-      ],
-      "size": [
-        169,
-        116
-      ],
-      "suggested_selector": "d(description=\"Like button. Double tap and hold to react to the comment.\")",
-      "xpath": "//*[@content-desc=\"Like button. Double tap and hold to react to the comment.\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "7.9K",
-      "content_desc": "7.9K",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[101,1517][169,1557]",
-      "center": [
-        135,
-        1537
-      ],
-      "size": [
-        68,
-        40
-      ],
-      "suggested_selector": "d(text=\"7.9K\")",
-      "xpath": "//*[@text=\"7.9K\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Comment",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[201,1479][391,1595]",
-      "center": [
-        296,
-        1537
-      ],
-      "size": [
-        190,
-        116
-      ],
-      "suggested_selector": "d(description=\"Comment\")",
-      "xpath": "//*[@content-desc=\"Comment\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "478",
-      "content_desc": "478",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[302,1517][359,1557]",
-      "center": [
-        330,
-        1537
-      ],
-      "size": [
-        57,
-        40
-      ],
-      "suggested_selector": "d(text=\"478\")",
-      "xpath": "//*[@text=\"478\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Share button. Double tap to share the post.",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[391,1479][581,1595]",
-      "center": [
-        486,
-        1537
-      ],
-      "size": [
-        190,
-        116
-      ],
-      "suggested_selector": "d(description=\"Share button. Double tap to share the post.\")",
-      "xpath": "//*[@content-desc=\"Share button. Double tap to share the post.\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "291",
-      "content_desc": "291",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[492,1517][549,1557]",
-      "center": [
-        520,
-        1537
-      ],
-      "size": [
-        57,
-        40
-      ],
-      "suggested_selector": "d(text=\"291\")",
-      "xpath": "//*[@text=\"291\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "React",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[954,1479][1048,1595]",
-      "center": [
-        1001,
-        1537
-      ],
-      "size": [
-        94,
-        116
-      ],
-      "suggested_selector": "d(description=\"React\")",
-      "xpath": "//*[@content-desc=\"React\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,1600][1080,1794]",
-      "center": [
-        540,
-        1697
+        773
       ],
       "size": [
         1080,
-        194
+        1188
       ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,179][1080,1367]",
+      "center": [
+        540,
+        773
+      ],
+      "size": [
+        1080,
+        1188
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,179][1080,475]",
+      "center": [
+        540,
+        327
+      ],
+      "size": [
+        1080,
+        296
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "People you may know",
-      "content_desc": "People you may know",
+      "text": "",
+      "content_desc": "",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,211][1068,316]",
+      "center": [
+        550,
+        263
+      ],
+      "size": [
+        1036,
+        105
+      ],
+      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
+      "xpath": ""
+    },
+    {
+      "class": "android.widget.ImageView",
+      "short_class": "ImageView",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "actor profile picture",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[106,1630][870,1676]",
+      "bounds": "[32,211][137,316]",
       "center": [
-        488,
-        1653
+        84,
+        263
       ],
       "size": [
-        764,
+        105,
+        105
+      ],
+      "suggested_selector": "d(description=\"actor profile picture\")",
+      "xpath": "//*[@content-desc=\"actor profile picture\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Miwa Suto",
+      "content_desc": "Miwa Suto",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[158,242][343,288]",
+      "center": [
+        250,
+        265
+      ],
+      "size": [
+        185,
         46
       ],
-      "suggested_selector": "d(text=\"People you may know\")",
-      "xpath": "//*[@text=\"People you may know\"]"
+      "suggested_selector": "d(text=\"Miwa Suto\")",
+      "xpath": "//*[@text=\"Miwa Suto\"]"
     },
     {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
-      "content_desc": "See more options for this post",
-      "clickable": true,
+      "content_desc": "",
+      "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[875,1600][980,1705]",
+      "bounds": "[0,359][1080,475]",
       "center": [
-        927,
-        1652
+        540,
+        417
       ],
       "size": [
-        105,
-        105
+        1080,
+        116
       ],
-      "suggested_selector": "d(description=\"See more options for this post\")",
-      "xpath": "//*[@content-desc=\"See more options for this post\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Hide",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[970,1600][1075,1705]",
-      "center": [
-        1022,
-        1652
-      ],
-      "size": [
-        105,
-        105
-      ],
-      "suggested_selector": "d(description=\"Hide\")",
-      "xpath": "//*[@content-desc=\"Hide\"]"
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -898,14 +612,366 @@
       "enabled": false,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1705][1080,1794]",
+      "bounds": "[0,359][1080,475]",
       "center": [
         540,
-        1749
+        417
+      ],
+      "size": [
+        1080,
+        116
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "androidx.recyclerview.widget.RecyclerView",
+      "short_class": "RecyclerView",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,375][1080,459]",
+      "center": [
+        540,
+        417
+      ],
+      "size": [
+        1080,
+        84
+      ],
+      "suggested_selector": "d(className=\"androidx.recyclerview.widget.RecyclerView\")",
+      "xpath": ""
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "People. 1 of 3. Press to mention people in your post",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,375][254,459]",
+      "center": [
+        143,
+        417
+      ],
+      "size": [
+        222,
+        84
+      ],
+      "suggested_selector": "d(description=\"People. 1 of 3. Press to mention people in your post\")",
+      "xpath": "//*[@content-desc=\"People. 1 of 3. Press to mention people in your post\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "People",
+      "content_desc": "People",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[96,397][243,437]",
+      "center": [
+        169,
+        417
+      ],
+      "size": [
+        147,
+        40
+      ],
+      "suggested_selector": "d(text=\"People\")",
+      "xpath": "//*[@text=\"People\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Location. 2 of 3. Press to add a location tag to your post",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[275,375][523,459]",
+      "center": [
+        399,
+        417
+      ],
+      "size": [
+        248,
+        84
+      ],
+      "suggested_selector": "d(description=\"Location. 2 of 3. Press to add a location tag to your post\")",
+      "xpath": "//*[@content-desc=\"Location. 2 of 3. Press to add a location tag to your post\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Location",
+      "content_desc": "Location",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[339,397][512,437]",
+      "center": [
+        425,
+        417
+      ],
+      "size": [
+        173,
+        40
+      ],
+      "suggested_selector": "d(text=\"Location\")",
+      "xpath": "//*[@text=\"Location\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Feeling or Activity. 3 of 3. Press to add a feeling or activity to your post",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[544,375][895,459]",
+      "center": [
+        719,
+        417
+      ],
+      "size": [
+        351,
+        84
+      ],
+      "suggested_selector": "d(description=\"Feeling or Activity. 3 of 3. Press to add a feeling or activity to your post\")",
+      "xpath": "//*[@content-desc=\"Feeling or Activity. 3 of 3. Press to add a feeling or activity to your post\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Feeling/activity",
+      "content_desc": "Feeling/activity",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[608,397][884,437]",
+      "center": [
+        746,
+        417
+      ],
+      "size": [
+        276,
+        40
+      ],
+      "suggested_selector": "d(text=\"Feeling/activity\")",
+      "xpath": "//*[@text=\"Feeling/activity\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,475][1080,1367]",
+      "center": [
+        540,
+        921
+      ],
+      "size": [
+        1080,
+        892
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,475][1080,624]",
+      "center": [
+        540,
+        549
+      ],
+      "size": [
+        1080,
+        149
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.EditText",
+      "short_class": "EditText",
+      "resource_id": "",
+      "text": "Add a title (optional)",
+      "content_desc": "Post Title",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,528][1048,613]",
+      "center": [
+        540,
+        570
+      ],
+      "size": [
+        1016,
+        85
+      ],
+      "suggested_selector": "d(text=\"Add a title (optional)\")",
+      "xpath": "//*[@text=\"Add a title (optional)\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,624][1080,806]",
+      "center": [
+        540,
+        715
+      ],
+      "size": [
+        1080,
+        182
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,666][1080,774]",
+      "center": [
+        540,
+        720
+      ],
+      "size": [
+        1080,
+        108
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.AutoCompleteTextView",
+      "short_class": "AutoCompleteTextView",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "Create your post...",
+      "content_desc": "",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,666][1080,755]",
+      "center": [
+        540,
+        710
       ],
       "size": [
         1080,
         89
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1367][1080,1794]",
+      "center": [
+        540,
+        1580
+      ],
+      "size": [
+        1080,
+        427
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1367][1080,1611]",
+      "center": [
+        540,
+        1489
+      ],
+      "size": [
+        1080,
+        244
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": false,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1367][1080,1611]",
+      "center": [
+        540,
+        1489
+      ],
+      "size": [
+        1080,
+        244
       ],
       "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
@@ -920,373 +986,197 @@
       "enabled": true,
       "checked": false,
       "scrollable": true,
-      "bounds": "[0,1705][1080,1794]",
+      "bounds": "[0,1367][1080,1611]",
       "center": [
         540,
-        1749
+        1489
       ],
       "size": [
         1080,
-        89
+        244
       ],
       "suggested_selector": "d(className=\"androidx.recyclerview.widget.RecyclerView\")",
       "xpath": ""
     },
     {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
+      "class": "android.widget.Button",
+      "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Văn Cường Huỳnh",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[27,1705][699,1794]",
-      "center": [
-        363,
-        1749
-      ],
-      "size": [
-        672,
-        89
-      ],
-      "suggested_selector": "d(description=\"Văn Cường Huỳnh\")",
-      "xpath": "//*[@content-desc=\"Văn Cường Huỳnh\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Văn Cường Huỳnh's profile picture",
+      "content_desc": "Gallery",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[30,1708][696,1794]",
+      "bounds": "[32,1399][276,1573]",
       "center": [
-        363,
-        1751
+        154,
+        1486
       ],
       "size": [
-        666,
-        86
+        244,
+        174
       ],
-      "suggested_selector": "d(description=\"Văn Cường Huỳnh's profile picture\")",
-      "xpath": "//*[@content-desc=\"Văn Cường Huỳnh's profile picture\"]"
+      "suggested_selector": "d(description=\"Gallery\")",
+      "xpath": "//*[@content-desc=\"Gallery\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "",
-      "content_desc": "Bui Hoang Viet Anh",
+      "text": "Gallery",
+      "content_desc": "Gallery",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[721,1705][1080,1794]",
+      "bounds": "[101,1509][208,1549]",
       "center": [
-        900,
-        1749
+        154,
+        1529
       ],
       "size": [
-        359,
-        89
+        107,
+        40
       ],
-      "suggested_selector": "d(description=\"Bui Hoang Viet Anh\")",
-      "xpath": "//*[@content-desc=\"Bui Hoang Viet Anh\"]"
+      "suggested_selector": "d(text=\"Gallery\")",
+      "xpath": "//*[@text=\"Gallery\"]"
     },
     {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
+      "class": "android.widget.Button",
+      "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Bui Hoang Viet Anh's profile picture",
+      "content_desc": "GIF",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[724,1708][1080,1794]",
+      "bounds": "[319,1399][563,1573]",
       "center": [
-        902,
-        1751
+        441,
+        1486
       ],
       "size": [
-        356,
-        86
+        244,
+        174
       ],
-      "suggested_selector": "d(description=\"Bui Hoang Viet Anh's profile picture\")",
-      "xpath": "//*[@content-desc=\"Bui Hoang Viet Anh's profile picture\"]"
+      "suggested_selector": "d(description=\"GIF\")",
+      "xpath": "//*[@content-desc=\"GIF\"]"
     },
     {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "GIF",
+      "content_desc": "GIF",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,63][1080,297]",
+      "bounds": "[415,1509][467,1549]",
       "center": [
-        540,
-        180
+        441,
+        1529
       ],
       "size": [
-        1080,
-        234
+        52,
+        40
       ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+      "suggested_selector": "d(text=\"GIF\")",
+      "xpath": "//*[@text=\"GIF\"]"
     },
     {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
       "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,63][1080,297]",
-      "center": [
-        540,
-        180
-      ],
-      "size": [
-        1080,
-        234
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,63][1080,297]",
-      "center": [
-        540,
-        180
-      ],
-      "size": [
-        1080,
-        234
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,63][1080,129]",
-      "center": [
-        540,
-        96
-      ],
-      "size": [
-        1080,
-        66
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,63][1080,127]",
-      "center": [
-        540,
-        95
-      ],
-      "size": [
-        1080,
-        64
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,63][1080,127]",
-      "center": [
-        540,
-        95
-      ],
-      "size": [
-        1080,
-        64
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
+      "content_desc": "Live",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,63][180,127]",
+      "bounds": "[606,1399][850,1573]",
       "center": [
-        90,
-        95
+        728,
+        1486
       ],
       "size": [
-        180,
-        64
+        244,
+        174
       ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+      "suggested_selector": "d(description=\"Live\")",
+      "xpath": "//*[@content-desc=\"Live\"]"
     },
     {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "com.facebook.katana:id/(name removed)",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Live",
+      "content_desc": "Live",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[697,1509][759,1549]",
+      "center": [
+        728,
+        1529
+      ],
+      "size": [
+        62,
+        40
+      ],
+      "suggested_selector": "d(text=\"Live\")",
+      "xpath": "//*[@text=\"Live\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
       "text": "",
-      "content_desc": "",
+      "content_desc": "Poll",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[180,63][360,127]",
+      "bounds": "[893,1399][1080,1573]",
       "center": [
-        270,
-        95
+        986,
+        1486
       ],
       "size": [
-        180,
-        64
+        187,
+        174
       ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+      "suggested_selector": "d(description=\"Poll\")",
+      "xpath": "//*[@content-desc=\"Poll\"]"
     },
     {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Poll",
+      "content_desc": "Poll",
+      "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[360,63][540,127]",
+      "bounds": "[986,1509][1045,1549]",
       "center": [
-        450,
-        95
+        1015,
+        1529
       ],
       "size": [
-        180,
-        64
+        59,
+        40
       ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+      "suggested_selector": "d(text=\"Poll\")",
+      "xpath": "//*[@text=\"Poll\"]"
     },
     {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[540,63][720,127]",
-      "center": [
-        630,
-        95
-      ],
-      "size": [
-        180,
-        64
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[720,63][900,127]",
-      "center": [
-        810,
-        95
-      ],
-      "size": [
-        180,
-        64
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[900,63][1080,127]",
-      "center": [
-        990,
-        95
-      ],
-      "size": [
-        180,
-        64
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
       "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
       "content_desc": "",
@@ -1294,39 +1184,149 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,63][1080,127]",
+      "bounds": "[0,1611][1080,1794]",
       "center": [
         540,
-        95
+        1702
       ],
       "size": [
         1080,
-        64
+        183
       ],
       "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.view.View",
-      "short_class": "View",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
       "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": false,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1662][790,1746]",
+      "center": [
+        395,
+        1704
+      ],
+      "size": [
+        790,
+        84
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "androidx.recyclerview.widget.RecyclerView",
+      "short_class": "RecyclerView",
+      "resource_id": "",
       "text": "",
       "content_desc": "",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,127][1080,129]",
+      "bounds": "[0,1662][790,1746]",
       "center": [
-        540,
-        128
+        395,
+        1704
       ],
       "size": [
-        1080,
-        2
+        790,
+        84
       ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+      "suggested_selector": "d(className=\"androidx.recyclerview.widget.RecyclerView\")",
+      "xpath": ""
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Crosspost to more groups",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,1662][324,1746]",
+      "center": [
+        178,
+        1704
+      ],
+      "size": [
+        292,
+        84
+      ],
+      "suggested_selector": "d(description=\"Crosspost to more groups\")",
+      "xpath": "//*[@content-desc=\"Crosspost to more groups\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Add groups",
+      "content_desc": "Add groups",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[96,1684][313,1724]",
+      "center": [
+        204,
+        1704
+      ],
+      "size": [
+        217,
+        40
+      ],
+      "suggested_selector": "d(text=\"Add groups\")",
+      "xpath": "//*[@text=\"Add groups\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Post",
+      "clickable": false,
+      "enabled": false,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[822,1646][1048,1762]",
+      "center": [
+        935,
+        1704
+      ],
+      "size": [
+        226,
+        116
+      ],
+      "suggested_selector": "d(description=\"Post\")",
+      "xpath": "//*[@content-desc=\"Post\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Post",
+      "content_desc": "Post",
+      "clickable": false,
+      "enabled": false,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[888,1678][981,1731]",
+      "center": [
+        934,
+        1704
+      ],
+      "size": [
+        93,
+        53
+      ],
+      "suggested_selector": "d(text=\"Post\")",
+      "xpath": "//*[@text=\"Post\"]"
     },
     {
       "class": "android.widget.FrameLayout",
@@ -1442,8 +1442,8 @@
       "class": "android.widget.TextView",
       "short_class": "TextView",
       "resource_id": "com.android.systemui:id/clock",
-      "text": "2:36",
-      "content_desc": "2:36 PM",
+      "text": "1:30",
+      "content_desc": "1:30 PM",
       "clickable": false,
       "enabled": true,
       "checked": false,

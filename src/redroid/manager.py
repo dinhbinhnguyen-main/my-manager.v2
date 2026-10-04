@@ -126,14 +126,15 @@ class RedroidManager:
     @classmethod
     def get_container_storage_dir(cls, account_uid: str) -> Path:
         """Calculates storage directory for an account container, handling VM symlinks if present."""
+        clean_uid = re.sub(r'[\'"\s]', '', str(account_uid))
         containers_root = cls.get_containers_root_path()
         if containers_root.is_symlink() and not containers_root.exists():
             # Symlink points to a path inside the Linux VM (e.g., /home/user.guest/redroid_containers)
             vm_containers_root = Path(os.readlink(containers_root))
-            return vm_containers_root / account_uid
+            return vm_containers_root / clean_uid
         if platform.system() == "Darwin" and str(containers_root).startswith("/home/"):
-            return containers_root / account_uid
-        storage_dir = containers_root / account_uid
+            return containers_root / clean_uid
+        storage_dir = containers_root / clean_uid
         storage_dir.mkdir(parents=True, exist_ok=True)
         return storage_dir
 
@@ -150,10 +151,13 @@ class RedroidManager:
 
     def find_available_adb_port(self, account_uid: Optional[str] = None) -> int:
         """Finds an unused ADB port starting from DEFAULT_ADB_START_PORT, checking both DB and OS socket."""
+        if account_uid:
+            account_uid = re.sub(r'[\'"\s]', '', str(account_uid))
         existing = RedroidRepository.list_all()
         if account_uid:
             for inst in existing:
-                if inst.account_uid == account_uid and inst.adb_port >= DEFAULT_ADB_START_PORT:
+                clean_inst_uid = re.sub(r'[\'"\s]', '', str(inst.account_uid or ''))
+                if clean_inst_uid == account_uid and inst.adb_port >= DEFAULT_ADB_START_PORT:
                     scrcpy_port = inst.adb_port + 2000
                     if not self._is_port_occupied(inst.adb_port) and not self._is_port_occupied(scrcpy_port):
                         return inst.adb_port
@@ -291,6 +295,7 @@ class RedroidManager:
         apk_path: Optional[str] = None,
     ) -> RedroidInstance:
         """Spawns a new Redroid docker container with assigned device fingerprint, proxy, and Facebook APK."""
+        account_uid = re.sub(r'[\'"\s]', '', str(account_uid))
         running_count = self.get_total_running_containers()
         if running_count >= MAX_CONCURRENT_REDROID_CONTAINERS:
             evicted = self.evict_oldest_idle_container_if_needed(exclude_target=account_uid)

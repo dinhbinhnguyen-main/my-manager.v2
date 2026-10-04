@@ -63,7 +63,7 @@ class FBPostGroupAction:
             # Click Write something / Bấm để viết bài
             post_box_xpaths = [
                 "//*[contains(@text, 'Write something') or contains(@text, 'Viết gì đó') or contains(@text, 'Tạo bài viết')]",
-                "//*[contains(@description, 'Write something') or contains(@description, 'Viết gì đó')]"
+                "//*[contains(@content-desc, 'Write something') or contains(@content-desc, 'Viết gì đó')]"
             ]
             clicked = False
             for xp in post_box_xpaths:

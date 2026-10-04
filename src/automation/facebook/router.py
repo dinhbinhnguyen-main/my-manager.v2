@@ -8,6 +8,7 @@ from src.automation.base_automator import BaseAutomator
 from src.automation.facebook.login import FBLoginAction
 from src.automation.facebook.warmup import FBWarmupAction
 from src.automation.facebook.marketplace import FBMarketplaceAction
+from src.automation.facebook.actions.discussion_group import FBDiscussionGroupAction
 from src.automation.facebook.actions.post_group import FBPostGroupAction
 from src.automation.facebook.actions.join_group import FBJoinGroupAction
 from src.automation.facebook.actions.list_group_share import FBGroupShareAction
@@ -40,7 +41,7 @@ class FBActionRouter:
                 max_swipes=params.get("max_swipes", params.get("scroll_count", 20)),
                 min_delay=params.get("min_delay", 3.0),
                 max_delay=params.get("max_delay", 8.0),
-                max_likes=params.get("max_likes", 3)
+                max_likes=params.get("max_likes", 0)
             )
 
         elif action in ["marketplace", "marketplace_post", "fb_marketplace"]:
@@ -91,6 +92,17 @@ class FBActionRouter:
                 use_ai=params.get("use_ai", True),
                 share_groups_count=share_groups_count,
                 custom_content=params.get("custom_content")
+            )
+
+        elif action in ["discussion_group", "fb_discussion_group", "discussion", "post_discussion_group"]:
+            act = FBDiscussionGroupAction(automator, account)
+            return act.execute(
+                use_v1_product=params.get("use_v1_product", True),
+                use_ai=params.get("use_ai", True),
+                group_id=params.get("group_id"),
+                custom_content=params.get("custom_content", params.get("content")),
+                image_paths=params.get("image_paths", []),
+                transaction_type=params.get("transaction_type")
             )
 
         else:

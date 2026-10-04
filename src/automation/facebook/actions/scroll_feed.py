@@ -22,7 +22,7 @@ class FBScrollFeedAction:
         max_swipes: int = 20,
         min_delay: float = 3.0,
         max_delay: float = 8.0,
-        max_likes: int = 3
+        max_likes: int = 0
     ) -> bool:
         """
         Simulates human-like scrolling through Facebook News Feed with random reading pauses,
@@ -92,44 +92,78 @@ class FBScrollFeedAction:
 
             # Interaction 2: Like / React to post (7% chance)
             if likes_done < max_likes and random.random() < 0.07:
-                like_xpaths = [
-                    "//android.widget.Button[contains(@text, 'Like') or contains(@text, 'Thích')]",
-                    "//android.widget.TextView[contains(@text, 'Like') or contains(@text, 'Thích')]",
-                    "//android.view.ViewGroup[contains(@content-desc, 'Like button') or contains(@content-desc, 'Thích button') or @content-desc='Like' or @content-desc='Thích']"
-                ]
-                for xpath in like_xpaths:
-                    if d.xpath(xpath).exists:
-                        try:
-                            d.xpath(xpath).click()
-                            likes_done += 1
-                            logger.info(f"❤️ Liked random post to increase engagement ({likes_done}/{max_likes})")
-                            self.automator.smart_sleep(1.5, 3.0)
-                            break
-                        except Exception as e:
-                            logger.debug(f"Could not click Like: {e}")
+                like_clicked = False
+                # Try via UIAutomator2 native selector first
+                like_btn = d(className="android.widget.Button", descriptionMatches=r"(?i).*(Like button|Nút thích|Nút Thích|^Like$|^Thích$).*")
+                if not like_btn.exists:
+                    like_btn = d(descriptionMatches=r"(?i).*(Like button|Nút thích|Nút Thích|^Like$|^Thích$).*")
+                if not like_btn.exists:
+                    like_btn = d(textMatches=r"(?i)^(Like|Thích)$")
+
+                if like_btn.exists:
+                    try:
+                        like_btn.click()
+                        likes_done += 1
+                        logger.info(f"❤️ Liked random post to increase engagement ({likes_done}/{max_likes})")
+                        self.automator.smart_sleep(1.5, 3.0)
+                        like_clicked = True
+                    except Exception as e:
+                        logger.debug(f"Could not click Like: {e}")
+
+                if not like_clicked:
+                    like_xpaths = [
+                        "//android.widget.Button[contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích') or contains(@content-desc, 'Nút Thích') or @content-desc='Like' or @content-desc='Thích']",
+                        "//android.widget.Button[contains(@text, 'Like') or contains(@text, 'Thích')]",
+                        "//*[@content-desc='Like' or @content-desc='Thích' or contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích')]"
+                    ]
+                    for xpath in like_xpaths:
+                        if d.xpath(xpath).exists:
+                            try:
+                                d.xpath(xpath).click()
+                                likes_done += 1
+                                logger.info(f"❤️ Liked random post to increase engagement ({likes_done}/{max_likes})")
+                                self.automator.smart_sleep(1.5, 3.0)
+                                break
+                            except Exception as e:
+                                logger.debug(f"Could not click Like via xpath: {e}")
 
             # Interaction 3: Open comments (4% chance)
             if random.random() < 0.04:
-                comment_xpaths = [
-                    "//android.widget.Button[contains(@text, 'Comment') or contains(@text, 'Bình luận')]",
-                    "//android.widget.TextView[contains(@text, 'Comment') or contains(@text, 'Bình luận')]",
-                    "//android.view.ViewGroup[contains(@content-desc, 'Comment') or contains(@content-desc, 'Bình luận')]"
-                ]
-                for xpath in comment_xpaths:
-                    if d.xpath(xpath).exists:
-                        try:
-                            logger.info("💬 Opening post comments...")
-                            d.xpath(xpath).click()
-                            self.automator.smart_sleep(4.0, 7.0)
-                            if random.random() < 0.5:
-                                self.automator.swipe_up(scale=0.3)
-                                self.automator.smart_sleep(2.0, 4.0)
-                            logger.info("↩️ Returning to News Feed...")
-                            d.press("back")
-                            self.automator.smart_sleep(2.0, 3.0)
-                            break
-                        except Exception as e:
-                            logger.debug(f"Could not open comments: {e}")
+                comment_btn = d(className="android.widget.Button", descriptionMatches=r"(?i).*(Comment|Bình luận).*") or d(descriptionMatches=r"(?i).*(Comment|Bình luận).*")
+                if comment_btn and comment_btn.exists:
+                    try:
+                        logger.info("💬 Opening post comments...")
+                        comment_btn.click()
+                        self.automator.smart_sleep(4.0, 7.0)
+                        if random.random() < 0.5:
+                            self.automator.swipe_up(scale=0.3)
+                            self.automator.smart_sleep(2.0, 4.0)
+                        logger.info("↩️ Returning to News Feed...")
+                        d.press("back")
+                        self.automator.smart_sleep(2.0, 3.0)
+                    except Exception as e:
+                        logger.debug(f"Could not open comments: {e}")
+                else:
+                    comment_xpaths = [
+                        "//android.widget.Button[contains(@content-desc, 'Comment') or contains(@content-desc, 'Bình luận') or @content-desc='Comment' or @content-desc='Bình luận']",
+                        "//android.widget.Button[contains(@text, 'Comment') or contains(@text, 'Bình luận')]",
+                        "//*[@content-desc='Comment' or @content-desc='Bình luận']"
+                    ]
+                    for xpath in comment_xpaths:
+                        if d.xpath(xpath).exists:
+                            try:
+                                logger.info("💬 Opening post comments...")
+                                d.xpath(xpath).click()
+                                self.automator.smart_sleep(4.0, 7.0)
+                                if random.random() < 0.5:
+                                    self.automator.swipe_up(scale=0.3)
+                                    self.automator.smart_sleep(2.0, 4.0)
+                                logger.info("↩️ Returning to News Feed...")
+                                d.press("back")
+                                self.automator.smart_sleep(2.0, 3.0)
+                                break
+                            except Exception as e:
+                                logger.debug(f"Could not open comments via xpath: {e}")
 
         AccountRepository.update_status(self.account.uid, AccountStatus.LIVE, f"Feed scroll completed ({swipes_performed} swipes, Likes={likes_done})")
         logger.info(f"✔️ News Feed scroll task completed for {self.account.uid}!")

@@ -1,5 +1,6 @@
 """CLI Subcommands for Direct Automation Action Execution."""
 
+import re
 import typer
 from rich.console import Console
 from typing import List, Optional
@@ -23,6 +24,7 @@ manager = RedroidManager()
 
 
 def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = False):
+    uid = re.sub(r'[\'"\s]', '', str(uid))
     """Worker task executing action on single account's Redroid container with auto-start & proxy."""
     acc = AccountRepository.get_by_uid(uid)
     if not acc:
@@ -100,7 +102,7 @@ import json
 
 @app.command("action")
 def run_action(
-    action: str = typer.Option(..., help="Action type: login, warmup, marketplace, list_group_share, scroll_feed"),
+    action: str = typer.Option(..., help="Action type: login, warmup, marketplace, list_group_share, discussion_group, scroll_feed"),
     uids: List[str] = typer.Option(..., help="List of Facebook UIDs to execute action on"),
     params: str = typer.Option("{}", help="JSON string of parameters for the action, e.g. '{\"group_ids\": [\"5857815244230418\"], \"use_v1_product\": true}'"),
     concurrency: int = typer.Option(2, help="Number of concurrent workers"),

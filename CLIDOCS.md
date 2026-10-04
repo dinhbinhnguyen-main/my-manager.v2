@@ -170,6 +170,10 @@ python main-cli.py automation create-batch \
   --actions '[{"action": "scroll_feed", "params": {"max_swipes": 25, "min_delay": 3.0, "max_delay": 8.0, "max_likes": 3}}]' \
   --name "scroll feed"
 
+python main-cli.py run action --action discussion_group --uids "61587778096475" --auto-stop
+# {{"action": "discussion_group", "params": {"use_v1_product": true, "use_ai": true}}
+
+
 # Xem danh sách kịch bản đã khởi tạo (Lọc theo Tag hoặc Status)
 python main-cli.py automation list --tag list_uid_01
 python main-cli.py automation list --status pending

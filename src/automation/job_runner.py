@@ -1,5 +1,6 @@
 """Automation Job Runner with proxy pool dynamic concurrency throttling min(available_proxies, threads)."""
 
+import re
 import json
 import time
 import logging
@@ -29,7 +30,7 @@ class JobRunner:
 
     def run_job_single(self, job: AutomationJob) -> bool:
         """Executes a single automation job, managing proxy acquisition, Redroid lifecycle, and action sequence."""
-        account_uid = job.account_uid
+        account_uid = re.sub(r'[\'"\s]', '', str(job.account_uid or ''))
         logger.info(f"[Job-{job.id}] Starting execution for account {account_uid}...")
 
         # 1. Acquire Proxy (Wait up to 90s for an available proxy in the pool)

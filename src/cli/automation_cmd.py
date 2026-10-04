@@ -1,5 +1,6 @@
 """CLI controller for Automation Scenario Jobs and Live Monitoring."""
 
+import re
 import json
 import time
 import typer
@@ -39,13 +40,14 @@ def create_batch(
 
     target_uids = []
     if uids:
-        target_uids = [u.strip() for u in uids.split(",") if u.strip()]
+        raw_uids = [re.sub(r'[\'"\s]', '', u) for u in uids.split(",")]
+        target_uids = [u for u in raw_uids if u]
     elif group_id is not None:
         accs = AccountRepository.list_by_group(group_id)
-        target_uids = [acc.uid for acc in accs]
+        target_uids = [re.sub(r'[\'"\s]', '', acc.uid) for acc in accs if acc.uid]
     else:
         accs = AccountRepository.list_all()
-        target_uids = [acc.uid for acc in accs]
+        target_uids = [re.sub(r'[\'"\s]', '', acc.uid) for acc in accs if acc.uid]
 
     if not target_uids:
         console.print("[yellow]No accounts found matching criteria.[/yellow]")
@@ -53,10 +55,11 @@ def create_batch(
 
     created_count = 0
     for uid in target_uids:
+        clean_uid = re.sub(r'[\'"\s]', '', str(uid))
         job = AutomationJob(
-            name=f"{name} ({uid})",
+            name=f"{name} ({clean_uid})",
             group_tag=tag,
-            account_uid=uid,
+            account_uid=clean_uid,
             actions_json=json.dumps(actions_list),
             status=JobStatus.PENDING,
         )
@@ -446,6 +449,21 @@ ACTION_REGISTRY = {
         ],
         "single_cli": 'python main-cli.py run action --action group_share --uids "61599900011122" --auto-stop',
         "script_json": '{"action": "list_group_share", "params": {"group_ids": ["111222", "333444"], "use_ai": true}}',
+    },
+    "discussion_group": {
+        "name": "discussion_group",
+        "aliases": ["fb_discussion_group", "discussion", "post_discussion_group"],
+        "summary": "10-step Real Estate Discussion Group Post with AI Rewrite & Gallery Images",
+        "description": "Opens Groups tab list via deeplink -> Selects random group matching transaction_type -> Clicks 'Write something...' -> Pastes Gemini AI rewritten discussion content -> Uploads pushed images from gallery -> Publishes discussion post.",
+        "params": [
+            {"name": "use_v1_product", "type": "bool", "required": False, "default": "true", "desc": "Fetch random real estate listing from v1 DB"},
+            {"name": "use_ai", "type": "bool", "required": False, "default": "true", "desc": "Use Gemini AI to rewrite discussion post into natural, engaging Vietnamese"},
+            {"name": "group_id", "type": "str", "required": False, "default": "None", "desc": "Optional specific Group ID override (e.g. '123456789')"},
+            {"name": "custom_content", "type": "str", "required": False, "default": "None", "desc": "Custom text body override instead of v1/AI"},
+            {"name": "image_paths", "type": "list[str]", "required": False, "default": "[]", "desc": "Custom image paths list override"}
+        ],
+        "single_cli": 'python main-cli.py run action --action discussion_group --uids "61599900011122" --auto-stop',
+        "script_json": '{"action": "discussion_group", "params": {"use_v1_product": true, "use_ai": true}}',
     }
 }
 

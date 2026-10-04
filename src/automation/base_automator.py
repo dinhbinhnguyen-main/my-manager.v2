@@ -326,7 +326,7 @@ class BaseAutomator:
             return False
         xpaths = [
             "//*[contains(@text, 'See more') or contains(@text, 'Xem thêm') or contains(@text, 'See More')]",
-            "//*[contains(@description, 'See more') or contains(@description, 'Xem thêm')]"
+            "//*[contains(@content-desc, 'See more') or contains(@content-desc, 'Xem thêm')]"
         ]
         for xp in xpaths:
             if self.device.xpath(xp).exists:
@@ -340,8 +340,9 @@ class BaseAutomator:
         if not self.device:
             return False
         xpaths = [
+            "//android.widget.Button[contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích') or contains(@content-desc, 'Nút Thích') or @content-desc='Like' or @content-desc='Thích']",
             "//android.widget.Button[contains(@text, 'Like') or contains(@text, 'Thích')]",
-            "//android.widget.Button[contains(@content-desc, 'Like') or contains(@content-desc, 'Thích')]"
+            "//*[@content-desc='Like' or @content-desc='Thích' or contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích')]"
         ]
         for xp in xpaths:
             if self.device.xpath(xp).exists:
