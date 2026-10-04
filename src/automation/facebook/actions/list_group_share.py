@@ -1,14 +1,16 @@
 """Facebook Buy/Sell Group Listing & Top-Group Cross-Sharing Action.
-Ported with 100% faithful logic from phonemanager.v1 (Adaptive Form Filling, Strict Media Picker, Top-Member Cross-Sharing).
+Ported with 100% faithful logic from phonemanager.v1 / Redroid container automation.
 """
 
 import os
 import re
+import sys
 import json
 import time
 import shutil
 import logging
 import subprocess
+import traceback
 import xml.etree.ElementTree as ET
 from random import randint
 from pathlib import Path
@@ -17,16 +19,11 @@ from typing import List, Dict, Any, Optional, Set
 from src.core.models import Account, AccountStatus
 from src.db.repository import AccountRepository
 from src.automation.base_automator import BaseAutomator
-from src.automation.checkpoint_handler import CheckpointDetector
+from src.automation.checkpoint_handler import CheckpointDetector, check_and_handle_identity_confirmation
 from src.services.v1_bridge import V1DatabaseBridge
 from src.ai.gemini_service import GeminiService
 
 logger = logging.getLogger(__name__)
-
-
-# ==============================================================================
-# HELPER FUNCTIONS & UI DIAGNOSTIC DUMP
-# ==============================================================================
 
 def dump_error_view(bot: BaseAutomator, account_uid: Optional[str] = None, step_name: str = "unknown_step"):
     """
@@ -37,12 +34,11 @@ def dump_error_view(bot: BaseAutomator, account_uid: Optional[str] = None, step_
     try:
         from tests.dump_view import parse_hierarchy_node
 
-        uid = str(account_uid or getattr(bot, "account_uid", None) or getattr(bot, "adb_port", "device"))
+        uid = str(account_uid or getattr(bot, "account_uid", None) or getattr(bot, "device_id", None) or getattr(bot, "adb_port", "device"))
         safe_uid = re.sub(r'[^\w\-_\.]', '_', uid)
         safe_step = re.sub(r'[^\w\-_\.]', '_', str(step_name))
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
 
-        output_dir = Path("tests/dumps/errors") / f"{safe_uid}_{safe_step}_{timestamp}"
+        output_dir = Path("tests/dumps/errors") / f"{safe_uid}_{safe_step}"
         output_dir.mkdir(parents=True, exist_ok=True)
 
         latest_dir = Path("tests/dumps/latest")
@@ -73,7 +69,7 @@ def dump_error_view(bot: BaseAutomator, account_uid: Optional[str] = None, step_
 
         with open(json_file, "w", encoding="utf-8") as f:
             json.dump({
-                "adb_port": getattr(bot, "adb_port", None),
+                "device_id": getattr(bot, "device_id", None),
                 "account_uid": uid,
                 "failed_step": step_name,
                 "timestamp": timestamp,
@@ -176,7 +172,12 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
 
     bot.log(f"🚀 [Step 1] Opening Facebook and navigating to Group: {group_id}...")
     deeplink = f"fb://group/{group_id}"
-    bot.launch(deeplink=deeplink)
+    if hasattr(bot, "launch_app"):
+        bot.launch_app("com.facebook.katana", deeplink=deeplink)
+    elif hasattr(bot, "launch"):
+        bot.launch(deeplink=deeplink)
+    else:
+        bot.d.app_start("com.facebook.katana")
 
     bot.log("⏳ Waiting for group page to load...")
     start_time = time.time()
@@ -216,49 +217,78 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
 def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
     """
     STEP 2:
-    - Search and click 'What are you selling?' (or 'Bạn đang bán gì?', 'Sell something', 'Item').
+    - Search and click 'What are you selling?' (or 'Bạn đang bán gì?', 'Sell something', 'Item', 'Tạo bài niêm yết').
+    - Tries current view, and if not found, scrolls down up to 3 times.
     - If Facebook displays intermediate category layout (e.g. 'Items' / 'Mặt hàng'), click 'Items'.
     - Wait logic: Wait for Listing Composer form to load.
     """
-    bot.log("🔍 [Step 2] Searching for 'What are you selling?' button...")
+    bot.log("🔍 [Step 2] Searching for 'What are you selling?' button (with up to 3 scroll attempts)...")
 
     sell_keywords = [
         "what are you selling",
         "bạn đang bán gì",
         "sell something",
         "bán gì đó",
+        "tạo bài niêm yết",
         "item"
     ]
 
-    clicked = False
-    for kw in sell_keywords:
-        btn = bot.get_button_by_text(kw, timeout=2)
-        if btn and btn.exists:
-            bot.log(f"👆 Found and clicking '{kw}' button...")
-            btn.click_exists(timeout=3)
-            clicked = True
-            break
+    sell_patterns = [
+        r"(?i).*What are you selling.*",
+        r"(?i).*Bạn đang bán gì.*",
+        r"(?i).*Sell something.*",
+        r"(?i).*Bán gì đó.*",
+        r"(?i).*Tạo bài niêm yết.*"
+    ]
 
-        wg = bot.get_widget_by_text("android.view.ViewGroup", kw, timeout=1)
-        if wg and wg.exists:
-            bot.log(f"👆 Found ViewGroup '{kw}', clicking...")
-            wg.click()
-            clicked = True
-            break
+    def _try_click_sell() -> bool:
+        # 1. Direct regex match
+        for p in sell_patterns:
+            if bot.d:
+                btn_txt = bot.d(textMatches=p)
+                if btn_txt.exists:
+                    bot.log(f"👆 Found and clicking sell element (text: {p})...")
+                    btn_txt.click()
+                    return True
+                btn_desc = bot.d(descriptionMatches=p)
+                if btn_desc.exists:
+                    bot.log(f"👆 Found and clicking sell element (desc: {p})...")
+                    btn_desc.click()
+                    return True
 
-    if not clicked:
-        bot.log("🔄 Scrolling slightly to find 'What are you selling?' button...")
-        bot.swipe_down(scale=0.3)
-        bot.smart_sleep(1.0)
+        # 2. Keyword button / widget search
         for kw in sell_keywords:
-            btn = bot.get_button_by_text(kw, timeout=2)
+            btn = bot.get_button_by_text(kw, timeout=1)
             if btn and btn.exists:
-                btn.click_exists(timeout=3)
+                bot.log(f"👆 Found and clicking '{kw}' button...")
+                btn.click_exists(timeout=2)
+                return True
+
+            wg = bot.get_widget_by_text("android.view.ViewGroup", kw, timeout=0.5)
+            if wg and wg.exists:
+                bot.log(f"👆 Found ViewGroup '{kw}', clicking...")
+                wg.click()
+                return True
+
+        return False
+
+    clicked = False
+    # Check initial screen
+    if _try_click_sell():
+        clicked = True
+
+    # If not found, scroll down (swipe up) up to 3 times
+    if not clicked:
+        for scroll_idx in range(3):
+            bot.log(f"📜 [Scroll {scroll_idx + 1}/3] Scrolling down to find 'What are you selling?' button...")
+            bot.swipe_up(scale=0.35)
+            bot.smart_sleep(1.2)
+            if _try_click_sell():
                 clicked = True
                 break
 
     if not clicked:
-        raise Exception("❌ Could not find 'What are you selling?' button on group page.")
+        raise Exception("❌ Could not find 'What are you selling?' button on group page after 3 scrolls.")
 
     bot.log("⏳ Waiting for listing form to open...")
     start_time = time.time()
@@ -292,14 +322,14 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
                 break
 
             # 3. Direct device selector fallback
-            if bot.device:
-                item_desc = bot.device(descriptionMatches=f"(?i).*{item_kw}.*")
+            if bot.d:
+                item_desc = bot.d(descriptionMatches=f"(?i).*{item_kw}.*")
                 if item_desc.exists:
                     bot.log(f"👆 Found category element via content-desc '{item_kw}', clicking...")
                     item_desc.click()
                     bot.smart_sleep(1.5)
                     break
-                item_txt = bot.device(textMatches=f"(?i)^{item_kw}$")
+                item_txt = bot.d(textMatches=f"(?i)^{item_kw}$")
                 if item_txt.exists:
                     bot.log(f"👆 Found category element via text '{item_kw}', clicking...")
                     item_txt.click()
@@ -323,7 +353,15 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
             form_opened = True
             return True
 
+        # Check for Confirm Identity screen blocking listing form
+        if check_and_handle_identity_confirmation(bot):
+            raise Exception("CONFIRM_IDENTITY: Account requires identity verification.")
+
         bot.smart_sleep(1.0)
+
+    # Final check before failing
+    if check_and_handle_identity_confirmation(bot):
+        raise Exception("CONFIRM_IDENTITY: Account requires identity verification.")
 
     if not form_opened:
         raise Exception("❌ Listing form did not open after clicking 'What are you selling?'.")
@@ -339,8 +377,8 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
 def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, max_retries: int = 2) -> bool:
     """
     STEP 3:
-    - Search and click 'Add photos' (or 'Thêm ảnh').
-    - If not found, try pressing 'back' (handling discard draft popup if any) and calling click_what_are_you_selling again.
+    - Search and click 'Add photos' (or 'Thêm ảnh', 'Thêm hình ảnh', etc.).
+    - If not found, proactively press 'back' once (handling discard draft popup if any) and call click_what_are_you_selling again to re-enter listing form and search for 'Add photos'.
     - Wait logic: Wait for Camera Roll / Photo Gallery to appear.
     - Identify photo checkboxes/grid items (NEVER matching arbitrary ImageView).
     - Select corresponding number of photos (photo_num) in reverse order (bottom up).
@@ -350,23 +388,39 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
 
     # Pre-grant storage permissions via ADB to avoid React Native permission SecurityException
     try:
+        dev_serial = getattr(bot, "device_id", None)
         if hasattr(bot, "adb_client") and bot.adb_client and getattr(bot.adb_client, "target", None):
-            target = bot.adb_client.target
-            subprocess.run(["adb", "-s", target, "shell", "pm", "grant", "com.facebook.katana", "android.permission.READ_EXTERNAL_STORAGE"], capture_output=True)
-            subprocess.run(["adb", "-s", target, "shell", "pm", "grant", "com.facebook.katana", "android.permission.READ_MEDIA_IMAGES"], capture_output=True)
+            dev_serial = bot.adb_client.target
+
+        if dev_serial:
+            subprocess.run(["adb", "-s", dev_serial, "shell", "pm", "grant", "com.facebook.katana", "android.permission.READ_EXTERNAL_STORAGE"], capture_output=True)
+            subprocess.run(["adb", "-s", dev_serial, "shell", "pm", "grant", "com.facebook.katana", "android.permission.READ_MEDIA_IMAGES"], capture_output=True)
     except Exception as pe:
         logger.debug(f"Pre-grant permissions error: {pe}")
 
     def _trigger_add_photos_button() -> bool:
         """Finds and clicks 'Add photos' / 'Thêm ảnh' via multiple selectors."""
-        add_photo_keywords = ["add photos", "thêm ảnh", "add photo", "thêm hình ảnh"]
+        add_photo_keywords = [
+            "add photos", "thêm ảnh", "add photo", "thêm hình ảnh",
+            "thêm ảnh/video", "add photos/videos", "ảnh/video", "photo/video"
+        ]
+
+        # 1. Check by resourceId
+        if bot.d:
+            res_elem = bot.d(resourceIdMatches=r"(?i).*(add_photos|composer_add_photos|marketplace_add_photos).*")
+            if res_elem.exists:
+                bot.log("👆 Found 'Add photos' by resourceId. Clicking...")
+                res_elem.click()
+                return True
+
+        # 2. Check by keyword button / widget / text / description
         for kw in add_photo_keywords:
-            btn = bot.get_button_by_text(kw, timeout=2)
+            btn = bot.get_button_by_text(kw, timeout=1.5)
             if btn and btn.exists:
                 bot.log(f"👆 Clicking '{kw}' button...")
                 btn.click_exists(timeout=2)
                 return True
-            wg = bot.get_widget_by_text("android.view.ViewGroup", kw, timeout=1.5)
+            wg = bot.get_widget_by_text("android.view.ViewGroup", kw, timeout=1.0)
             if wg and wg.exists:
                 bot.log(f"👆 Clicking ViewGroup '{kw}'...")
                 wg.click()
@@ -405,19 +459,24 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
         # 1. Click 'Add photos'
         clicked = _trigger_add_photos_button()
         if not clicked:
-            bot.log(f"⚠️ Could not find 'Add photos' button on attempt {attempt + 1}. Waiting...")
-            bot.smart_sleep(1.5)
-            # If still on previous screen, try backup/draft discard logic on late attempts
-            if attempt >= 2 and bot.d:
+            bot.log(f"⚠️ Could not find 'Add photos' button on attempt {attempt + 1}. Proactively pressing 'back' and re-clicking 'What are you selling? / Sell something'...")
+            if bot.d:
                 bot.d.press("back")
                 bot.smart_sleep(1.5)
-                discard_btn = bot.get_button_by_text("discard", timeout=1) or bot.get_button_by_text("bỏ bài viết", timeout=1)
-                if discard_btn and discard_btn.exists:
-                    discard_btn.click_exists(timeout=2)
+                # Check and handle discard draft popup if any
+                for discard_kw in ["discard", "bỏ bài viết", "bỏ bản nháp", "bỏ"]:
+                    discard_btn = bot.get_button_by_text(discard_kw, timeout=0.8)
+                    if discard_btn and discard_btn.exists:
+                        bot.log(f"🧹 Found discard dialog ('{discard_kw}'), clicking to confirm...")
+                        discard_btn.click_exists(timeout=2)
+                        bot.smart_sleep(1.0)
+                        break
                 try:
-                    click_what_are_you_selling(bot)
-                except Exception:
-                    pass
+                    bot.log("🔄 Re-clicking 'What are you selling? / Sell something' button to reload listing form...")
+                    click_what_are_you_selling(bot, timeout=15)
+                except Exception as re_err:
+                    bot.log(f"⚠️ Error re-clicking sell button: {re_err}")
+            bot.smart_sleep(1.5)
             continue
 
         # 2. Wait and inspect screen transition
@@ -579,6 +638,56 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                 pass
         return False
 
+    def _ensure_select_multiple_mode() -> bool:
+        if not bot.d:
+            return False
+        try:
+            # 1. Text match
+            multi_text = bot.d(textMatches=r"(?i).*(select multiple|chọn nhiều|chọn nhiều ảnh|chọn nhiều mục).*")
+            if multi_text.exists:
+                info = multi_text.info
+                if not info.get("selected") and not info.get("checked"):
+                    bot.log(f"👆 Found 'Select multiple' button (text='{info.get('text', '')}'). Clicking to enable multi-selection...")
+                    multi_text.click_exists(timeout=2)
+                    bot.smart_sleep(1.0)
+                    return True
+                else:
+                    bot.log("ℹ️ 'Select multiple' mode is already active.")
+                    return True
+
+            # 2. Description match
+            multi_desc = bot.d(descriptionMatches=r"(?i).*(select multiple|chọn nhiều|chọn nhiều ảnh|chọn nhiều mục).*")
+            if multi_desc.exists:
+                info = multi_desc.info
+                if not info.get("selected") and not info.get("checked"):
+                    bot.log(f"👆 Found 'Select multiple' button (desc='{info.get('contentDescription', '')}'). Clicking to enable multi-selection...")
+                    multi_desc.click_exists(timeout=2)
+                    bot.smart_sleep(1.0)
+                    return True
+                else:
+                    bot.log("ℹ️ 'Select multiple' mode is already active.")
+                    return True
+
+            # 3. Resource ID match
+            multi_id = bot.d(resourceIdMatches=r"(?i).*(select_multiple|multi_select|multiple_selection).*")
+            if multi_id.exists:
+                bot.log("👆 Found 'Select multiple' button by resourceId. Clicking to enable multi-selection...")
+                multi_id.click_exists(timeout=2)
+                bot.smart_sleep(1.0)
+                return True
+
+            # 4. Helper get_button_by_text
+            for kw in ["select multiple", "chọn nhiều", "chọn nhiều ảnh", "chọn nhiều mục"]:
+                b = bot.get_button_by_text(kw, timeout=1)
+                if b and b.exists:
+                    bot.log(f"👆 Clicking '{kw}' button...")
+                    b.click_exists(timeout=2)
+                    bot.smart_sleep(1.0)
+                    return True
+        except Exception as ex:
+            logger.debug(f"Error checking 'Select multiple' button: {ex}")
+        return False
+
     while time.time() - start_time < timeout:
         if not bot.d:
             break
@@ -591,53 +700,72 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
             bot.log("✔️ Completed Step 3 (Confirmed already-selected photos).")
             return True
 
+        # Check and activate 'Select multiple' mode if button is present
+        _ensure_select_multiple_mode()
+
         # 1. Try detecting standard Katana camera roll photos (ViewGroup / CheckBox / Button with description)
-        camera_images = bot.d(descriptionMatches=r"(?i).*Photo.*taken on.*")
-        if not camera_images.exists:
-            camera_images = bot.d(descriptionMatches=r"(?i).*Photo taken on.*")
-        if not camera_images.exists:
-            camera_images = bot.d(descriptionMatches=r"(?i).*Ảnh.*chụp.*")
-        if not camera_images.exists:
+        camera_images = bot.d(className="android.view.ViewGroup", clickable=True, descriptionMatches=r"(?i).*Photo.*taken on.*|.*Photo taken on.*|.*Ảnh.*chụp.*")
+        if not camera_images.exists or camera_images.count == 0:
+            camera_images = bot.d(descriptionMatches=r"(?i).*Photo.*taken on.*|.*Photo taken on.*|.*Ảnh.*chụp.*")
+        if not camera_images.exists or camera_images.count == 0:
             camera_images = bot.d(descriptionMatches=r"(?i)^Photo, item \d+.*")
-        if not camera_images.exists:
+        if not camera_images.exists or camera_images.count == 0:
             camera_images = bot.d(className="android.widget.Button", descriptionMatches=r"(?i)^Photo.*|^Ảnh.*")
-        if not camera_images.exists:
+        if not camera_images.exists or camera_images.count == 0:
             camera_images = bot.d(resourceIdMatches=".*camera_roll_image.*")
-        if not camera_images.exists:
+        if not camera_images.exists or camera_images.count == 0:
             camera_images = bot.d(className="android.widget.CheckBox")
 
         if camera_images.exists and camera_images.count > 0:
-            count = camera_images.count
-            actual_num = min(count, photo_num)
-            bot.log(f"📸 Found {count} photos in Camera Roll. Selecting {actual_num} photos from bottom up...")
-
-            for i in reversed(range(actual_num)):
+            # Deduplicate by bounds to avoid clicking parent Button + child ViewGroup (which causes deselect)
+            unique_items = []
+            seen_bounds = set()
+            for idx in range(camera_images.count):
                 try:
-                    img = camera_images[i]
-                    # Check if already selected to prevent deselecting
+                    img = camera_images[idx]
                     info = img.info
-                    if info.get("selected") or info.get("checked"):
-                        bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
-                        selected_count += 1
-                        continue
-                    img.click_exists(timeout=3)
-                    selected_count += 1
-                    bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (bottom up)")
-                    bot.smart_sleep(0.5)
-                except Exception as ce:
-                    logger.debug(f"Error clicking photo {i}: {ce}")
+                    b = info.get("bounds")
+                    if b:
+                        key = (b.get("left") // 10, b.get("top") // 10, b.get("right") // 10, b.get("bottom") // 10)
+                        if key not in seen_bounds:
+                            seen_bounds.add(key)
+                            unique_items.append((img, info))
+                except Exception as ex:
+                    logger.debug(f"Error inspecting photo item {idx}: {ex}")
 
-            photos_found = True
-            break
+            if unique_items:
+                count = len(unique_items)
+                actual_num = min(count, photo_num)
+                bot.log(f"📸 Found {count} unique photos in Camera Roll. Selecting {actual_num} photo(s) from bottom up...")
+
+                for i in reversed(range(actual_num)):
+                    try:
+                        img, info = unique_items[i]
+                        # Check if already selected to prevent deselecting
+                        if info.get("selected") or info.get("checked"):
+                            bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
+                            selected_count += 1
+                            continue
+                        img.click_exists(timeout=3)
+                        selected_count += 1
+                        bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (bottom up)")
+                        bot.smart_sleep(0.6)
+                    except Exception as ce:
+                        logger.debug(f"Error clicking photo {i}: {ce}")
+
+                photos_found = True
+                break
 
         # 2. Try legacy / modern GridView
         grid_view = bot.get_elements_by_widget("android.widget.GridView", timeout=1) or (bot.d(className="android.widget.GridView") if bot.d else None)
         if grid_view and grid_view.exists:
             # 2a. Try finding buttons / views with photo description inside GridView
-            photo_widgets = bot.d(className="android.widget.Button", descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*")
-            if not photo_widgets.exists:
+            photo_widgets = bot.d(className="android.view.ViewGroup", clickable=True, descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*")
+            if not photo_widgets.exists or photo_widgets.count == 0:
+                photo_widgets = bot.d(className="android.widget.Button", descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*")
+            if not photo_widgets.exists or photo_widgets.count == 0:
                 photo_widgets = bot.d(descriptionMatches=r"(?i).*Photo.*|.*Ảnh.*")
-            if not photo_widgets.exists:
+            if not photo_widgets.exists or photo_widgets.count == 0:
                 # 2b. Fallback to get_interactable_from_parent with text="photo"
                 photo_widgets = bot.get_interactable_from_parent(
                     grid_view[0] if hasattr(grid_view, '__getitem__') else grid_view, 
@@ -647,25 +775,40 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                 )
 
             if photo_widgets and photo_widgets.exists and photo_widgets.count > 0:
-                count = photo_widgets.count
-                actual_num = min(count, photo_num)
-                bot.log(f"📸 Found {count} photos in GridView. Selecting {actual_num} photos...")
-                for i in reversed(range(actual_num)):
+                unique_grid_items = []
+                seen_grid_bounds = set()
+                for idx in range(photo_widgets.count):
                     try:
-                        pw = photo_widgets[i]
+                        pw = photo_widgets[idx]
                         info = pw.info
-                        if info.get("selected") or info.get("checked"):
-                            bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
+                        b = info.get("bounds")
+                        if b:
+                            key = (b.get("left") // 10, b.get("top") // 10, b.get("right") // 10, b.get("bottom") // 10)
+                            if key not in seen_grid_bounds:
+                                seen_grid_bounds.add(key)
+                                unique_grid_items.append((pw, info))
+                    except Exception as ex:
+                        logger.debug(f"Error inspecting grid item {idx}: {ex}")
+
+                if unique_grid_items:
+                    count = len(unique_grid_items)
+                    actual_num = min(count, photo_num)
+                    bot.log(f"📸 Found {count} unique photos in GridView. Selecting {actual_num} photo(s)...")
+                    for i in reversed(range(actual_num)):
+                        try:
+                            pw, info = unique_grid_items[i]
+                            if info.get("selected") or info.get("checked"):
+                                bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
+                                selected_count += 1
+                                continue
+                            pw.click_exists(timeout=3)
                             selected_count += 1
-                            continue
-                        pw.click_exists(timeout=3)
-                        selected_count += 1
-                        bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (GridView)")
-                        bot.smart_sleep(0.5)
-                    except Exception as ce:
-                        logger.debug(f"Error clicking photo {i}: {ce}")
-                photos_found = True
-                break
+                            bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (GridView)")
+                            bot.smart_sleep(0.6)
+                        except Exception as ce:
+                            logger.debug(f"Error clicking photo {i}: {ce}")
+                    photos_found = True
+                    break
 
         bot.smart_sleep(1.0)
 
@@ -727,6 +870,7 @@ def _set_title(bot: BaseAutomator, title: str):
         bot.d.send_keys(title_text)
 
     bot.smart_sleep(0.5)
+    bot.hide_keyboard()
     bot.log("   ✔️ Title entered successfully.")
 
 
@@ -774,6 +918,7 @@ def _set_price(bot: BaseAutomator, price: Optional[Any] = None):
         bot.d.send_keys(price_val)
 
     bot.smart_sleep(0.5)
+    bot.hide_keyboard()
     bot.log("   ✔️ Price entered successfully.")
 
 
@@ -1185,6 +1330,7 @@ def _set_description(bot: BaseAutomator, description: str):
             bot.d.send_keys(desc_text)
 
         bot.smart_sleep(0.5)
+        bot.hide_keyboard()
         bot.log("   ✔️ Description entered successfully.")
     else:
         bot.log("⚠️ Description field not found, skipping.")
@@ -1374,6 +1520,14 @@ def click_next_button(bot: BaseAutomator, timeout: int = 15) -> bool:
 
     if not next_btn or not next_btn.exists:
         next_btn = bot.d(resourceId="mp_composer_next")
+
+    if not next_btn or not next_btn.exists:
+        bot.hide_keyboard()
+        bot.smart_sleep(0.5)
+        for p in patterns:
+            next_btn = bot.d(textMatches=f"(?i)^{p}$") or bot.d(descriptionMatches=f"(?i)^{p}.*") or bot.get_button_by_text(p.lower(), timeout=0.5)
+            if next_btn and next_btn.exists:
+                break
 
     if not next_btn or not next_btn.exists:
         # Check if the button is directly 'Publish' or 'Đăng' on this form!
@@ -1772,8 +1926,14 @@ def click_publish_or_done(bot: BaseAutomator, timeout: int = 20) -> bool:
 
     if not publish_btn or not publish_btn.exists:
         # Fallback: check top-right header action button if visible
-        w, h = bot.get_screen_resolution()
-        top_right_btn = bot.d(clickable=True, boundsInside=(int(0.7 * w), 0, w, int(0.12 * h)))
+        try:
+            w, h = bot.d.window_size() if bot.d else (1080, 1920)
+            top_right_btn = bot.d(clickable=True, boundsInside=(int(0.7 * w), 0, w, int(0.12 * h)))
+            if top_right_btn.exists:
+                bot.log("ℹ️ Found clickable header action button at top-right corner. Using fallback click...")
+                publish_btn = top_right_btn
+        except Exception:
+            pass
         if top_right_btn.exists:
             bot.log("ℹ️ Found clickable header action button at top-right corner. Using fallback click...")
             publish_btn = top_right_btn
@@ -1805,15 +1965,17 @@ def click_publish_or_done(bot: BaseAutomator, timeout: int = 20) -> bool:
 
 
 # ==============================================================================
-# MAIN FBGroupShareAction CLASS
+
+
+# ==============================================================================
+# CLASS-BASED ACTION WRAPPER FOR MY-MANAGER.V2
 # ==============================================================================
 
 class FBGroupShareAction:
     def __init__(self, automator: BaseAutomator, account: Account):
         self.automator = automator
         self.account = account
-        # Attach account_uid for dump_error_view
-        if hasattr(self.automator, "__dict__"):
+        if hasattr(self.automator, '__dict__'):
             self.automator.account_uid = self.account.uid
         self.detector = CheckpointDetector(automator.device)
         self.v1_bridge = V1DatabaseBridge()
@@ -1839,28 +2001,8 @@ class FBGroupShareAction:
         current_step = "step_0_push_media"
         is_success = False
         try:
-            # 0. Clean previous session media & cache, then push new images
-            if self.automator.adb_client:
-                logger.info("🧹 Cleaning previous session media & Facebook temporary cache...")
-                self.automator.adb_client.clear_media_storage()
-                self.automator.adb_client.clear_facebook_cache()
-                self.automator.adb_client.ensure_storage_ready()
-                self.automator.adb_client.grant_app_permissions("com.facebook.katana")
-
-                if image_paths:
-                    logger.info(f"Pushing {len(image_paths)} image(s) to Redroid gallery...")
-                    for idx, img in enumerate(image_paths):
-                        if not os.path.exists(img):
-                            logger.warning(f"Image not found on host: {img}")
-                            continue
-                        ext = Path(img).suffix.lower() or ".jpg"
-                        remote_path = f"/sdcard/DCIM/Camera/share_{idx}{ext}"
-                        if self.automator.adb_client.push_file(img, remote_path):
-                            pushed_remotes.append(remote_path)
-                            self.automator.adb_client.scan_media_file(remote_path)
-                        else:
-                            logger.error(f"Failed to push image to Redroid: {img}")
-                    time.sleep(1.5)
+            if image_paths:
+                pushed_remotes = self.automator.push_media(image_paths)
 
             # Step 1: Open Group via Deeplink
             current_step = "step_1_open_facebook_group"
@@ -1876,6 +2018,11 @@ class FBGroupShareAction:
             # Step 2: Click 'What are you selling?'
             current_step = "step_2_click_what_are_you_selling"
             click_what_are_you_selling(self.automator, timeout=20)
+
+            # Check for Confirm Identity screen after clicking sell button
+            if check_and_handle_identity_confirmation(self.automator, self.account.uid):
+                self.automator.log("🚨 Account required Confirm Identity after clicking sell button. Aborting pipeline.")
+                return False
 
             # Step 3: Add Photos from Redroid gallery
             current_step = "step_3_click_add_photos"
@@ -1926,9 +2073,7 @@ class FBGroupShareAction:
                 logger.error(f"Execution failed at {current_step}. Dumping error view in finally block...")
                 dump_error_view(self.automator, account_uid=self.account.uid, step_name=f"error_{current_step}")
             if pushed_remotes:
-                logger.info(f"Cleaning up {len(pushed_remotes)} temp image(s) from Redroid device storage...")
-                for r_path in pushed_remotes:
-                    self.automator.adb_client.remove_file(r_path)
+                self.automator.cleanup_media()
 
     def execute(
         self,
@@ -1956,16 +2101,9 @@ class FBGroupShareAction:
             if use_ai:
                 ai_t, ai_d = self.ai_service.rewrite_real_estate_listing(raw_title, raw_desc, is_rental=is_rental)
                 t_clean = str(ai_t).strip() if ai_t else ""
-                if not t_clean or t_clean.lower().startswith("```") or t_clean in ("{", "}", '""', "''") or len(t_clean) < 5:
-                    title = raw_title[:90].strip() or "BẤT ĐỘNG SẢN GIÁ TỐT"
-                else:
-                    title = t_clean[:90].strip()
-
+                title = t_clean[:90].strip() if t_clean and not t_clean.lower().startswith("```") and len(t_clean) >= 5 else (raw_title[:90].strip() or "BẤT ĐỘNG SẢN GIÁ TỐT")
                 d_clean = str(ai_d).strip() if ai_d else ""
-                if not d_clean or d_clean.lower().startswith("```") or d_clean in ("{", "}", '""', "''") or len(d_clean) < 10:
-                    description = raw_desc
-                else:
-                    description = d_clean
+                description = d_clean if d_clean and not d_clean.lower().startswith("```") and len(d_clean) >= 10 else raw_desc
             else:
                 title = raw_title[:90].strip() or "BẤT ĐỘNG SẢN GIÁ TỐT"
                 description = raw_desc

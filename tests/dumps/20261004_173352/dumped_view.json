@@ -1,14 +1,12 @@
 {
-  "adb_port": 6558,
-  "account_uid": "61566073936679",
-  "failed_step": "error_step_3_post_to_group_g1",
-  "timestamp": "20261004_175749",
-  "current_app": {
+  "device": "127.0.0.1:6584",
+  "timestamp": "20261004_173352",
+  "app_current": {
     "package": "com.facebook.katana",
     "activity": ".immersiveactivity.ImmersiveActivity",
-    "pid": 2606
+    "pid": 2258
   },
-  "total_elements": 71,
+  "total_elements": 54,
   "elements": [
     {
       "class": "android.widget.FrameLayout",
@@ -297,314 +295,6 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": false,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "androidx.recyclerview.widget.RecyclerView",
-      "short_class": "RecyclerView",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": true,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,745]",
-      "center": [
-        540,
-        462
-      ],
-      "size": [
-        1080,
-        566
-      ],
-      "suggested_selector": "d(description=\"Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.\")",
-      "xpath": "//*[@content-desc=\"Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[21,777][975,926]",
-      "center": [
-        498,
-        851
-      ],
-      "size": [
-        954,
-        149
-      ],
-      "suggested_selector": "d(description=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members\")",
-      "xpath": "//*[@content-desc=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  ",
-      "content_desc": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  ",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,785][964,858]",
-      "center": [
-        498,
-        821
-      ],
-      "size": [
-        932,
-        73
-      ],
-      "suggested_selector": "d(text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  \")",
-      "xpath": "//*[@text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  \"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "  Public group · 199K members",
-      "content_desc": "  Public group · 199K members",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,873][964,913]",
-      "center": [
-        498,
-        893
-      ],
-      "size": [
-        932,
-        40
-      ],
-      "suggested_selector": "d(text=\"  Public group · 199K members\")",
-      "xpath": "//*[@text=\"  Public group · 199K members\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,947][529,1042]",
-      "center": [
-        280,
-        994
-      ],
-      "size": [
-        497,
-        95
-      ],
-      "suggested_selector": "d(description=\"joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group\")",
-      "xpath": "//*[@content-desc=\"joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Joined",
-      "content_desc": "Joined",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[221,972][340,1018]",
-      "center": [
-        280,
-        995
-      ],
-      "size": [
-        119,
-        46
-      ],
-      "suggested_selector": "d(text=\"Joined\")",
-      "xpath": "//*[@text=\"Joined\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[551,947][1048,1042]",
-      "center": [
-        799,
-        994
-      ],
-      "size": [
-        497,
-        95
-      ],
-      "suggested_selector": "d(description=\"invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\")",
-      "xpath": "//*[@content-desc=\"invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Invite",
-      "content_desc": "Invite",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[780,972][876,1018]",
-      "center": [
-        828,
-        995
-      ],
-      "size": [
-        96,
-        46
-      ],
-      "suggested_selector": "d(text=\"Invite\")",
-      "xpath": "//*[@text=\"Invite\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": false,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,1074][1080,1169]",
-      "center": [
-        540,
-        1121
-      ],
-      "size": [
-        1080,
-        95
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
       "class": "androidx.recyclerview.widget.RecyclerView",
       "short_class": "RecyclerView",
       "resource_id": "",
@@ -614,461 +304,527 @@
       "enabled": true,
       "checked": false,
       "scrollable": true,
-      "bounds": "[0,1074][1080,1169]",
+      "bounds": "[0,179][1080,1575]",
       "center": [
         540,
-        1121
+        877
       ],
       "size": [
         1080,
-        95
+        1396
       ],
       "suggested_selector": "d(className=\"androidx.recyclerview.widget.RecyclerView\")",
       "xpath": ""
     },
     {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Featured, new content",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1074][251,1169]",
-      "center": [
-        141,
-        1121
-      ],
-      "size": [
-        219,
-        95
-      ],
-      "suggested_selector": "d(description=\"Featured, new content\")",
-      "xpath": "//*[@content-desc=\"Featured, new content\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Reels",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[271,1074][432,1169]",
-      "center": [
-        351,
-        1121
-      ],
-      "size": [
-        161,
-        95
-      ],
-      "suggested_selector": "d(description=\"Reels\")",
-      "xpath": "//*[@content-desc=\"Reels\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Your listings",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[452,1074][734,1169]",
-      "center": [
-        593,
-        1121
-      ],
-      "size": [
-        282,
-        95
-      ],
-      "suggested_selector": "d(description=\"Your listings\")",
-      "xpath": "//*[@content-desc=\"Your listings\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Photos",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[754,1074][942,1169]",
-      "center": [
-        848,
-        1121
-      ],
-      "size": [
-        188,
-        95
-      ],
-      "suggested_selector": "d(description=\"Photos\")",
-      "xpath": "//*[@content-desc=\"Photos\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Albums",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[962,1074][1080,1169]",
-      "center": [
-        1021,
-        1121
-      ],
-      "size": [
-        118,
-        95
-      ],
-      "suggested_selector": "d(description=\"Albums\")",
-      "xpath": "//*[@content-desc=\"Albums\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
+      "class": "androidx.recyclerview.widget.RecyclerView",
+      "short_class": "RecyclerView",
       "resource_id": "",
       "text": "",
       "content_desc": "",
-      "clickable": true,
+      "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1201][1080,1370]",
+      "bounds": "[0,179][1080,1575]",
       "center": [
         540,
-        1285
+        877
       ],
       "size": [
         1080,
-        169
+        1396
       ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
+      "suggested_selector": "d(className=\"androidx.recyclerview.widget.RecyclerView\")",
       "xpath": ""
     },
     {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
       "resource_id": "",
       "text": "",
-      "content_desc": "Show profile",
-      "clickable": true,
+      "content_desc": "Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng, Public group • 357.6K members",
+      "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1233][137,1338]",
-      "center": [
-        84,
-        1285
-      ],
-      "size": [
-        105,
-        105
-      ],
-      "suggested_selector": "d(description=\"Show profile\")",
-      "xpath": "//*[@content-desc=\"Show profile\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "What are you selling?",
-      "content_desc": "What are you selling?",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[158,1240][1037,1331]",
-      "center": [
-        597,
-        1285
-      ],
-      "size": [
-        879,
-        91
-      ],
-      "suggested_selector": "d(text=\"What are you selling?\")",
-      "xpath": "//*[@text=\"What are you selling?\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Top listings",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,1370][1080,1486]",
+      "bounds": "[0,179][1080,383]",
       "center": [
         540,
-        1428
+        281
       ],
       "size": [
         1080,
-        116
+        204
       ],
-      "suggested_selector": "d(description=\"Top listings\")",
-      "xpath": "//*[@content-desc=\"Top listings\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Top listings",
-      "content_desc": "Top listings",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1412][953,1444]",
-      "center": [
-        492,
-        1428
-      ],
-      "size": [
-        921,
-        32
-      ],
-      "suggested_selector": "d(text=\"Top listings\")",
-      "xpath": "//*[@text=\"Top listings\"]"
+      "suggested_selector": "d(description=\"Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng, Public group • 357.6K members\")",
+      "xpath": "//*[@content-desc=\"Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng, Public group • 357.6K members\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
       "text": "",
-      "content_desc": "",
-      "clickable": true,
+      "content_desc": "Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng, Public group • 357.6K members",
+      "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1486][1080,1655]",
+      "bounds": "[222,201][1048,361]",
+      "center": [
+        635,
+        281
+      ],
+      "size": [
+        826,
+        160
+      ],
+      "suggested_selector": "d(description=\"Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng, Public group • 357.6K members\")",
+      "xpath": "//*[@content-desc=\"Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng, Public group • 357.6K members\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng",
+      "content_desc": "Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[222,201][1048,309]",
+      "center": [
+        635,
+        255
+      ],
+      "size": [
+        826,
+        108
+      ],
+      "suggested_selector": "d(text=\"Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng\")",
+      "xpath": "//*[@text=\"Mua Bán Nhà Đất - Đức Trọng, Đà Lạt, Lâm Đồng\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Public group • 357.6K members",
+      "content_desc": "Public group • 357.6K members",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[222,309][770,361]",
+      "center": [
+        496,
+        335
+      ],
+      "size": [
+        548,
+        52
+      ],
+      "suggested_selector": "d(text=\"Public group • 357.6K members\")",
+      "xpath": "//*[@text=\"Public group • 357.6K members\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "These rules come from the group admins.",
+      "content_desc": "These rules come from the group admins.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[42,415][1080,465]",
+      "center": [
+        561,
+        440
+      ],
+      "size": [
+        1038,
+        50
+      ],
+      "suggested_selector": "d(text=\"These rules come from the group admins.\")",
+      "xpath": "//*[@text=\"These rules come from the group admins.\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Hãy tử tế và lịch sự, Tất cả chúng ta cùng có mặt ở đây để tạo nên một môi trường thân thiện. Hãy tôn trọng tất cả mọi người. Tranh luận lành mạnh là điều hết sức tự nhiên nhưng cũng cần tử tế.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,507][1080,776]",
       "center": [
         540,
-        1570
+        641
       ],
       "size": [
         1080,
-        169
+        269
       ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Phạm Gia profile picture",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1518][137,1623]",
-      "center": [
-        84,
-        1570
-      ],
-      "size": [
-        105,
-        105
-      ],
-      "suggested_selector": "d(description=\"Phạm Gia profile picture\")",
-      "xpath": "//*[@content-desc=\"Phạm Gia profile picture\"]"
+      "suggested_selector": "d(description=\"Hãy tử tế và lịch sự, Tất cả chúng ta cùng có mặt ở đây để tạo nên một môi trường thân thiện. Hãy tôn trọng tất cả mọi người. Tranh luận lành mạnh là điều hết sức tự nhiên nhưng cũng cần tử tế.\")",
+      "xpath": "//*[@content-desc=\"Hãy tử tế và lịch sự, Tất cả chúng ta cùng có mặt ở đây để tạo nên một môi trường thân thiện. Hãy tôn trọng tất cả mọi người. Tranh luận lành mạnh là điều hết sức tự nhiên nhưng cũng cần tử tế.\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Phạm Gia",
-      "content_desc": "Phạm Gia",
+      "text": "1",
+      "content_desc": "1",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[158,1517][948,1566]",
+      "bounds": "[61,546][83,592]",
       "center": [
-        553,
-        1541
+        72,
+        569
       ],
       "size": [
-        790,
-        49
+        22,
+        46
       ],
-      "suggested_selector": "d(text=\"Phạm Gia\")",
-      "xpath": "//*[@text=\"Phạm Gia\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "Phạm Gia",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[158,1517][339,1566]",
-      "center": [
-        248,
-        1541
-      ],
-      "size": [
-        181,
-        49
-      ],
-      "suggested_selector": "d(text=\"Phạm Gia\")",
-      "xpath": "//*[@text=\"Phạm Gia\"]"
+      "suggested_selector": "d(text=\"1\")",
+      "xpath": "//*[@text=\"1\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "5m•Shared with: Public group",
-      "content_desc": "5m•Shared with: Public group",
+      "text": "Hãy tử tế và lịch sự",
+      "content_desc": "Hãy tử tế và lịch sự",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[169,1577][276,1615]",
+      "bounds": "[143,539][952,577]",
       "center": [
-        222,
-        1596
+        547,
+        558
       ],
       "size": [
-        107,
+        809,
         38
       ],
-      "suggested_selector": "d(text=\"5m•Shared with: Public group\")",
-      "xpath": "//*[@text=\"5m•Shared with: Public group\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "More options for Phạm Gia’s post",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[969,1486][1080,1596]",
-      "center": [
-        1024,
-        1541
-      ],
-      "size": [
-        111,
-        110
-      ],
-      "suggested_selector": "d(description=\"More options for Phạm Gia’s post\")",
-      "xpath": "//*[@content-desc=\"More options for Phạm Gia’s post\"]"
+      "suggested_selector": "d(text=\"Hãy tử tế và lịch sự\")",
+      "xpath": "//*[@text=\"Hãy tử tế và lịch sự\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more",
-      "content_desc": "Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1655][1048,1770]",
-      "center": [
-        540,
-        1712
-      ],
-      "size": [
-        1016,
-        115
-      ],
-      "suggested_selector": "d(text=\"Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more\")",
-      "xpath": "//*[@text=\"Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "more",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[931,1699][1028,1748]",
-      "center": [
-        979,
-        1723
-      ],
-      "size": [
-        97,
-        49
-      ],
-      "suggested_selector": "d(text=\"more\")",
-      "xpath": "//*[@text=\"more\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Bán nhanh, FREE · Đà LạT, LâM ĐồNG",
+      "text": "Tất cả chúng ta cùng có mặt ở đây để tạo nên một môi trường thân thiện. Hãy tôn trọng tất cả mọi người. Tranh luận lành mạnh là điều hết sức tự nhiên nhưng cũng cần tử tế.",
+      "content_desc": "Tất cả chúng ta cùng có mặt ở đây để tạo nên một môi trường thân thiện. Hãy tôn trọng tất cả mọi người. Tranh luận lành mạnh là điều hết sức tự nhiên nhưng cũng cần tử tế.",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1770][1080,1794]",
+      "bounds": "[143,586][952,744]",
       "center": [
-        540,
-        1782
+        547,
+        665
       ],
       "size": [
-        1080,
-        24
+        809,
+        158
       ],
-      "suggested_selector": "d(description=\"Bán nhanh, FREE · Đà LạT, LâM ĐồNG\")",
-      "xpath": "//*[@content-desc=\"Bán nhanh, FREE · Đà LạT, LâM ĐồNG\"]"
+      "suggested_selector": "d(text=\"Tất cả chúng ta cùng có mặt ở đây để tạo nên một môi trường thân thiện. Hãy tôn trọng tất cả mọi người. Tranh luận lành mạnh là điều hết sức tự nhiên nhưng cũng cần tử tế.\")",
+      "xpath": "//*[@text=\"Tất cả chúng ta cùng có mặt ở đây để tạo nên một môi trường thân thiện. Hãy tôn trọng tất cả mọi người. Tranh luận lành mạnh là điều hết sức tự nhiên nhưng cũng cần tử tế.\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "See less",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[958,507][1074,623]",
+      "center": [
+        1016,
+        565
+      ],
+      "size": [
+        116,
+        116
+      ],
+      "suggested_selector": "d(description=\"See less\")",
+      "xpath": "//*[@content-desc=\"See less\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
       "text": "",
-      "content_desc": "",
+      "content_desc": "Không dùng ngôn từ gây thù ghét hoặc bắt nạt, Hãy đảm bảo mọi người cảm thấy an toàn. Mọi hình thức bắt nạt đều không được cho phép và những bình luận hạ nhục về chủng tộc, tôn giáo, văn hóa, thiên hướng tính dục, giới tính hoặc bản sắc sẽ không được chấp nhận.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,776][1080,1140]",
+      "center": [
+        540,
+        958
+      ],
+      "size": [
+        1080,
+        364
+      ],
+      "suggested_selector": "d(description=\"Không dùng ngôn từ gây thù ghét hoặc bắt nạt, Hãy đảm bảo mọi người cảm thấy an toàn. Mọi hình thức bắt nạt đều không được cho phép và những bình luận hạ nhục về chủng tộc, tôn giáo, văn hóa, thiên hướng tính dục, giới tính hoặc bản sắc sẽ không được chấp nhận.\")",
+      "xpath": "//*[@content-desc=\"Không dùng ngôn từ gây thù ghét hoặc bắt nạt, Hãy đảm bảo mọi người cảm thấy an toàn. Mọi hình thức bắt nạt đều không được cho phép và những bình luận hạ nhục về chủng tộc, tôn giáo, văn hóa, thiên hướng tính dục, giới tính hoặc bản sắc sẽ không được chấp nhận.\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "2",
+      "content_desc": "2",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[61,815][83,861]",
+      "center": [
+        72,
+        838
+      ],
+      "size": [
+        22,
+        46
+      ],
+      "suggested_selector": "d(text=\"2\")",
+      "xpath": "//*[@text=\"2\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Không dùng ngôn từ gây thù ghét hoặc bắt nạt",
+      "content_desc": "Không dùng ngôn từ gây thù ghét hoặc bắt nạt",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[143,808][952,899]",
+      "center": [
+        547,
+        853
+      ],
+      "size": [
+        809,
+        91
+      ],
+      "suggested_selector": "d(text=\"Không dùng ngôn từ gây thù ghét hoặc bắt nạt\")",
+      "xpath": "//*[@text=\"Không dùng ngôn từ gây thù ghét hoặc bắt nạt\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Hãy đảm bảo mọi người cảm thấy an toàn. Mọi hình thức bắt nạt đều không được cho phép và những bình luận hạ nhục về chủng tộc, tôn giáo, văn hóa, thiên hướng tính dục, giới tính hoặc bản sắc sẽ không được chấp nhận.",
+      "content_desc": "Hãy đảm bảo mọi người cảm thấy an toàn. Mọi hình thức bắt nạt đều không được cho phép và những bình luận hạ nhục về chủng tộc, tôn giáo, văn hóa, thiên hướng tính dục, giới tính hoặc bản sắc sẽ không được chấp nhận.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[143,908][952,1108]",
+      "center": [
+        547,
+        1008
+      ],
+      "size": [
+        809,
+        200
+      ],
+      "suggested_selector": "d(text=\"Hãy đảm bảo mọi người cảm thấy an toàn. Mọi hình thức bắt nạt đều không được cho phép và những bình luận hạ nhục về chủng tộc, tôn giáo, văn hóa, thiên hướng tính dục, giới tính hoặc bản sắc sẽ không được chấp nhận.\")",
+      "xpath": "//*[@text=\"Hãy đảm bảo mọi người cảm thấy an toàn. Mọi hình thức bắt nạt đều không được cho phép và những bình luận hạ nhục về chủng tộc, tôn giáo, văn hóa, thiên hướng tính dục, giới tính hoặc bản sắc sẽ không được chấp nhận.\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "See less",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1770][1080,1794]",
+      "bounds": "[958,776][1074,892]",
+      "center": [
+        1016,
+        834
+      ],
+      "size": [
+        116,
+        116
+      ],
+      "suggested_selector": "d(description=\"See less\")",
+      "xpath": "//*[@content-desc=\"See less\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Không quảng cáo hoặc spam, Trong nhóm, hãy cho đi nhiều hơn nhận lại. Bạn không được tự quảng bá, spam và đăng liên kết không phù hợp.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1140][1080,1367]",
       "center": [
         540,
-        1782
+        1253
       ],
       "size": [
         1080,
-        24
+        227
       ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
+      "suggested_selector": "d(description=\"Không quảng cáo hoặc spam, Trong nhóm, hãy cho đi nhiều hơn nhận lại. Bạn không được tự quảng bá, spam và đăng liên kết không phù hợp.\")",
+      "xpath": "//*[@content-desc=\"Không quảng cáo hoặc spam, Trong nhóm, hãy cho đi nhiều hơn nhận lại. Bạn không được tự quảng bá, spam và đăng liên kết không phù hợp.\"]"
     },
     {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "3",
+      "content_desc": "3",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[61,1179][83,1225]",
+      "center": [
+        72,
+        1202
+      ],
+      "size": [
+        22,
+        46
+      ],
+      "suggested_selector": "d(text=\"3\")",
+      "xpath": "//*[@text=\"3\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Không quảng cáo hoặc spam",
+      "content_desc": "Không quảng cáo hoặc spam",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[143,1172][952,1210]",
+      "center": [
+        547,
+        1191
+      ],
+      "size": [
+        809,
+        38
+      ],
+      "suggested_selector": "d(text=\"Không quảng cáo hoặc spam\")",
+      "xpath": "//*[@text=\"Không quảng cáo hoặc spam\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Trong nhóm, hãy cho đi nhiều hơn nhận lại. Bạn không được tự quảng bá, spam và đăng liên kết không phù hợp.",
+      "content_desc": "Trong nhóm, hãy cho đi nhiều hơn nhận lại. Bạn không được tự quảng bá, spam và đăng liên kết không phù hợp.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[143,1219][952,1335]",
+      "center": [
+        547,
+        1277
+      ],
+      "size": [
+        809,
+        116
+      ],
+      "suggested_selector": "d(text=\"Trong nhóm, hãy cho đi nhiều hơn nhận lại. Bạn không được tự quảng bá, spam và đăng liên kết không phù hợp.\")",
+      "xpath": "//*[@text=\"Trong nhóm, hãy cho đi nhiều hơn nhận lại. Bạn không được tự quảng bá, spam và đăng liên kết không phù hợp.\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "See less",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[958,1140][1074,1256]",
+      "center": [
+        1016,
+        1198
+      ],
+      "size": [
+        116,
+        116
+      ],
+      "suggested_selector": "d(description=\"See less\")",
+      "xpath": "//*[@content-desc=\"See less\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Next",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[42,1674][1038,1766]",
+      "center": [
+        540,
+        1720
+      ],
+      "size": [
+        996,
+        92
+      ],
+      "suggested_selector": "d(description=\"Next\")",
+      "xpath": "//*[@content-desc=\"Next\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Next",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[499,1694][581,1747]",
+      "center": [
+        540,
+        1720
+      ],
+      "size": [
+        82,
+        53
+      ],
+      "suggested_selector": "d(text=\"Next\")",
+      "xpath": "//*[@text=\"Next\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
       "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
       "content_desc": "",
@@ -1089,133 +845,45 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "com.facebook.katana:id/(name removed)",
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
       "text": "",
       "content_desc": "Back",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,63][126,179]",
+      "bounds": "[26,74][121,169]",
       "center": [
-        63,
+        73,
         121
       ],
       "size": [
-        126,
-        116
+        95,
+        95
       ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[126,63][827,179]",
-      "center": [
-        476,
-        121
-      ],
-      "size": [
-        701,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[126,63][827,179]",
-      "center": [
-        476,
-        121
-      ],
-      "size": [
-        701,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[827,63][1080,179]",
-      "center": [
-        953,
-        121
-      ],
-      "size": [
-        253,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "Search in MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[827,63][964,179]",
-      "center": [
-        895,
-        121
-      ],
-      "size": [
-        137,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+      "suggested_selector": "d(description=\"Back\")",
+      "xpath": "//*[@content-desc=\"Back\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
-      "content_desc": "Member tools more options",
+      "content_desc": "Report welcome message button",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[964,63][1080,179]",
+      "bounds": "[969,74][1064,169]",
       "center": [
-        1022,
+        1016,
         121
       ],
       "size": [
-        116,
-        116
+        95,
+        95
       ],
       "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
@@ -1334,8 +1002,8 @@
       "class": "android.widget.TextView",
       "short_class": "TextView",
       "resource_id": "com.android.systemui:id/clock",
-      "text": "10:57",
-      "content_desc": "10:57 AM",
+      "text": "10:33",
+      "content_desc": "10:33 AM",
       "clickable": false,
       "enabled": true,
       "checked": false,
@@ -1417,50 +1085,6 @@
       ],
       "suggested_selector": "d(resourceId=\"com.android.systemui:id/notificationIcons\")",
       "xpath": "//*[@resource-id=\"com.android.systemui:id/notificationIcons\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Facebook notification: Hoàng K Tran: Hoàng K Tran",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[133,0][191,63]",
-      "center": [
-        162,
-        31
-      ],
-      "size": [
-        58,
-        63
-      ],
-      "suggested_selector": "d(description=\"Facebook notification: Hoàng K Tran: Hoàng K Tran\")",
-      "xpath": "//*[@content-desc=\"Facebook notification: Hoàng K Tran: Hoàng K Tran\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[191,0][249,63]",
-      "center": [
-        220,
-        31
-      ],
-      "size": [
-        58,
-        63
-      ],
-      "suggested_selector": "d(description=\"Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh\")",
-      "xpath": "//*[@content-desc=\"Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh\"]"
     },
     {
       "class": "android.widget.LinearLayout",

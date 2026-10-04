@@ -13,6 +13,25 @@ class ContainerProxyConfigurator:
     def __init__(self, adb_target: str):
         self.adb_target = adb_target
 
+    @classmethod
+    def configure_proxy_for_container(cls, container_name_or_target: str, proxy_url: str) -> bool:
+        """Configures proxy on a container or ADB target (e.g. '127.0.0.1:6584' or 'redroid_fb_...')."""
+        if not proxy_url:
+            return False
+        target = str(container_name_or_target)
+        if not (":" in target and target.split(":")[-1].isdigit()):
+            from src.db.repository import RedroidRepository
+            clean_uid = target.replace("redroid_fb_", "")
+            inst = RedroidRepository.get_by_account_uid(clean_uid)
+            if not inst:
+                for row in RedroidRepository.list_all():
+                    if row.container_name == target or row.container_id == target:
+                        inst = row
+                        break
+            if inst:
+                target = f"127.0.0.1:{inst.adb_port}"
+        return cls(target).setup_proxy(proxy_url)
+
     def setup_proxy(self, proxy_url: str) -> bool:
         """
         Sets up global HTTP proxy on the Android system via ADB settings.

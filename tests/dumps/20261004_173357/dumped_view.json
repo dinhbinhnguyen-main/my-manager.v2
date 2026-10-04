@@ -1,14 +1,12 @@
 {
-  "adb_port": 6558,
-  "account_uid": "61566073936679",
-  "failed_step": "error_step_3_post_to_group_g1",
-  "timestamp": "20261004_175749",
-  "current_app": {
+  "device": "127.0.0.1:6584",
+  "timestamp": "20261004_173357",
+  "app_current": {
     "package": "com.facebook.katana",
     "activity": ".immersiveactivity.ImmersiveActivity",
-    "pid": 2606
+    "pid": 2258
   },
-  "total_elements": 71,
+  "total_elements": 48,
   "elements": [
     {
       "class": "android.widget.FrameLayout",
@@ -297,314 +295,6 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": false,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "androidx.recyclerview.widget.RecyclerView",
-      "short_class": "RecyclerView",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": true,
-      "bounds": "[0,179][1080,1794]",
-      "center": [
-        540,
-        986
-      ],
-      "size": [
-        1080,
-        1615
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,745]",
-      "center": [
-        540,
-        462
-      ],
-      "size": [
-        1080,
-        566
-      ],
-      "suggested_selector": "d(description=\"Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.\")",
-      "xpath": "//*[@content-desc=\"Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[21,777][975,926]",
-      "center": [
-        498,
-        851
-      ],
-      "size": [
-        954,
-        149
-      ],
-      "suggested_selector": "d(description=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members\")",
-      "xpath": "//*[@content-desc=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  ",
-      "content_desc": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  ",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,785][964,858]",
-      "center": [
-        498,
-        821
-      ],
-      "size": [
-        932,
-        73
-      ],
-      "suggested_selector": "d(text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  \")",
-      "xpath": "//*[@text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  \"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "  Public group · 199K members",
-      "content_desc": "  Public group · 199K members",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,873][964,913]",
-      "center": [
-        498,
-        893
-      ],
-      "size": [
-        932,
-        40
-      ],
-      "suggested_selector": "d(text=\"  Public group · 199K members\")",
-      "xpath": "//*[@text=\"  Public group · 199K members\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,947][529,1042]",
-      "center": [
-        280,
-        994
-      ],
-      "size": [
-        497,
-        95
-      ],
-      "suggested_selector": "d(description=\"joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group\")",
-      "xpath": "//*[@content-desc=\"joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Joined",
-      "content_desc": "Joined",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[221,972][340,1018]",
-      "center": [
-        280,
-        995
-      ],
-      "size": [
-        119,
-        46
-      ],
-      "suggested_selector": "d(text=\"Joined\")",
-      "xpath": "//*[@text=\"Joined\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[551,947][1048,1042]",
-      "center": [
-        799,
-        994
-      ],
-      "size": [
-        497,
-        95
-      ],
-      "suggested_selector": "d(description=\"invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\")",
-      "xpath": "//*[@content-desc=\"invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Invite",
-      "content_desc": "Invite",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[780,972][876,1018]",
-      "center": [
-        828,
-        995
-      ],
-      "size": [
-        96,
-        46
-      ],
-      "suggested_selector": "d(text=\"Invite\")",
-      "xpath": "//*[@text=\"Invite\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": false,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,1074][1080,1169]",
-      "center": [
-        540,
-        1121
-      ],
-      "size": [
-        1080,
-        95
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
       "class": "androidx.recyclerview.widget.RecyclerView",
       "short_class": "RecyclerView",
       "resource_id": "",
@@ -614,461 +304,395 @@
       "enabled": true,
       "checked": false,
       "scrollable": true,
-      "bounds": "[0,1074][1080,1169]",
+      "bounds": "[0,179][1080,1575]",
       "center": [
         540,
-        1121
+        877
       ],
       "size": [
         1080,
-        95
+        1396
       ],
       "suggested_selector": "d(className=\"androidx.recyclerview.widget.RecyclerView\")",
       "xpath": ""
     },
     {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Featured, new content",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1074][251,1169]",
-      "center": [
-        141,
-        1121
-      ],
-      "size": [
-        219,
-        95
-      ],
-      "suggested_selector": "d(description=\"Featured, new content\")",
-      "xpath": "//*[@content-desc=\"Featured, new content\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Reels",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[271,1074][432,1169]",
-      "center": [
-        351,
-        1121
-      ],
-      "size": [
-        161,
-        95
-      ],
-      "suggested_selector": "d(description=\"Reels\")",
-      "xpath": "//*[@content-desc=\"Reels\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Your listings",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[452,1074][734,1169]",
-      "center": [
-        593,
-        1121
-      ],
-      "size": [
-        282,
-        95
-      ],
-      "suggested_selector": "d(description=\"Your listings\")",
-      "xpath": "//*[@content-desc=\"Your listings\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Photos",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[754,1074][942,1169]",
-      "center": [
-        848,
-        1121
-      ],
-      "size": [
-        188,
-        95
-      ],
-      "suggested_selector": "d(description=\"Photos\")",
-      "xpath": "//*[@content-desc=\"Photos\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Albums",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[962,1074][1080,1169]",
-      "center": [
-        1021,
-        1121
-      ],
-      "size": [
-        118,
-        95
-      ],
-      "suggested_selector": "d(description=\"Albums\")",
-      "xpath": "//*[@content-desc=\"Albums\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
+      "class": "androidx.recyclerview.widget.RecyclerView",
+      "short_class": "RecyclerView",
       "resource_id": "",
       "text": "",
       "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,1201][1080,1370]",
-      "center": [
-        540,
-        1285
-      ],
-      "size": [
-        1080,
-        169
-      ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Show profile",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1233][137,1338]",
-      "center": [
-        84,
-        1285
-      ],
-      "size": [
-        105,
-        105
-      ],
-      "suggested_selector": "d(description=\"Show profile\")",
-      "xpath": "//*[@content-desc=\"Show profile\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "What are you selling?",
-      "content_desc": "What are you selling?",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[158,1240][1037,1331]",
-      "center": [
-        597,
-        1285
-      ],
-      "size": [
-        879,
-        91
-      ],
-      "suggested_selector": "d(text=\"What are you selling?\")",
-      "xpath": "//*[@text=\"What are you selling?\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Top listings",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,1370][1080,1486]",
-      "center": [
-        540,
-        1428
-      ],
-      "size": [
-        1080,
-        116
-      ],
-      "suggested_selector": "d(description=\"Top listings\")",
-      "xpath": "//*[@content-desc=\"Top listings\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Top listings",
-      "content_desc": "Top listings",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1412][953,1444]",
+      "bounds": "[0,179][1080,1575]",
       "center": [
-        492,
-        1428
+        540,
+        877
       ],
       "size": [
-        921,
+        1080,
+        1396
+      ],
+      "suggested_selector": "d(className=\"androidx.recyclerview.widget.RecyclerView\")",
+      "xpath": ""
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Đoàn, introduce yourself and start connecting",
+      "content_desc": "Đoàn, introduce yourself and start connecting",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,786][1016,909]",
+      "center": [
+        524,
+        847
+      ],
+      "size": [
+        984,
+        123
+      ],
+      "suggested_selector": "d(text=\"Đoàn, introduce yourself and start connecting\")",
+      "xpath": "//*[@text=\"Đoàn, introduce yourself and start connecting\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Post using a prompt.",
+      "content_desc": "Post using a prompt.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[42,931][457,984]",
+      "center": [
+        249,
+        957
+      ],
+      "size": [
+        415,
+        53
+      ],
+      "suggested_selector": "d(text=\"Post using a prompt.\")",
+      "xpath": "//*[@text=\"Post using a prompt.\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Share a favorite photo",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1053][1080,1190]",
+      "center": [
+        540,
+        1121
+      ],
+      "size": [
+        1080,
+        137
+      ],
+      "suggested_selector": "d(description=\"Share a favorite photo\")",
+      "xpath": "//*[@content-desc=\"Share a favorite photo\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Share a favorite photo",
+      "content_desc": "Share a favorite photo",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,1106][850,1138]",
+      "center": [
+        488,
+        1122
+      ],
+      "size": [
+        723,
         32
       ],
-      "suggested_selector": "d(text=\"Top listings\")",
-      "xpath": "//*[@text=\"Top listings\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,1486][1080,1655]",
-      "center": [
-        540,
-        1570
-      ],
-      "size": [
-        1080,
-        169
-      ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Phạm Gia profile picture",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1518][137,1623]",
-      "center": [
-        84,
-        1570
-      ],
-      "size": [
-        105,
-        105
-      ],
-      "suggested_selector": "d(description=\"Phạm Gia profile picture\")",
-      "xpath": "//*[@content-desc=\"Phạm Gia profile picture\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Phạm Gia",
-      "content_desc": "Phạm Gia",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[158,1517][948,1566]",
-      "center": [
-        553,
-        1541
-      ],
-      "size": [
-        790,
-        49
-      ],
-      "suggested_selector": "d(text=\"Phạm Gia\")",
-      "xpath": "//*[@text=\"Phạm Gia\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "Phạm Gia",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[158,1517][339,1566]",
-      "center": [
-        248,
-        1541
-      ],
-      "size": [
-        181,
-        49
-      ],
-      "suggested_selector": "d(text=\"Phạm Gia\")",
-      "xpath": "//*[@text=\"Phạm Gia\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "5m•Shared with: Public group",
-      "content_desc": "5m•Shared with: Public group",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[169,1577][276,1615]",
-      "center": [
-        222,
-        1596
-      ],
-      "size": [
-        107,
-        38
-      ],
-      "suggested_selector": "d(text=\"5m•Shared with: Public group\")",
-      "xpath": "//*[@text=\"5m•Shared with: Public group\"]"
+      "suggested_selector": "d(text=\"Share a favorite photo\")",
+      "xpath": "//*[@text=\"Share a favorite photo\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "More options for Phạm Gia’s post",
+      "content_desc": "Share",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[969,1486][1080,1596]",
+      "bounds": "[882,1074][1048,1169]",
       "center": [
-        1024,
-        1541
+        965,
+        1121
       ],
       "size": [
-        111,
-        110
+        166,
+        95
       ],
-      "suggested_selector": "d(description=\"More options for Phạm Gia’s post\")",
-      "xpath": "//*[@content-desc=\"More options for Phạm Gia’s post\"]"
+      "suggested_selector": "d(description=\"Share\")",
+      "xpath": "//*[@content-desc=\"Share\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more",
-      "content_desc": "Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more",
-      "clickable": true,
+      "text": "Share",
+      "content_desc": "Share",
+      "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1655][1048,1770]",
+      "bounds": "[914,1099][1016,1145]",
       "center": [
-        540,
-        1712
+        965,
+        1122
       ],
       "size": [
-        1016,
-        115
+        102,
+        46
       ],
-      "suggested_selector": "d(text=\"Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more\")",
-      "xpath": "//*[@text=\"Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more\"]"
+      "suggested_selector": "d(text=\"Share\")",
+      "xpath": "//*[@text=\"Share\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Share why you joined the group",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1190][1080,1327]",
+      "center": [
+        540,
+        1258
+      ],
+      "size": [
+        1080,
+        137
+      ],
+      "suggested_selector": "d(description=\"Share why you joined the group\")",
+      "xpath": "//*[@content-desc=\"Share why you joined the group\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Share why you joined the group",
+      "content_desc": "Share why you joined the group",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,1243][850,1275]",
+      "center": [
+        488,
+        1259
+      ],
+      "size": [
+        723,
+        32
+      ],
+      "suggested_selector": "d(text=\"Share why you joined the group\")",
+      "xpath": "//*[@text=\"Share why you joined the group\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
-      "text": "more",
-      "content_desc": "",
+      "text": "",
+      "content_desc": "Share",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[931,1699][1028,1748]",
+      "bounds": "[882,1211][1048,1306]",
       "center": [
-        979,
-        1723
+        965,
+        1258
       ],
       "size": [
-        97,
-        49
+        166,
+        95
       ],
-      "suggested_selector": "d(text=\"more\")",
-      "xpath": "//*[@text=\"more\"]"
+      "suggested_selector": "d(description=\"Share\")",
+      "xpath": "//*[@content-desc=\"Share\"]"
     },
     {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "",
-      "content_desc": "Bán nhanh, FREE · Đà LạT, LâM ĐồNG",
+      "text": "Share",
+      "content_desc": "Share",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1770][1080,1794]",
+      "bounds": "[914,1236][1016,1282]",
       "center": [
-        540,
-        1782
+        965,
+        1259
       ],
       "size": [
-        1080,
-        24
+        102,
+        46
       ],
-      "suggested_selector": "d(description=\"Bán nhanh, FREE · Đà LạT, LâM ĐồNG\")",
-      "xpath": "//*[@content-desc=\"Bán nhanh, FREE · Đà LạT, LâM ĐồNG\"]"
+      "suggested_selector": "d(text=\"Share\")",
+      "xpath": "//*[@text=\"Share\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
       "text": "",
-      "content_desc": "",
+      "content_desc": "Share something you want the group to know about you",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1327][1080,1476]",
+      "center": [
+        540,
+        1401
+      ],
+      "size": [
+        1080,
+        149
+      ],
+      "suggested_selector": "d(description=\"Share something you want the group to know about you\")",
+      "xpath": "//*[@content-desc=\"Share something you want the group to know about you\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Share something you want the group to know about you",
+      "content_desc": "Share something you want the group to know about you",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,1359][850,1444]",
+      "center": [
+        488,
+        1401
+      ],
+      "size": [
+        723,
+        85
+      ],
+      "suggested_selector": "d(text=\"Share something you want the group to know about you\")",
+      "xpath": "//*[@text=\"Share something you want the group to know about you\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Share",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1770][1080,1794]",
+      "bounds": "[882,1348][1048,1443]",
       "center": [
-        540,
-        1782
+        965,
+        1395
       ],
       "size": [
-        1080,
-        24
+        166,
+        95
       ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
+      "suggested_selector": "d(description=\"Share\")",
+      "xpath": "//*[@content-desc=\"Share\"]"
     },
     {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Share",
+      "content_desc": "Share",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[914,1373][1016,1419]",
+      "center": [
+        965,
+        1396
+      ],
+      "size": [
+        102,
+        46
+      ],
+      "suggested_selector": "d(text=\"Share\")",
+      "xpath": "//*[@text=\"Share\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Skip",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[42,1674][1038,1766]",
+      "center": [
+        540,
+        1720
+      ],
+      "size": [
+        996,
+        92
+      ],
+      "suggested_selector": "d(description=\"Skip\")",
+      "xpath": "//*[@content-desc=\"Skip\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Skip",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[502,1694][579,1747]",
+      "center": [
+        540,
+        1720
+      ],
+      "size": [
+        77,
+        53
+      ],
+      "suggested_selector": "d(text=\"Skip\")",
+      "xpath": "//*[@text=\"Skip\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
       "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
       "content_desc": "",
@@ -1089,133 +713,45 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "com.facebook.katana:id/(name removed)",
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
       "text": "",
       "content_desc": "Back",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,63][126,179]",
+      "bounds": "[26,74][121,169]",
       "center": [
-        63,
+        73,
         121
       ],
       "size": [
-        126,
-        116
+        95,
+        95
       ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[126,63][827,179]",
-      "center": [
-        476,
-        121
-      ],
-      "size": [
-        701,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[126,63][827,179]",
-      "center": [
-        476,
-        121
-      ],
-      "size": [
-        701,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[827,63][1080,179]",
-      "center": [
-        953,
-        121
-      ],
-      "size": [
-        253,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "Search in MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[827,63][964,179]",
-      "center": [
-        895,
-        121
-      ],
-      "size": [
-        137,
-        116
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+      "suggested_selector": "d(description=\"Back\")",
+      "xpath": "//*[@content-desc=\"Back\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
-      "content_desc": "Member tools more options",
+      "content_desc": "Report welcome message button",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[964,63][1080,179]",
+      "bounds": "[969,74][1064,169]",
       "center": [
-        1022,
+        1016,
         121
       ],
       "size": [
-        116,
-        116
+        95,
+        95
       ],
       "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
@@ -1334,8 +870,8 @@
       "class": "android.widget.TextView",
       "short_class": "TextView",
       "resource_id": "com.android.systemui:id/clock",
-      "text": "10:57",
-      "content_desc": "10:57 AM",
+      "text": "10:33",
+      "content_desc": "10:33 AM",
       "clickable": false,
       "enabled": true,
       "checked": false,
@@ -1417,50 +953,6 @@
       ],
       "suggested_selector": "d(resourceId=\"com.android.systemui:id/notificationIcons\")",
       "xpath": "//*[@resource-id=\"com.android.systemui:id/notificationIcons\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Facebook notification: Hoàng K Tran: Hoàng K Tran",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[133,0][191,63]",
-      "center": [
-        162,
-        31
-      ],
-      "size": [
-        58,
-        63
-      ],
-      "suggested_selector": "d(description=\"Facebook notification: Hoàng K Tran: Hoàng K Tran\")",
-      "xpath": "//*[@content-desc=\"Facebook notification: Hoàng K Tran: Hoàng K Tran\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[191,0][249,63]",
-      "center": [
-        220,
-        31
-      ],
-      "size": [
-        58,
-        63
-      ],
-      "suggested_selector": "d(description=\"Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh\")",
-      "xpath": "//*[@content-desc=\"Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh\"]"
     },
     {
       "class": "android.widget.LinearLayout",

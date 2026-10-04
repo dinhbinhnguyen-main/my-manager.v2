@@ -102,9 +102,9 @@ import json
 
 @app.command("action")
 def run_action(
-    action: str = typer.Option(..., help="Action type: login, warmup, marketplace, list_group_share, discussion_group, scroll_feed"),
+    action: str = typer.Option(..., help="Action type: login, warmup, marketplace, list_group_share, list_marketplace_share, single_listing, discussion_group, scroll_feed, join_group"),
     uids: List[str] = typer.Option(..., help="List of Facebook UIDs to execute action on"),
-    params: str = typer.Option("{}", help="JSON string of parameters for the action, e.g. '{\"group_ids\": [\"5857815244230418\"], \"use_v1_product\": true}'"),
+    params: str = typer.Option("{}", help="JSON string of parameters for the action"),
     concurrency: int = typer.Option(2, help="Number of concurrent workers"),
     auto_stop: bool = typer.Option(False, help="Automatically stop container and release proxy after action finishes"),
 ):
@@ -127,6 +127,112 @@ def run_action(
     console.print(f"[bold green]Finished batch action '{action}'![/bold green]")
 
 
+@app.command("discussion-group")
+def run_discussion_group_cmd(
+    uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs"),
+    group_id: Optional[str] = typer.Option(None, "--group-id", "-g", help="Specific group ID/URL (or None to select random)"),
+    transaction_type: str = typer.Option("rental", "--trans-type", "-t", help="Transaction type: rental or sale"),
+    use_ai: bool = typer.Option(True, "--use-ai/--no-ai", help="Use Gemini AI to rewrite post"),
+    use_v1_product: bool = typer.Option(True, "--v1-prod/--no-v1-prod", help="Fetch random product from v1 database"),
+    content: Optional[str] = typer.Option(None, "--content", "-c", help="Custom text content if not using v1 product"),
+    concurrency: int = typer.Option(2, "--concurrency", "-m", help="Number of concurrent workers"),
+    auto_stop: bool = typer.Option(False, "--auto-stop", help="Auto stop container and release proxy after finish"),
+):
+    """Executes 10-step Discussion Group posting pipeline."""
+    params = {
+        "group_id": group_id,
+        "transaction_type": transaction_type,
+        "use_ai": use_ai,
+        "use_v1_product": use_v1_product,
+        "custom_content": content,
+    }
+    console.print(f"[bold green]🚀 Running Discussion Group on {len(uids)} accounts (Trans: {transaction_type})...[/bold green]")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [executor.submit(_run_single_account, uid, "discussion_group", params, auto_stop) for uid in uids]
+        for f in futures:
+            f.result()
+    console.print("[bold green]✅ Finished Discussion Group execution![/bold green]")
+
+
+@app.command("group-share")
+def run_group_share_cmd(
+    uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs"),
+    group_id: str = typer.Option("5857815244230418", "--group-id", "-g", help="Starting group ID to list item in"),
+    share_count: int = typer.Option(5, "--share-count", "-s", help="Max number of top groups to cross-share"),
+    transaction_type: str = typer.Option("rental", "--trans-type", "-t", help="Transaction type: rental or sale"),
+    use_ai: bool = typer.Option(True, "--use-ai/--no-ai", help="Use Gemini AI rewriting"),
+    use_v1_product: bool = typer.Option(True, "--v1-prod/--no-v1-prod", help="Fetch product from v1 database"),
+    concurrency: int = typer.Option(2, "--concurrency", "-m", help="Number of concurrent workers"),
+    auto_stop: bool = typer.Option(False, "--auto-stop", help="Auto stop container and release proxy after finish"),
+):
+    """Executes 7-step Buy/Sell Group Listing & Top Groups Cross-Sharing pipeline."""
+    params = {
+        "group_ids": [group_id],
+        "share_groups_count": share_count,
+        "transaction_type": transaction_type,
+        "use_ai": use_ai,
+        "use_v1_product": use_v1_product,
+    }
+    console.print(f"[bold green]🚀 Running Group Share on {len(uids)} accounts (Group: {group_id}, Share Count: {share_count})...[/bold green]")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [executor.submit(_run_single_account, uid, "list_group_share", params, auto_stop) for uid in uids]
+        for f in futures:
+            f.result()
+    console.print("[bold green]✅ Finished Group Share execution![/bold green]")
+
+
+@app.command("marketplace-share")
+def run_marketplace_share_cmd(
+    uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs"),
+    share_count: int = typer.Option(20, "--share-count", "-s", help="Max number of top groups to cross-share"),
+    transaction_type: str = typer.Option("sale", "--trans-type", "-t", help="Transaction type: sale or rental"),
+    location: str = typer.Option("Da Lat", "--location", "-l", help="Listing location city"),
+    use_ai: bool = typer.Option(True, "--use-ai/--no-ai", help="Use Gemini AI rewriting"),
+    use_v1_product: bool = typer.Option(True, "--v1-prod/--no-v1-prod", help="Fetch product from v1 database"),
+    concurrency: int = typer.Option(2, "--concurrency", "-m", help="Number of concurrent workers"),
+    auto_stop: bool = typer.Option(False, "--auto-stop", help="Auto stop container and release proxy after finish"),
+):
+    """Executes 11-step Facebook Marketplace Listing & Group Cross-Sharing pipeline."""
+    params = {
+        "share_groups_count": share_count,
+        "transaction_type": transaction_type,
+        "location": location,
+        "use_ai": use_ai,
+        "use_v1_product": use_v1_product,
+    }
+    console.print(f"[bold green]🚀 Running Marketplace Listing & Share on {len(uids)} accounts (Location: {location})...[/bold green]")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [executor.submit(_run_single_account, uid, "list_marketplace_share", params, auto_stop) for uid in uids]
+        for f in futures:
+            f.result()
+    console.print("[bold green]✅ Finished Marketplace Listing & Share execution![/bold green]")
+
+
+@app.command("single-listing")
+def run_single_listing_cmd(
+    uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs"),
+    group_count: int = typer.Option(3, "--groups-count", "-c", help="Number of groups to post individually"),
+    transaction_type: str = typer.Option("rental", "--trans-type", "-t", help="Transaction type: rental or sale"),
+    use_ai: bool = typer.Option(True, "--use-ai/--no-ai", help="Use Gemini AI rewriting"),
+    use_v1_product: bool = typer.Option(True, "--v1-prod/--no-v1-prod", help="Fetch product from v1 database"),
+    concurrency: int = typer.Option(2, "--concurrency", "-m", help="Number of concurrent workers"),
+    auto_stop: bool = typer.Option(False, "--auto-stop", help="Auto stop container and release proxy after finish"),
+):
+    """Executes Multi-Group Single Listing pipeline (auto detects Sell vs Discussion)."""
+    params = {
+        "group_count": group_count,
+        "transaction_type": transaction_type,
+        "use_ai": use_ai,
+        "use_v1_product": use_v1_product,
+    }
+    console.print(f"[bold green]🚀 Running Single Listing on {len(uids)} accounts ({group_count} groups each)...[/bold green]")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [executor.submit(_run_single_account, uid, "single_listing", params, auto_stop) for uid in uids]
+        for f in futures:
+            f.result()
+    console.print("[bold green]✅ Finished Single Listing execution![/bold green]")
+
+
 @app.command("join-group")
 def run_join_group(
     uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs to execute on"),
@@ -147,4 +253,5 @@ def run_join_group(
             f.result()
 
     console.print(f"[bold green]✅ Finished 'join_group' action![/bold green]")
+
 

@@ -18,6 +18,11 @@ class BaseAutomator:
         self.adb_client = ADBClient(port=adb_port)
         self.device: Optional[u2.Device] = None
 
+    @property
+    def device_id(self) -> str:
+        """Convenience property for device identifier."""
+        return str(self.adb_port)
+
     def log(self, message: str, level: Optional[str] = None):
         """Unified logging method compatible with v1 scripts, routing to semantic log levels."""
         if level:
@@ -365,3 +370,68 @@ class BaseAutomator:
             if self.device(text=txt).exists:
                 self.device(text=txt).click()
                 self.smart_sleep(0.5, 1.0)
+
+    def launch_app(self, package_name: Optional[str] = None, deeplink: Optional[str] = None):
+        """Launches target package, optionally with a deeplink URL."""
+        pkg = package_name or self.package_name
+        if deeplink:
+            self.launch(deeplink=deeplink)
+        else:
+            if self.device:
+                self.device.app_start(pkg, stop=False)
+            else:
+                self.adb_client.launch_app(pkg)
+            self.smart_sleep(2.0, 3.0)
+
+    def push_media(self, image_paths: List[str], user_id: int = 0) -> List[str]:
+        """Cleans existing media, prepares storage, and pushes new images to Redroid gallery."""
+        import os
+        from pathlib import Path
+        pushed_remotes: List[str] = []
+        if not self.adb_client:
+            return pushed_remotes
+
+        self.log("🧹 Preparing device media storage...")
+        self.adb_client.clear_media_storage()
+        self.adb_client.ensure_storage_ready()
+        self.adb_client.grant_app_permissions(self.package_name)
+
+        if not image_paths:
+            return pushed_remotes
+
+        self.log(f"📤 Pushing {len(image_paths)} image(s) to Redroid device storage...")
+        for idx, img in enumerate(image_paths):
+            if not os.path.exists(img):
+                self.log(f"⚠️ Image not found on host: {img}", level="warning")
+                continue
+            ext = Path(img).suffix.lower() or ".jpg"
+            remote_path = f"/sdcard/DCIM/Camera/media_{idx}{ext}"
+            if self.adb_client.push_file(img, remote_path):
+                pushed_remotes.append(remote_path)
+                self.adb_client.scan_media_file(remote_path)
+            else:
+                self.log(f"❌ Failed to push image: {img}", level="error")
+
+        self.smart_sleep(1.5, 2.5)
+        return pushed_remotes
+
+    def cleanup_media(self):
+        """Cleans up leftover media and temporary files on Redroid container."""
+        if self.adb_client:
+            self.adb_client.clear_media_storage()
+
+    def hide_keyboard(self):
+        """Hides on-screen soft keyboard."""
+        try:
+            if self.device:
+                self.device.press("back")
+                self.smart_sleep(0.5, 1.0)
+            if self.adb_client:
+                self.adb_client.disable_soft_keyboard()
+        except Exception as e:
+            logger.debug(f"Could not hide keyboard: {e}")
+
+    def teardown(self):
+        """Teardown alias for close."""
+        self.close()
+

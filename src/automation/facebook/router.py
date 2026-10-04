@@ -12,6 +12,8 @@ from src.automation.facebook.actions.discussion_group import FBDiscussionGroupAc
 from src.automation.facebook.actions.post_group import FBPostGroupAction
 from src.automation.facebook.actions.join_group import FBJoinGroupAction
 from src.automation.facebook.actions.list_group_share import FBGroupShareAction
+from src.automation.facebook.actions.list_marketplace_share import FBMarketplaceShareAction
+from src.automation.facebook.actions.single_listing import FBSingleListingAction
 from src.automation.facebook.actions.scroll_feed import FBScrollFeedAction
 
 logger = logging.getLogger(__name__)
@@ -49,6 +51,29 @@ class FBActionRouter:
             return act.execute_v1_real_estate_post(
                 transaction_type=params.get("transaction_type", "sale"),
                 use_ai=params.get("use_ai", True)
+            )
+
+        elif action in ["list_marketplace_share", "marketplace_share", "fb_list_marketplace_share", "fb_marketplace_share"]:
+            act = FBMarketplaceShareAction(automator, account)
+            return act.execute(
+                use_v1_product=params.get("use_v1_product", True),
+                use_ai=params.get("use_ai", True),
+                transaction_type=params.get("transaction_type", "sale"),
+                share_groups_count=int(params.get("share_groups_count", params.get("max_share_groups", 20))),
+                custom_content=params.get("custom_content", params.get("content")),
+                image_paths=params.get("image_paths", []),
+                location=params.get("location", "Da Lat")
+            )
+
+        elif action in ["single_listing", "fb_single_listing", "post_single_group"]:
+            act = FBSingleListingAction(automator, account)
+            return act.execute(
+                group_count=int(params.get("group_count", params.get("target_groups_count", 3))),
+                use_v1_product=params.get("use_v1_product", True),
+                use_ai=params.get("use_ai", True),
+                transaction_type=params.get("transaction_type"),
+                custom_content=params.get("custom_content", params.get("content")),
+                image_paths=params.get("image_paths", [])
             )
 
         elif action in ["post_group", "fb_post_group"]:
@@ -134,4 +159,3 @@ def execute_action(action_name: str, adb_port: int, params: Dict[str, Any]) -> D
         return {"status": "failed", "message": str(e)}
     finally:
         automator.close()
-

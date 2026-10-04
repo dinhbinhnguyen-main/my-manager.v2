@@ -1,14 +1,14 @@
 {
-  "adb_port": 6558,
-  "account_uid": "61566073936679",
-  "failed_step": "error_step_3_post_to_group_g1",
-  "timestamp": "20261004_175749",
+  "adb_port": 6584,
+  "account_uid": "61589935183753",
+  "failed_step": "error_step_3_click_write_something",
+  "timestamp": "20261004_173110",
   "current_app": {
     "package": "com.facebook.katana",
     "activity": ".immersiveactivity.ImmersiveActivity",
-    "pid": 2606
+    "pid": 2099
   },
-  "total_elements": 71,
+  "total_elements": 69,
   "elements": [
     {
       "class": "android.widget.FrameLayout",
@@ -233,6 +233,314 @@
     {
       "class": "android.widget.FrameLayout",
       "short_class": "FrameLayout",
+      "resource_id": "com.android.systemui:id/status_bar_launch_animation_container",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,0][1080,63]",
+      "center": [
+        540,
+        31
+      ],
+      "size": [
+        1080,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_launch_animation_container\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_launch_animation_container\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.android.systemui:id/status_bar_container",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,0][1080,63]",
+      "center": [
+        540,
+        31
+      ],
+      "size": [
+        1080,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_container\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_container\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.android.systemui:id/status_bar",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,0][1080,63]",
+      "center": [
+        540,
+        31
+      ],
+      "size": [
+        1080,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.android.systemui:id/status_bar_contents",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,0][1027,63]",
+      "center": [
+        513,
+        31
+      ],
+      "size": [
+        1027,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_contents\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_contents\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.android.systemui:id/status_bar_left_side",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[21,0][513,63]",
+      "center": [
+        267,
+        31
+      ],
+      "size": [
+        492,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_left_side\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_left_side\"]"
+    },
+    {
+      "class": "android.widget.TextView",
+      "short_class": "TextView",
+      "resource_id": "com.android.systemui:id/clock",
+      "text": "10:31",
+      "content_desc": "10:31 AM",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[21,0][133,63]",
+      "center": [
+        77,
+        31
+      ],
+      "size": [
+        112,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/clock\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/clock\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.android.systemui:id/notification_icon_area",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[133,0][513,63]",
+      "center": [
+        323,
+        31
+      ],
+      "size": [
+        380,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/notification_icon_area\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/notification_icon_area\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.android.systemui:id/notification_icon_area_inner",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[133,0][513,63]",
+      "center": [
+        323,
+        31
+      ],
+      "size": [
+        380,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/notification_icon_area_inner\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/notification_icon_area_inner\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.android.systemui:id/notificationIcons",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[133,0][513,63]",
+      "center": [
+        323,
+        31
+      ],
+      "size": [
+        380,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/notificationIcons\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/notificationIcons\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.android.systemui:id/system_icon_area",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[513,0][1006,63]",
+      "center": [
+        759,
+        31
+      ],
+      "size": [
+        493,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/system_icon_area\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/system_icon_area\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.android.systemui:id/system_icons",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[513,0][1006,63]",
+      "center": [
+        759,
+        31
+      ],
+      "size": [
+        493,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/system_icons\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/system_icons\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.android.systemui:id/statusIcons",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[513,0][986,63]",
+      "center": [
+        749,
+        31
+      ],
+      "size": [
+        473,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/statusIcons\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/statusIcons\"]"
+    },
+    {
+      "class": "android.widget.ImageView",
+      "short_class": "ImageView",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Ethernet.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[921,2][970,60]",
+      "center": [
+        945,
+        31
+      ],
+      "size": [
+        49,
+        58
+      ],
+      "suggested_selector": "d(description=\"Ethernet.\")",
+      "xpath": "//*[@content-desc=\"Ethernet.\"]"
+    },
+    {
+      "class": "android.widget.LinearLayout",
+      "short_class": "LinearLayout",
+      "resource_id": "com.android.systemui:id/battery",
+      "text": "",
+      "content_desc": "Battery 0 percent.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[986,0][1006,63]",
+      "center": [
+        996,
+        31
+      ],
+      "size": [
+        20,
+        63
+      ],
+      "suggested_selector": "d(resourceId=\"com.android.systemui:id/battery\")",
+      "xpath": "//*[@resource-id=\"com.android.systemui:id/battery\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
       "resource_id": "android:id/content",
       "text": "",
       "content_desc": "",
@@ -407,94 +715,6 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,179][1080,745]",
-      "center": [
-        540,
-        462
-      ],
-      "size": [
-        1080,
-        566
-      ],
-      "suggested_selector": "d(description=\"Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.\")",
-      "xpath": "//*[@content-desc=\"Cover photo of group MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅. Description is unavailable.\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[21,777][975,926]",
-      "center": [
-        498,
-        851
-      ],
-      "size": [
-        954,
-        149
-      ],
-      "suggested_selector": "d(description=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members\")",
-      "xpath": "//*[@content-desc=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅,   Public group · 199K members\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  ",
-      "content_desc": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  ",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,785][964,858]",
-      "center": [
-        498,
-        821
-      ],
-      "size": [
-        932,
-        73
-      ],
-      "suggested_selector": "d(text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  \")",
-      "xpath": "//*[@text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅  \"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "  Public group · 199K members",
-      "content_desc": "  Public group · 199K members",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,873][964,913]",
-      "center": [
-        498,
-        893
-      ],
-      "size": [
-        932,
-        40
-      ],
-      "suggested_selector": "d(text=\"  Public group · 199K members\")",
-      "xpath": "//*[@text=\"  Public group · 199K members\"]"
-    },
-    {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
@@ -504,14 +724,14 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,947][529,1042]",
+      "bounds": "[32,179][529,235]",
       "center": [
         280,
-        994
+        207
       ],
       "size": [
         497,
-        95
+        56
       ],
       "suggested_selector": "d(description=\"joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group\")",
       "xpath": "//*[@content-desc=\"joined MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅ group\"]"
@@ -526,14 +746,14 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[221,972][340,1018]",
+      "bounds": "[221,179][340,211]",
       "center": [
         280,
-        995
+        195
       ],
       "size": [
         119,
-        46
+        32
       ],
       "suggested_selector": "d(text=\"Joined\")",
       "xpath": "//*[@text=\"Joined\"]"
@@ -548,14 +768,14 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[551,947][1048,1042]",
+      "bounds": "[551,179][1048,235]",
       "center": [
         799,
-        994
+        207
       ],
       "size": [
         497,
-        95
+        56
       ],
       "suggested_selector": "d(description=\"invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\")",
       "xpath": "//*[@content-desc=\"invite others to join MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\"]"
@@ -570,14 +790,14 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[780,972][876,1018]",
+      "bounds": "[780,179][876,211]",
       "center": [
         828,
-        995
+        195
       ],
       "size": [
         96,
-        46
+        32
       ],
       "suggested_selector": "d(text=\"Invite\")",
       "xpath": "//*[@text=\"Invite\"]"
@@ -592,10 +812,10 @@
       "enabled": false,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1074][1080,1169]",
+      "bounds": "[0,267][1080,362]",
       "center": [
         540,
-        1121
+        314
       ],
       "size": [
         1080,
@@ -614,10 +834,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": true,
-      "bounds": "[0,1074][1080,1169]",
+      "bounds": "[0,267][1080,362]",
       "center": [
         540,
-        1121
+        314
       ],
       "size": [
         1080,
@@ -636,10 +856,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1074][251,1169]",
+      "bounds": "[32,267][251,362]",
       "center": [
         141,
-        1121
+        314
       ],
       "size": [
         219,
@@ -658,10 +878,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[271,1074][432,1169]",
+      "bounds": "[271,267][432,362]",
       "center": [
         351,
-        1121
+        314
       ],
       "size": [
         161,
@@ -675,37 +895,15 @@
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Your listings",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[452,1074][734,1169]",
-      "center": [
-        593,
-        1121
-      ],
-      "size": [
-        282,
-        95
-      ],
-      "suggested_selector": "d(description=\"Your listings\")",
-      "xpath": "//*[@content-desc=\"Your listings\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
       "content_desc": "Photos",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[754,1074][942,1169]",
+      "bounds": "[452,267][640,362]",
       "center": [
-        848,
-        1121
+        546,
+        314
       ],
       "size": [
         188,
@@ -724,17 +922,61 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[962,1074][1080,1169]",
+      "bounds": "[660,267][858,362]",
       "center": [
-        1021,
-        1121
+        759,
+        314
       ],
       "size": [
-        118,
+        198,
         95
       ],
       "suggested_selector": "d(description=\"Albums\")",
       "xpath": "//*[@content-desc=\"Albums\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Events",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[878,267][1059,362]",
+      "center": [
+        968,
+        314
+      ],
+      "size": [
+        181,
+        95
+      ],
+      "suggested_selector": "d(description=\"Events\")",
+      "xpath": "//*[@content-desc=\"Events\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Files",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[1079,267][1080,362]",
+      "center": [
+        1079,
+        314
+      ],
+      "size": [
+        1,
+        95
+      ],
+      "suggested_selector": "d(description=\"Files\")",
+      "xpath": "//*[@content-desc=\"Files\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -746,10 +988,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1201][1080,1370]",
+      "bounds": "[0,394][1080,563]",
       "center": [
         540,
-        1285
+        478
       ],
       "size": [
         1080,
@@ -768,10 +1010,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1233][137,1338]",
+      "bounds": "[32,426][137,531]",
       "center": [
         84,
-        1285
+        478
       ],
       "size": [
         105,
@@ -790,10 +1032,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[158,1240][1037,1331]",
+      "bounds": "[158,433][1037,524]",
       "center": [
         597,
-        1285
+        478
       ],
       "size": [
         879,
@@ -812,10 +1054,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1370][1080,1486]",
+      "bounds": "[0,563][1080,679]",
       "center": [
         540,
-        1428
+        621
       ],
       "size": [
         1080,
@@ -834,10 +1076,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1412][953,1444]",
+      "bounds": "[32,605][953,637]",
       "center": [
         492,
-        1428
+        621
       ],
       "size": [
         921,
@@ -856,10 +1098,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1486][1080,1655]",
+      "bounds": "[0,679][1080,848]",
       "center": [
         540,
-        1570
+        763
       ],
       "size": [
         1080,
@@ -873,132 +1115,132 @@
       "short_class": "ImageView",
       "resource_id": "",
       "text": "",
-      "content_desc": "Phạm Gia profile picture",
+      "content_desc": "Tống Hoàn Dalat profile picture",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1518][137,1623]",
+      "bounds": "[32,711][137,816]",
       "center": [
         84,
-        1570
+        763
       ],
       "size": [
         105,
         105
       ],
-      "suggested_selector": "d(description=\"Phạm Gia profile picture\")",
-      "xpath": "//*[@content-desc=\"Phạm Gia profile picture\"]"
+      "suggested_selector": "d(description=\"Tống Hoàn Dalat profile picture\")",
+      "xpath": "//*[@content-desc=\"Tống Hoàn Dalat profile picture\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Phạm Gia",
-      "content_desc": "Phạm Gia",
+      "text": "Tống Hoàn Dalat",
+      "content_desc": "Tống Hoàn Dalat",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[158,1517][948,1566]",
+      "bounds": "[158,710][948,759]",
       "center": [
         553,
-        1541
+        734
       ],
       "size": [
         790,
         49
       ],
-      "suggested_selector": "d(text=\"Phạm Gia\")",
-      "xpath": "//*[@text=\"Phạm Gia\"]"
+      "suggested_selector": "d(text=\"Tống Hoàn Dalat\")",
+      "xpath": "//*[@text=\"Tống Hoàn Dalat\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
-      "text": "Phạm Gia",
+      "text": "Tống Hoàn Dalat",
       "content_desc": "",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[158,1517][339,1566]",
+      "bounds": "[158,710][468,759]",
       "center": [
-        248,
-        1541
+        313,
+        734
       ],
       "size": [
-        181,
+        310,
         49
       ],
-      "suggested_selector": "d(text=\"Phạm Gia\")",
-      "xpath": "//*[@text=\"Phạm Gia\"]"
+      "suggested_selector": "d(text=\"Tống Hoàn Dalat\")",
+      "xpath": "//*[@text=\"Tống Hoàn Dalat\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "5m•Shared with: Public group",
-      "content_desc": "5m•Shared with: Public group",
+      "text": "3h•Shared with: Public group",
+      "content_desc": "3h•Shared with: Public group",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[169,1577][276,1615]",
+      "bounds": "[169,770][266,808]",
       "center": [
-        222,
-        1596
+        217,
+        789
       ],
       "size": [
-        107,
+        97,
         38
       ],
-      "suggested_selector": "d(text=\"5m•Shared with: Public group\")",
-      "xpath": "//*[@text=\"5m•Shared with: Public group\"]"
+      "suggested_selector": "d(text=\"3h•Shared with: Public group\")",
+      "xpath": "//*[@text=\"3h•Shared with: Public group\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "More options for Phạm Gia’s post",
+      "content_desc": "More options for Tống Hoàn Dalat’s post",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[969,1486][1080,1596]",
+      "bounds": "[969,679][1080,789]",
       "center": [
         1024,
-        1541
+        734
       ],
       "size": [
         111,
         110
       ],
-      "suggested_selector": "d(description=\"More options for Phạm Gia’s post\")",
-      "xpath": "//*[@content-desc=\"More options for Phạm Gia’s post\"]"
+      "suggested_selector": "d(description=\"More options for Tống Hoàn Dalat’s post\")",
+      "xpath": "//*[@content-desc=\"More options for Tống Hoàn Dalat’s post\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more",
-      "content_desc": "Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more",
+      "text": "Giá 5tỷ5 ( TLCC)( Giá Đầu Tư ) Quá rẻ \n- Dt Sổ: 130m ( DTSD Nhà 2 sàn 210m )… more",
+      "content_desc": "Giá 5tỷ5 ( TLCC)( Giá Đầu Tư ) Quá rẻ \n- Dt Sổ: 130m ( DTSD Nhà 2 sàn 210m )… more",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1655][1048,1770]",
+      "bounds": "[32,848][1048,963]",
       "center": [
         540,
-        1712
+        905
       ],
       "size": [
         1016,
         115
       ],
-      "suggested_selector": "d(text=\"Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more\")",
-      "xpath": "//*[@text=\"Cần bán gấp căn homstay view rừng thông tại đường Hoàng Hoa Thám cách Hồ Xuân Hương 2.6km… more\"]"
+      "suggested_selector": "d(text=\"Giá 5tỷ5 ( TLCC)( Giá Đầu Tư ) Quá rẻ \n- Dt Sổ: 130m ( DTSD Nhà 2 sàn 210m )… more\")",
+      "xpath": "//*[@text=\"Giá 5tỷ5 ( TLCC)( Giá Đầu Tư ) Quá rẻ \n- Dt Sổ: 130m ( DTSD Nhà 2 sàn 210m )… more\"]"
     },
     {
       "class": "android.widget.Button",
@@ -1010,13 +1252,13 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[931,1699][1028,1748]",
+      "bounds": "[803,892][899,941]",
       "center": [
-        979,
-        1723
+        851,
+        916
       ],
       "size": [
-        97,
+        96,
         49
       ],
       "suggested_selector": "d(text=\"more\")",
@@ -1027,22 +1269,22 @@
       "short_class": "ImageView",
       "resource_id": "",
       "text": "",
-      "content_desc": "Bán nhanh, FREE · Đà LạT, LâM ĐồNG",
+      "content_desc": "Bán Nhà p4- Tp Đà Lạt, SGD5,500 · Đà LạT, LâM ĐồNG",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1770][1080,1794]",
+      "bounds": "[0,963][1080,1794]",
       "center": [
         540,
-        1782
+        1378
       ],
       "size": [
         1080,
-        24
+        831
       ],
-      "suggested_selector": "d(description=\"Bán nhanh, FREE · Đà LạT, LâM ĐồNG\")",
-      "xpath": "//*[@content-desc=\"Bán nhanh, FREE · Đà LạT, LâM ĐồNG\"]"
+      "suggested_selector": "d(description=\"Bán Nhà p4- Tp Đà Lạt, SGD5,500 · Đà LạT, LâM ĐồNG\")",
+      "xpath": "//*[@content-desc=\"Bán Nhà p4- Tp Đà Lạt, SGD5,500 · Đà LạT, LâM ĐồNG\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -1054,17 +1296,39 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1770][1080,1794]",
+      "bounds": "[0,963][1080,1794]",
       "center": [
         540,
-        1782
+        1378
       ],
       "size": [
         1080,
-        24
+        831
       ],
       "suggested_selector": "d(className=\"android.view.ViewGroup\")",
       "xpath": ""
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "+2",
+      "content_desc": "+2",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[783,1746][842,1794]",
+      "center": [
+        812,
+        1770
+      ],
+      "size": [
+        59,
+        48
+      ],
+      "suggested_selector": "d(text=\"+2\")",
+      "xpath": "//*[@text=\"+2\"]"
     },
     {
       "class": "android.widget.LinearLayout",
@@ -1155,6 +1419,50 @@
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
     },
     {
+      "class": "android.widget.ImageView",
+      "short_class": "ImageView",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Group Cover Photo",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[126,79][210,163]",
+      "center": [
+        168,
+        121
+      ],
+      "size": [
+        84,
+        84
+      ],
+      "suggested_selector": "d(description=\"Group Cover Photo\")",
+      "xpath": "//*[@content-desc=\"Group Cover Photo\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅",
+      "content_desc": "MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[231,105][827,137]",
+      "center": [
+        529,
+        121
+      ],
+      "size": [
+        596,
+        32
+      ],
+      "suggested_selector": "d(text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\")",
+      "xpath": "//*[@text=\"MUA BÁN NHÀ ĐẤT ĐÀ LẠT ✅\"]"
+    },
+    {
       "class": "android.widget.LinearLayout",
       "short_class": "LinearLayout",
       "resource_id": "com.facebook.katana:id/(name removed)",
@@ -1219,358 +1527,6 @@
       ],
       "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
       "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.android.systemui:id/status_bar_launch_animation_container",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,0][1080,63]",
-      "center": [
-        540,
-        31
-      ],
-      "size": [
-        1080,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_launch_animation_container\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_launch_animation_container\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.android.systemui:id/status_bar_container",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,0][1080,63]",
-      "center": [
-        540,
-        31
-      ],
-      "size": [
-        1080,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_container\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_container\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.android.systemui:id/status_bar",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,0][1080,63]",
-      "center": [
-        540,
-        31
-      ],
-      "size": [
-        1080,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.android.systemui:id/status_bar_contents",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,0][1027,63]",
-      "center": [
-        513,
-        31
-      ],
-      "size": [
-        1027,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_contents\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_contents\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.android.systemui:id/status_bar_left_side",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[21,0][513,63]",
-      "center": [
-        267,
-        31
-      ],
-      "size": [
-        492,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/status_bar_left_side\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/status_bar_left_side\"]"
-    },
-    {
-      "class": "android.widget.TextView",
-      "short_class": "TextView",
-      "resource_id": "com.android.systemui:id/clock",
-      "text": "10:57",
-      "content_desc": "10:57 AM",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[21,0][133,63]",
-      "center": [
-        77,
-        31
-      ],
-      "size": [
-        112,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/clock\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/clock\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.android.systemui:id/notification_icon_area",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[133,0][513,63]",
-      "center": [
-        323,
-        31
-      ],
-      "size": [
-        380,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/notification_icon_area\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/notification_icon_area\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.android.systemui:id/notification_icon_area_inner",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[133,0][513,63]",
-      "center": [
-        323,
-        31
-      ],
-      "size": [
-        380,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/notification_icon_area_inner\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/notification_icon_area_inner\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.android.systemui:id/notificationIcons",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[133,0][513,63]",
-      "center": [
-        323,
-        31
-      ],
-      "size": [
-        380,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/notificationIcons\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/notificationIcons\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Facebook notification: Hoàng K Tran: Hoàng K Tran",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[133,0][191,63]",
-      "center": [
-        162,
-        31
-      ],
-      "size": [
-        58,
-        63
-      ],
-      "suggested_selector": "d(description=\"Facebook notification: Hoàng K Tran: Hoàng K Tran\")",
-      "xpath": "//*[@content-desc=\"Facebook notification: Hoàng K Tran: Hoàng K Tran\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[191,0][249,63]",
-      "center": [
-        220,
-        31
-      ],
-      "size": [
-        58,
-        63
-      ],
-      "suggested_selector": "d(description=\"Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh\")",
-      "xpath": "//*[@content-desc=\"Facebook notification: Nguyễn Xuân Linh: Nguyễn Xuân Linh\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.android.systemui:id/system_icon_area",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[513,0][1006,63]",
-      "center": [
-        759,
-        31
-      ],
-      "size": [
-        493,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/system_icon_area\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/system_icon_area\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.android.systemui:id/system_icons",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[513,0][1006,63]",
-      "center": [
-        759,
-        31
-      ],
-      "size": [
-        493,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/system_icons\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/system_icons\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.android.systemui:id/statusIcons",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[513,0][986,63]",
-      "center": [
-        749,
-        31
-      ],
-      "size": [
-        473,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/statusIcons\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/statusIcons\"]"
-    },
-    {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Ethernet.",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[921,2][970,60]",
-      "center": [
-        945,
-        31
-      ],
-      "size": [
-        49,
-        58
-      ],
-      "suggested_selector": "d(description=\"Ethernet.\")",
-      "xpath": "//*[@content-desc=\"Ethernet.\"]"
-    },
-    {
-      "class": "android.widget.LinearLayout",
-      "short_class": "LinearLayout",
-      "resource_id": "com.android.systemui:id/battery",
-      "text": "",
-      "content_desc": "Battery 0 percent.",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[986,0][1006,63]",
-      "center": [
-        996,
-        31
-      ],
-      "size": [
-        20,
-        63
-      ],
-      "suggested_selector": "d(resourceId=\"com.android.systemui:id/battery\")",
-      "xpath": "//*[@resource-id=\"com.android.systemui:id/battery\"]"
     }
   ]
 }
