@@ -37,6 +37,7 @@ def dump_error_view(bot: BaseAutomator, account_uid: Optional[str] = None, step_
         uid = str(account_uid or getattr(bot, "account_uid", None) or getattr(bot, "device_id", None) or getattr(bot, "adb_port", "device"))
         safe_uid = re.sub(r'[^\w\-_\.]', '_', uid)
         safe_step = re.sub(r'[^\w\-_\.]', '_', str(step_name))
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
 
         output_dir = Path("tests/dumps/errors") / f"{safe_uid}_{safe_step}"
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -378,7 +379,6 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
     """
     STEP 3:
     - Search and click 'Add photos' (or 'Thêm ảnh', 'Thêm hình ảnh', etc.).
-    - If not found, proactively press 'back' once (handling discard draft popup if any) and call click_what_are_you_selling again to re-enter listing form and search for 'Add photos'.
     - Wait logic: Wait for Camera Roll / Photo Gallery to appear.
     - Identify photo checkboxes/grid items (NEVER matching arbitrary ImageView).
     - Select corresponding number of photos (photo_num) in reverse order (bottom up).
@@ -459,7 +459,7 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
         # 1. Click 'Add photos'
         clicked = _trigger_add_photos_button()
         if not clicked:
-            bot.log(f"⚠️ Could not find 'Add photos' button on attempt {attempt + 1}. Proactively pressing 'back' and re-clicking 'What are you selling? / Sell something'...")
+            bot.log(f"⚠️ Could not find 'Add photos' button on attempt {attempt + 1}. Pressing 'back' and re-clicking 'What are you selling? / Sell something'...")
             if bot.d:
                 bot.d.press("back")
                 bot.smart_sleep(1.5)
@@ -692,13 +692,7 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
         if not bot.d:
             break
 
-        # Check if photos are already selected: if so, skip selection and click Next directly
-        if _has_selected_photos():
-            bot.log("📸 Photo(s) ALREADY selected in Camera Roll. Skipping selection to avoid deselecting, clicking Next directly...")
-            if not _click_next_confirm():
-                raise Exception("❌ Could not find or click Next button after detecting already-selected photos.")
-            bot.log("✔️ Completed Step 3 (Confirmed already-selected photos).")
-            return True
+        # Check and activate 'Select multiple' mode if button is present
 
         # Check and activate 'Select multiple' mode if button is present
         _ensure_select_multiple_mode()
@@ -734,24 +728,34 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                     logger.debug(f"Error inspecting photo item {idx}: {ex}")
 
             if unique_items:
+                unique_items.sort(key=lambda x: (x[1].get('bounds', {}).get('top', 0), x[1].get('bounds', {}).get('left', 0)))
                 count = len(unique_items)
-                actual_num = min(count, photo_num)
-                bot.log(f"📸 Found {count} unique photos in Camera Roll. Selecting {actual_num} photo(s) from bottom up...")
+                actual_num = min(count, max(1, photo_num))
+                target_indices = list(range(count - 1, count - 1 - actual_num, -1))
+                bot.log(f"📸 Gallery has {count} photo(s). Selecting {actual_num} photo(s) from bottom up (indices: {target_indices})...")
 
-                for i in reversed(range(actual_num)):
+                # Deselect any checked photo that is NOT in target_indices
+                for i in range(count):
+                    if i not in target_indices:
+                        try:
+                            img, info = unique_items[i]
+                            if info.get("selected") or info.get("checked"):
+                                bot.log(f"   🧹 Deselecting stale photo at index {i}...")
+                                img.click_exists(timeout=2)
+                                bot.smart_sleep(0.3)
+                        except Exception:
+                            pass
+
+                # Select target photos from bottom up
+                for order, idx in enumerate(target_indices, start=1):
                     try:
-                        img, info = unique_items[i]
-                        # Check if already selected to prevent deselecting
-                        if info.get("selected") or info.get("checked"):
-                            bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
-                            selected_count += 1
-                            continue
+                        img, info = unique_items[idx]
                         img.click_exists(timeout=3)
                         selected_count += 1
-                        bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (bottom up)")
-                        bot.smart_sleep(0.6)
+                        bot.log(f"   ✔️ Selected photo {order}/{actual_num} (index {idx}, bottom-up)")
+                        bot.smart_sleep(0.5)
                     except Exception as ce:
-                        logger.debug(f"Error clicking photo {i}: {ce}")
+                        logger.debug(f"Error clicking photo {idx}: {ce}")
 
                 photos_found = True
                 break
@@ -791,22 +795,31 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                         logger.debug(f"Error inspecting grid item {idx}: {ex}")
 
                 if unique_grid_items:
+                    unique_grid_items.sort(key=lambda x: (x[1].get('bounds', {}).get('top', 0), x[1].get('bounds', {}).get('left', 0)))
                     count = len(unique_grid_items)
-                    actual_num = min(count, photo_num)
-                    bot.log(f"📸 Found {count} unique photos in GridView. Selecting {actual_num} photo(s)...")
-                    for i in reversed(range(actual_num)):
+                    actual_num = min(count, max(1, photo_num))
+                    target_indices = list(range(count - 1, count - 1 - actual_num, -1))
+                    bot.log(f"📸 GridView has {count} photo(s). Selecting {actual_num} photo(s) from bottom up (indices: {target_indices})...")
+                    
+                    for i in range(count):
+                        if i not in target_indices:
+                            try:
+                                pw, info = unique_grid_items[i]
+                                if info.get("selected") or info.get("checked"):
+                                    pw.click_exists(timeout=2)
+                                    bot.smart_sleep(0.3)
+                            except Exception:
+                                pass
+
+                    for order, idx in enumerate(target_indices, start=1):
                         try:
-                            pw, info = unique_grid_items[i]
-                            if info.get("selected") or info.get("checked"):
-                                bot.log(f"   ℹ️ Photo {i + 1} is already selected, skipping click.")
-                                selected_count += 1
-                                continue
+                            pw, info = unique_grid_items[idx]
                             pw.click_exists(timeout=3)
                             selected_count += 1
-                            bot.log(f"   ✔️ Selected photo {i + 1}/{actual_num} (GridView)")
-                            bot.smart_sleep(0.6)
+                            bot.log(f"   ✔️ Selected photo {order}/{actual_num} (index {idx}, GridView bottom-up)")
+                            bot.smart_sleep(0.5)
                         except Exception as ce:
-                            logger.debug(f"Error clicking photo {i}: {ce}")
+                            logger.debug(f"Error clicking photo {idx}: {ce}")
                     photos_found = True
                     break
 
@@ -1077,7 +1090,7 @@ def _set_category(bot: BaseAutomator, category_name: str = "Miscellaneous", max_
         bot.log(f"⚠️ Could not find category '{target_category}' after {max_swipes} swipes.")
         # Try closing popup or saving if available
         if not _click_save_if_present():
-            close_btn = bot.d(description="Close") or bot.d(description="Back")
+            close_btn = bot.d(description="Close")
             if close_btn.exists:
                 close_btn.click_exists(timeout=2)
     else:
@@ -1116,10 +1129,6 @@ def _set_condition(bot: BaseAutomator, condition_name: str = "New", timeout: int
             if close_btn.exists:
                 bot.log("   Dismissing Condition bottom sheet via Close button...")
                 close_btn.click_exists(timeout=2)
-                bot.smart_sleep(0.8)
-            else:
-                bot.log("   Dismissing Condition bottom sheet via Back key...")
-                bot.d.press("back")
                 bot.smart_sleep(0.8)
 
     # CHECK 0: Is Condition picker ALREADY open on screen?
@@ -1676,7 +1685,7 @@ def scroll_to_top_of_list(bot: BaseAutomator, max_swipes: int = 6):
     try:
         w, h = bot.d.window_size()
         for _ in range(max_swipes):
-            bot.d.swipe(w // 2, int(h * 0.3), w // 2, int(h * 0.8), steps=15)
+            bot.d.swipe(w // 2, int(h * 0.30), w // 2, int(h * 0.72), steps=15)
             bot.smart_sleep(0.4)
     except Exception as e:
         logger.debug(f"Error scrolling to top: {e}")
@@ -2071,7 +2080,7 @@ class FBGroupShareAction:
         finally:
             if not is_success:
                 logger.error(f"Execution failed at {current_step}. Dumping error view in finally block...")
-                dump_error_view(self.automator, account_uid=self.account.uid, step_name=f"error_{current_step}")
+                dump_error_view(self.automator, account_uid=self.account.uid, step_name=current_step)
             if pushed_remotes:
                 self.automator.cleanup_media()
 

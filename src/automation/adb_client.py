@@ -110,7 +110,8 @@ class ADBClient:
         """Cleans up all leftover images and videos from Redroid gallery storage and resets Android MediaStore."""
         cmd = (
             "su 0 sh -c \""
-            "rm -rf /sdcard/DCIM/Camera/* /sdcard/DCIM/.thumbnails/* /sdcard/Pictures/* /sdcard/Download/* /data/media/0/DCIM/Camera/* 2>/dev/null; "
+            "rm -rf /sdcard/DCIM/Camera/* /sdcard/DCIM/.thumbnails/* /sdcard/Pictures/* /sdcard/Pictures/PhoneFarm/* /sdcard/Download/* "
+            "/data/media/0/DCIM/Camera/* /data/media/0/Pictures/* 2>/dev/null; "
             "content delete --uri content://media/external/images/media 2>/dev/null; "
             "content delete --uri content://media/external/video/media 2>/dev/null\""
         )

@@ -17,6 +17,8 @@ except ImportError:
     docker = None
     NotFound = APIError = Exception
 
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from src.core.constants import (
     DEFAULT_REDROID_IMAGE,
@@ -103,6 +105,7 @@ from src.redroid.proxy_configurator import ContainerProxyConfigurator
 class RedroidManager:
     def __init__(self, image: str = DEFAULT_REDROID_IMAGE):
         self.image = image
+        self._lock = threading.Lock()
         if docker is not None:
             try:
                 self.docker_client = docker.from_env()
@@ -197,15 +200,16 @@ class RedroidManager:
         all_insts = RedroidRepository.list_all()
         return sum(1 for inst in all_insts if self.get_live_docker_status(inst.container_name) == "running")
 
-    def evict_oldest_idle_container_if_needed(self, exclude_target: Optional[str] = None) -> bool:
+    def evict_oldest_idle_container_if_needed(self, exclude_target: Optional[str] = None, max_concurrent: Optional[int] = None) -> bool:
         """
-        If total running containers >= MAX_CONCURRENT_REDROID_CONTAINERS,
+        If total running containers >= limit (default MAX_CONCURRENT_REDROID_CONTAINERS),
         evicts (stops) the oldest container that is currently IDLE (not actively executing an automation job).
-        Returns True if an idle container was evicted or running count < max,
+        Returns True if an idle container was evicted or running count < limit,
         False if limit reached and all running containers are actively executing jobs.
         """
         running_count = self.get_total_running_containers()
-        if running_count < MAX_CONCURRENT_REDROID_CONTAINERS:
+        limit = max_concurrent or MAX_CONCURRENT_REDROID_CONTAINERS
+        if running_count < limit:
             return True
 
         from src.db.repository import AutomationJobRepository
@@ -273,7 +277,7 @@ class RedroidManager:
 
         if not idle_candidates:
             logger.warning(
-                f"Limit reached ({running_count}/{MAX_CONCURRENT_REDROID_CONTAINERS}), but cannot auto-evict: All running containers are actively executing automation jobs."
+                f"Limit reached ({running_count}/{limit}), but cannot auto-evict: All running containers are actively executing automation jobs."
             )
             return False
 
@@ -293,14 +297,17 @@ class RedroidManager:
         device_profile: Optional[DeviceProfile] = None,
         proxy_url: Optional[str] = None,
         apk_path: Optional[str] = None,
+        use_proxy: bool = True,
+        max_concurrent: Optional[int] = None,
     ) -> RedroidInstance:
-        """Spawns a new Redroid docker container with assigned device fingerprint, proxy, and Facebook APK."""
+        """Spawns a new Redroid docker container with assigned device fingerprint, optional proxy, and Facebook APK."""
         account_uid = re.sub(r'[\'"\s]', '', str(account_uid))
         running_count = self.get_total_running_containers()
-        if running_count >= MAX_CONCURRENT_REDROID_CONTAINERS:
-            evicted = self.evict_oldest_idle_container_if_needed(exclude_target=account_uid)
+        limit = max_concurrent or MAX_CONCURRENT_REDROID_CONTAINERS
+        if running_count >= limit:
+            evicted = self.evict_oldest_idle_container_if_needed(exclude_target=account_uid, max_concurrent=limit)
             if not evicted:
-                msg = f"Cannot create container for UID {account_uid}: Maximum concurrent running container limit reached ({running_count}/{MAX_CONCURRENT_REDROID_CONTAINERS}) and all containers are actively executing jobs."
+                msg = f"Cannot create container for UID {account_uid}: Maximum concurrent running container limit reached ({running_count}/{limit}) and all containers are actively executing jobs."
                 logger.error(msg)
                 raise RuntimeError(msg)
 
@@ -309,64 +316,77 @@ class RedroidManager:
 
         DeviceProfileRepository.add(device_profile)
 
-        # Acquire and rotate a Proxy URL for this account
-        proxy_obj, parsed_proxy, proxy_msg = ProxyService.acquire_and_rotate_proxy(
-            account_uid=account_uid, proxy_url_override=proxy_url
-        )
-        if parsed_proxy:
-            logger.info(f"Assigned proxy {parsed_proxy['formatted_url']} to UID {account_uid}")
-        else:
-            logger.warning(f"Could not assign proxy for UID {account_uid}: {proxy_msg}")
-
-        adb_port = self.find_available_adb_port(account_uid=account_uid)
-        scrcpy_port = adb_port + 2000
-        container_name = f"{DEFAULT_CONTAINER_PREFIX}{account_uid}"
-        storage_dir = self.get_container_storage_dir(account_uid)
-
-        # Environment variables and build.prop parameters
-        build_prop_params = device_profile.to_build_prop_dict()
-        cmd_args = []
-        for prop_key, prop_val in build_prop_params.items():
-            cmd_args.append(f"{prop_key}={prop_val}")
-        cmd_args.append(f"androidboot.redroid_width={device_profile.width}")
-        cmd_args.append(f"androidboot.redroid_height={device_profile.height}")
-        cmd_args.append(f"androidboot.redroid_dpi={device_profile.dpi}")
-        cmd_args.append("androidboot.use_memfd=1")
-        cmd_args.append("androidboot.redroid_gpu_mode=guest")
-
-        logger.info(f"Creating Redroid container {container_name} on ADB port {adb_port}...")
-
-        # Ensure any old container with the same name is removed
-        subprocess.run(["docker", "rm", "-f", container_name], capture_output=True)
-
-        # Construct Docker run command
-        docker_cmd = [
-            "docker", "run", "-d",
-            "--name", container_name,
-            "--privileged",
-            "-v", f"{storage_dir}:/data",
-            "-p", f"{adb_port}:5555",
-            "-p", f"{scrcpy_port}:8000",
-            self.image
-        ] + cmd_args
-
-        try:
-            res = subprocess.run(docker_cmd, capture_output=True, text=True, check=True)
-            container_id = res.stdout.strip()[:12]
-            logger.info(f"Container created successfully: {container_id}")
-
-            instance = RedroidInstance(
-                container_id=container_id,
-                container_name=container_name,
-                adb_port=adb_port,
-                scrcpy_port=scrcpy_port,
-                status="running",
-                account_uid=account_uid,
-                proxy_url=parsed_proxy["formatted_url"] if parsed_proxy else None,
-                device_profile_id=device_profile.id,
+        # Acquire and rotate a Proxy URL for this account if use_proxy is True
+        parsed_proxy = None
+        if use_proxy:
+            proxy_obj, parsed_proxy, proxy_msg = ProxyService.acquire_and_rotate_proxy(
+                account_uid=account_uid, proxy_url_override=proxy_url
             )
-            RedroidRepository.add_or_update(instance)
+            if parsed_proxy:
+                logger.info(f"Assigned proxy {parsed_proxy['formatted_url']} to UID {account_uid}")
+            else:
+                logger.warning(f"Could not assign proxy for UID {account_uid}: {proxy_msg}")
+        else:
+            logger.info(f"Proxy disabled for UID {account_uid} (using default IP).")
 
+        with self._lock:
+            adb_port = self.find_available_adb_port(account_uid=account_uid)
+            scrcpy_port = adb_port + 2000
+            container_name = f"{DEFAULT_CONTAINER_PREFIX}{account_uid}"
+            storage_dir = self.get_container_storage_dir(account_uid)
+
+            # Environment variables and build.prop parameters
+            build_prop_params = device_profile.to_build_prop_dict()
+            cmd_args = []
+            for prop_key, prop_val in build_prop_params.items():
+                cmd_args.append(f"{prop_key}={prop_val}")
+            cmd_args.append(f"androidboot.redroid_width={device_profile.width}")
+            cmd_args.append(f"androidboot.redroid_height={device_profile.height}")
+            cmd_args.append(f"androidboot.redroid_dpi={device_profile.dpi}")
+            cmd_args.append("androidboot.use_memfd=1")
+            cmd_args.append("androidboot.redroid_gpu_mode=guest")
+
+            logger.info(f"Creating Redroid container {container_name} on ADB port {adb_port}...")
+
+            # Ensure any old container with the same name is removed
+            subprocess.run(["docker", "rm", "-f", container_name], capture_output=True)
+
+            # Construct Docker run command
+            docker_cmd = [
+                "docker", "run", "-d",
+                "--name", container_name,
+                "--privileged",
+                "-v", f"{storage_dir}:/data",
+                "-p", f"{adb_port}:5555",
+                "-p", f"{scrcpy_port}:8000",
+                self.image
+            ] + cmd_args
+
+            try:
+                res = subprocess.run(docker_cmd, capture_output=True, text=True, check=True)
+                container_id = res.stdout.strip()[:12]
+                logger.info(f"Container created successfully: {container_id}")
+
+                instance = RedroidInstance(
+                    container_id=container_id,
+                    container_name=container_name,
+                    adb_port=adb_port,
+                    scrcpy_port=scrcpy_port,
+                    status="running",
+                    account_uid=account_uid,
+                    proxy_url=parsed_proxy["formatted_url"] if parsed_proxy else None,
+                    device_profile_id=device_profile.id,
+                )
+                RedroidRepository.add_or_update(instance)
+            except subprocess.CalledProcessError as e:
+                logger.error(f"Failed to create Redroid container: {e.stderr}")
+                # Release proxy lock on failure
+                if use_proxy:
+                    ProxyService.release_proxy(account_uid)
+                raise RuntimeError(f"Docker container creation failed: {e.stderr}")
+
+        # Post-boot initialization outside creation lock
+        try:
             # Wait for Android OS to boot before applying post-boot configs
             adb_client = ADBClient(port=adb_port)
             logger.info(f"Waiting for Redroid OS (Port {adb_port}) to finish booting...")
@@ -376,7 +396,7 @@ class RedroidManager:
             self._apply_post_boot_fingerprint(adb_port, device_profile)
 
             # Configure proxy inside Redroid if available
-            if parsed_proxy:
+            if use_proxy and parsed_proxy:
                 configurator = ContainerProxyConfigurator(f"127.0.0.1:{adb_port}")
                 configurator.setup_proxy(parsed_proxy["formatted_url"])
 
@@ -386,11 +406,9 @@ class RedroidManager:
             self.hide_virtual_keyboard(container_name)
 
             return instance
-        except subprocess.CalledProcessError as e:
-            logger.error(f"Failed to create Redroid container: {e.stderr}")
-            # Release proxy lock on failure
-            ProxyService.release_proxy(account_uid)
-            raise RuntimeError(f"Docker container creation failed: {e.stderr}")
+        except Exception as e:
+            logger.warning(f"Post-boot setup encountered an error for container '{container_name}': {e}")
+            return instance
 
     def _apply_post_boot_fingerprint(self, adb_port: int, profile: DeviceProfile):
         """Connects via ADB and applies Android ID, MAC, and device settings."""
@@ -604,13 +622,22 @@ class RedroidManager:
         logger.info(f"Installing APK '{target_apk}' on port {adb_port}...")
         client.install_apk(str(target_apk))
 
-    def install_apk_status(self, target: str, apk_path: str, auto_start: bool = True) -> str:
+    def install_apk_status(
+        self,
+        target: str,
+        apk_path: str,
+        auto_start: bool = True,
+        use_proxy: bool = False,
+        stop_after: bool = True,
+        max_concurrent: int = 4,
+    ) -> str:
         """
         Installs an APK file onto a specified Redroid container (accepts UID, Port, Name, or ID).
-        - If container does not exist for an account, auto-provisions container and installs APK (returns 'created').
-        - If container exists, starts it if stopped, checks if APK is already installed:
+        - If container does not exist for an account, auto-provisions container without proxy (default IP) and installs APK (returns 'created').
+        - If container exists, starts it if stopped (without proxy, default IP), checks if APK is already installed:
             - If already installed: skips installation (returns 'skipped').
             - If not installed: installs APK (returns 'installed').
+        - Closes container after completion if stop_after=True.
         - On failure, returns 'failed'.
         """
         target_apk = Path(apk_path)
@@ -626,110 +653,175 @@ class RedroidManager:
         if not inst and acc_uid:
             inst = RedroidRepository.get_by_account_uid(acc_uid)
 
-        if not inst:
-            # Fallback if target is numeric ADB port
-            if target.isdigit() and len(target) <= 5:
-                adb_port = int(target)
-                c_name = f"port_{adb_port}"
-            else:
-                from src.db.repository import AccountRepository
-                acc = AccountRepository.get_by_uid(acc_uid) if acc_uid else None
-                if not acc and not acc_uid and target:
-                    acc = AccountRepository.get_by_uid(target)
-                    if acc:
-                        acc_uid = acc.uid
+        target_container_name = c_name
 
-                if acc and auto_start:
-                    logger.info(
-                        f"Account UID '{acc.uid}' ({acc.username}) has no Redroid container yet. "
-                        f"Auto-provisioning a new container and installing APK..."
-                    )
-                    try:
-                        inst = self.create_instance(account_uid=acc.uid, apk_path=str(target_apk))
-                        AccountRepository.bind_container(acc.uid, inst.container_id, inst.device_profile_id or "")
-                        logger.info(f"Successfully auto-provisioned container for UID '{acc.uid}' (Port {inst.adb_port}) and installed APK.")
-                        return "created"
-                    except Exception as e:
-                        logger.error(f"Failed to auto-provision container for UID '{acc.uid}': {e}")
-                        return "failed"
-                elif acc:
-                    logger.error(
-                        f"Account UID '{acc.uid}' ({acc.username}) has no Redroid container in Docker. "
-                        f"Please create one first using: python main-cli.py redroid create --uid {acc.uid}"
-                    )
-                    return "failed"
+        try:
+            if not inst:
+                # Fallback if target is numeric ADB port
+                if target.isdigit() and len(target) <= 5:
+                    adb_port = int(target)
+                    c_name = f"port_{adb_port}"
+                    target_container_name = c_name
                 else:
-                    logger.error(f"Could not find Redroid instance or account matching target '{target}'.")
-                    return "failed"
-        else:
-            c_name = inst.container_name
-            adb_port = inst.adb_port
-            if not acc_uid and inst.account_uid:
-                acc_uid = inst.account_uid
+                    from src.db.repository import AccountRepository
+                    acc = AccountRepository.get_by_uid(acc_uid) if acc_uid else None
+                    if not acc and not acc_uid and target:
+                        acc = AccountRepository.get_by_uid(target)
+                        if acc:
+                            acc_uid = acc.uid
 
-        live_status = self.get_live_docker_status(c_name)
-        if live_status != "running":
-            if auto_start:
-                if live_status == "not_found" and acc_uid:
-                    logger.info(f"Container '{c_name}' does not exist in Docker. Auto-recreating container...")
-                    try:
-                        from src.db.repository import AccountRepository
-                        inst = self.create_instance(account_uid=acc_uid, apk_path=str(target_apk))
-                        AccountRepository.bind_container(acc_uid, inst.container_id, inst.device_profile_id or "")
-                        logger.info(f"Successfully auto-recreated container for UID '{acc_uid}' (Port {inst.adb_port}) and installed APK.")
-                        return "created"
-                    except Exception as e:
-                        logger.error(f"Failed to auto-recreate container for UID '{acc_uid}': {e}")
+                    if acc and auto_start:
+                        logger.info(
+                            f"Account UID '{acc.uid}' ({acc.username}) has no Redroid container yet. "
+                            f"Auto-provisioning a new container (no proxy, direct IP) and installing APK..."
+                        )
+                        try:
+                            inst = self.create_instance(
+                                account_uid=acc.uid,
+                                apk_path=str(target_apk),
+                                use_proxy=use_proxy,
+                                max_concurrent=max_concurrent,
+                            )
+                            AccountRepository.bind_container(acc.uid, inst.container_id, inst.device_profile_id or "")
+                            target_container_name = inst.container_name
+                            logger.info(f"Successfully auto-provisioned container for UID '{acc.uid}' (Port {inst.adb_port}) and installed APK.")
+                            return "created"
+                        except Exception as e:
+                            logger.error(f"Failed to auto-provision container for UID '{acc.uid}': {e}")
+                            return "failed"
+                    elif acc:
+                        logger.error(
+                            f"Account UID '{acc.uid}' ({acc.username}) has no Redroid container in Docker. "
+                            f"Please create one first using: python main-cli.py redroid create --uid {acc.uid}"
+                        )
                         return "failed"
-
-                logger.info(f"Container '{c_name}' is currently stopped. Auto-starting it to install APK...")
-                self.start_instance(c_name)
+                    else:
+                        logger.error(f"Could not find Redroid instance or account matching target '{target}'.")
+                        return "failed"
             else:
-                logger.error(f"Container '{c_name}' is not running.")
+                c_name = inst.container_name
+                target_container_name = c_name
+                adb_port = inst.adb_port
+                if not acc_uid and inst.account_uid:
+                    acc_uid = inst.account_uid
+
+            live_status = self.get_live_docker_status(c_name)
+            if live_status != "running":
+                if auto_start:
+                    if live_status == "not_found" and acc_uid:
+                        logger.info(f"Container '{c_name}' does not exist in Docker. Auto-recreating container (no proxy, direct IP)...")
+                        try:
+                            from src.db.repository import AccountRepository
+                            inst = self.create_instance(
+                                account_uid=acc_uid,
+                                apk_path=str(target_apk),
+                                use_proxy=use_proxy,
+                                max_concurrent=max_concurrent,
+                            )
+                            AccountRepository.bind_container(acc_uid, inst.container_id, inst.device_profile_id or "")
+                            target_container_name = inst.container_name
+                            logger.info(f"Successfully auto-recreated container for UID '{acc_uid}' (Port {inst.adb_port}) and installed APK.")
+                            return "created"
+                        except Exception as e:
+                            logger.error(f"Failed to auto-recreate container for UID '{acc_uid}': {e}")
+                            return "failed"
+
+                    logger.info(f"Container '{c_name}' is currently stopped. Auto-starting it (no proxy, direct IP) to install APK...")
+                    self.start_instance(c_name, use_proxy=use_proxy, max_concurrent=max_concurrent)
+                else:
+                    logger.error(f"Container '{c_name}' is not running.")
+                    return "failed"
+
+            client = ADBClient(port=adb_port)
+            logger.info(f"Connecting to container on ADB port {adb_port} to check/install APK '{target_apk.name}'...")
+            if not client.wait_for_boot(timeout_sec=35):
+                logger.warning(f"Redroid container on port {adb_port} is not responding or did not boot in time.")
                 return "failed"
 
-        client = ADBClient(port=adb_port)
-        logger.info(f"Connecting to container on ADB port {adb_port} to check/install APK '{target_apk.name}'...")
-        if not client.wait_for_boot(timeout_sec=35):
-            logger.warning(f"Redroid container on port {adb_port} is not responding or did not boot in time.")
-            return "failed"
-
-        # Check if already installed
-        if pkg_name and client.is_app_installed(pkg_name):
-            logger.info(f"Package '{pkg_name}' is already installed on container '{c_name}' (Port {adb_port}). Skipping installation.")
-            self.ensure_app_permissions(c_name, package_name=pkg_name)
-            return "skipped"
-
-        logger.info(f"Installing APK '{target_apk}' on ADB port {adb_port}...")
-        ok = client.install_apk(str(target_apk))
-        if ok:
-            if pkg_name:
+            # Check if already installed
+            if pkg_name and client.is_app_installed(pkg_name):
+                logger.info(f"Package '{pkg_name}' is already installed on container '{c_name}' (Port {adb_port}). Skipping installation.")
                 self.ensure_app_permissions(c_name, package_name=pkg_name)
-            return "installed"
-        return "failed"
+                return "skipped"
 
-    def install_apk(self, target: str, apk_path: str, auto_start: bool = True) -> bool:
+            logger.info(f"Installing APK '{target_apk}' on ADB port {adb_port}...")
+            ok = client.install_apk(str(target_apk))
+            if ok:
+                if pkg_name:
+                    self.ensure_app_permissions(c_name, package_name=pkg_name)
+                return "installed"
+            return "failed"
+        finally:
+            if stop_after and target_container_name:
+                try:
+                    logger.info(f"Stopping Redroid container '{target_container_name}' after APK install...")
+                    self.stop_instance(target_container_name)
+                except Exception as e:
+                    logger.warning(f"Error stopping container '{target_container_name}': {e}")
+
+    def install_apk(
+        self,
+        target: str,
+        apk_path: str,
+        auto_start: bool = True,
+        use_proxy: bool = False,
+        stop_after: bool = True,
+        max_concurrent: int = 4,
+    ) -> bool:
         """
         Installs an APK file onto a specified Redroid container (accepts UID, Port, Name, or ID).
         Returns True if APK was installed, container was created, or APK was already installed.
         """
-        status = self.install_apk_status(target, apk_path=apk_path, auto_start=auto_start)
+        status = self.install_apk_status(
+            target,
+            apk_path=apk_path,
+            auto_start=auto_start,
+            use_proxy=use_proxy,
+            stop_after=stop_after,
+            max_concurrent=max_concurrent,
+        )
         return status in ("created", "installed", "skipped")
 
-    def install_apk_batch(self, targets: List[str], apk_path: str) -> Dict[str, str]:
+    def install_apk_batch(
+        self,
+        targets: List[str],
+        apk_path: str,
+        max_workers: int = 4,
+        use_proxy: bool = False,
+        stop_after: bool = True,
+    ) -> Dict[str, str]:
         """
-        Installs an APK file onto multiple Redroid containers sequentially.
+        Installs an APK file onto multiple Redroid containers in parallel (up to max_workers threads).
+        Uses default IP (no proxy) and automatically stops containers after installation.
         Returns a dictionary mapping target -> status ("created", "installed", "skipped", "failed").
         """
-        results = {}
-        for tgt in targets:
+        results: Dict[str, str] = {}
+        if not targets:
+            return results
+
+        def _worker(tgt: str) -> Tuple[str, str]:
             try:
-                status = self.install_apk_status(tgt, apk_path=apk_path, auto_start=True)
-                results[tgt] = status
+                status = self.install_apk_status(
+                    tgt,
+                    apk_path=apk_path,
+                    auto_start=True,
+                    use_proxy=use_proxy,
+                    stop_after=stop_after,
+                    max_concurrent=max_workers,
+                )
+                return tgt, status
             except Exception as e:
                 logger.error(f"Failed to install APK for target '{tgt}': {e}")
-                results[tgt] = "failed"
-        return results
+                return tgt, "failed"
+
+        workers_count = min(len(targets), max_workers) if max_workers > 0 else 1
+        with ThreadPoolExecutor(max_workers=workers_count) as executor:
+            future_to_tgt = {executor.submit(_worker, tgt): tgt for tgt in targets}
+            for future in as_completed(future_to_tgt):
+                tgt, status = future.result()
+                results[tgt] = status
+
+        return {tgt: results.get(tgt, "failed") for tgt in targets}
 
     def resolve_target(self, target: str) -> Tuple[str, Optional[str]]:
         """
@@ -791,8 +883,14 @@ class RedroidManager:
         logger.info(f"Stopped all {stopped_count} running Redroid containers.")
         return stopped_count
 
-    def start_instance(self, target: str, proxy_url: Optional[str] = None):
-        """Starts an existing Redroid container, acquires/configures proxy, and updates DB status."""
+    def start_instance(
+        self,
+        target: str,
+        proxy_url: Optional[str] = None,
+        use_proxy: bool = True,
+        max_concurrent: Optional[int] = None,
+    ):
+        """Starts an existing Redroid container, acquires/configures proxy (if use_proxy=True), and updates DB status."""
         c_name, acc_uid = self.resolve_target(target)
 
         # Check if container exists in Docker
@@ -805,7 +903,7 @@ class RedroidManager:
             acc = AccountRepository.get_by_uid(acc_uid) if acc_uid else None
             if acc:
                 logger.info(f"Container '{c_name}' does not exist in Docker. Auto-provisioning new container for UID '{acc_uid}' ({acc.username})...")
-                new_inst = self.create_instance(account_uid=acc_uid, proxy_url=proxy_url)
+                new_inst = self.create_instance(account_uid=acc_uid, proxy_url=proxy_url, use_proxy=use_proxy, max_concurrent=max_concurrent)
                 AccountRepository.bind_container(acc_uid, new_inst.container_id, new_inst.device_profile_id or "")
                 logger.info(f"Successfully auto-provisioned container for UID '{acc_uid}' (Port {new_inst.adb_port}).")
                 return
@@ -816,15 +914,16 @@ class RedroidManager:
                 raise RuntimeError(msg)
 
         running_count = self.get_total_running_containers()
-        if running_count >= MAX_CONCURRENT_REDROID_CONTAINERS:
-            evicted = self.evict_oldest_idle_container_if_needed(exclude_target=c_name)
+        limit = max_concurrent or MAX_CONCURRENT_REDROID_CONTAINERS
+        if running_count >= limit:
+            evicted = self.evict_oldest_idle_container_if_needed(exclude_target=c_name, max_concurrent=limit)
             if not evicted:
-                msg = f"Cannot start container '{c_name}': Maximum concurrent running container limit reached ({running_count}/{MAX_CONCURRENT_REDROID_CONTAINERS}) and all containers are actively executing jobs."
+                msg = f"Cannot start container '{c_name}': Maximum concurrent running container limit reached ({running_count}/{limit}) and all containers are actively executing jobs."
                 logger.error(msg)
                 raise RuntimeError(msg)
 
         # Resolve proxy_url target if passed as ID or Name
-        if proxy_url and acc_uid:
+        if use_proxy and proxy_url and acc_uid:
             from src.db.repository import ProxyRepository
             if str(proxy_url).isdigit():
                 proxies = ProxyRepository.list_all()
@@ -856,8 +955,8 @@ class RedroidManager:
         self.ensure_app_permissions(c_name)
         self.hide_virtual_keyboard(c_name)
 
-        # Acquire and configure proxy if account_uid exists
-        if acc_uid:
+        # Acquire and configure proxy if requested and account_uid exists
+        if use_proxy and acc_uid:
             proxy_obj, parsed_proxy, proxy_msg = ProxyService.acquire_and_rotate_proxy(
                 account_uid=acc_uid, proxy_url_override=proxy_url
             )
@@ -872,6 +971,8 @@ class RedroidManager:
                 logger.info(f"Assigned and configured proxy '{parsed_proxy['formatted_url']}' for container '{c_name}'.")
             else:
                 logger.warning(f"Could not assign proxy when starting container '{c_name}': {proxy_msg}")
+        elif not use_proxy:
+            logger.info(f"Container '{c_name}' running with default direct IP (no proxy).")
 
     def _delete_container_storage(self, storage_dir: Path):
         """Deletes container data directory on disk, bypassing root/read-only ownership created by Android/Docker."""

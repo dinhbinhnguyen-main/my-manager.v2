@@ -457,6 +457,8 @@ def execute_single_group_post(
 
         bot.log("👉 [Step S5] Publishing listing to group...")
         click_publish_or_done(bot, timeout=30)
+        bot.log("⏳ Waiting 10s after publishing before next step...")
+        bot.smart_sleep(10.0, 10.5)
 
     else:
         bot.log("📝 [Mode: DISCUSSION] Executing Discussion Post Flow...")
@@ -495,6 +497,8 @@ def execute_single_group_post(
 
         bot.log("👉 [Step D6] Clicking 'Post' / 'Đăng' button...")
         click_post_button(bot, timeout=25)
+        bot.log("⏳ Waiting 10s after posting before next step...")
+        bot.smart_sleep(10.0, 10.5)
 
     bot.log(f"✔️ Successfully posted to group '{group_name}'!")
     return True
@@ -599,7 +603,7 @@ class FBSingleListingAction:
 
         finally:
             if not is_success:
-                dump_error_view(self.automator, account_uid=self.account.uid, step_name=f"error_{current_step}")
+                dump_error_view(self.automator, account_uid=self.account.uid, step_name=current_step)
             if pushed_remotes:
                 self.automator.cleanup_media()
 

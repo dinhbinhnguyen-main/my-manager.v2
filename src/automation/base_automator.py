@@ -194,14 +194,21 @@ class BaseAutomator:
         return child_by_desc
 
     def swipe_widget_to_center(self, widget, duration: float = 0.5) -> bool:
-        """Swipes the screen to move a visible Widget to the center of the display."""
+        """Swipes the screen to move a visible Widget to the center of the display.
+        Clamps starting position to avoid statusbar (<22%) and navbar (>78%).
+        """
         if not widget or not widget.exists or not self.device:
             return False
         try:
             screen_info = self.device.info
             screen_center_x = screen_info.get("displayWidth", 720) // 2
             screen_center_y = screen_info.get("displayHeight", 1280) // 2
-            widget_center_x, widget_center_y = widget.center()
+            widget_center_x, raw_wy = widget.center()
+            
+            # Avoid swiping starting from statusbar top (<22%) or navbar bottom (>78%)
+            h = screen_info.get("displayHeight", 1280)
+            widget_center_y = min(max(raw_wy, int(h * 0.22)), int(h * 0.78))
+            
             self.device.swipe(widget_center_x, widget_center_y, screen_center_x, screen_center_y, duration=duration)
             self.smart_sleep(0.8, 1.2)
             return True
@@ -308,21 +315,25 @@ class BaseAutomator:
         self.smart_sleep(0.8, 1.5)
 
     def swipe_up(self, scale: float = 0.6):
-        """Swipes screen up (scrolls content down)."""
+        """Swipes screen up (scrolls content down).
+        Never touches the top statusbar (<22%) or bottom navigation bar (>78%).
+        """
         if not self.device:
             return
         w, h = self.device.window_size()
-        sy = int(h * 0.75)
-        ey = int(h * (0.75 - scale * 0.5))
+        sy = int(h * 0.70)
+        ey = max(int(h * 0.25), int(h * (0.70 - scale * 0.45)))
         self.device.swipe(w // 2, sy, w // 2, ey, steps=10)
 
     def swipe_down(self, scale: float = 0.4):
-        """Swipes screen down (scrolls content up / re-read)."""
+        """Swipes screen down (scrolls content up / re-read).
+        Never touches the top statusbar (<22%) or bottom navigation bar (>78%).
+        """
         if not self.device:
             return
         w, h = self.device.window_size()
-        sy = int(h * 0.3)
-        ey = int(h * (0.3 + scale * 0.4))
+        sy = int(h * 0.30)
+        ey = min(int(h * 0.75), int(h * (0.30 + scale * 0.45)))
         self.device.swipe(w // 2, sy, w // 2, ey, steps=10)
 
     def try_click_see_more(self) -> bool:
@@ -420,16 +431,30 @@ class BaseAutomator:
         if self.adb_client:
             self.adb_client.clear_media_storage()
 
-    def hide_keyboard(self):
-        """Hides on-screen soft keyboard."""
+    def is_keyboard_shown(self) -> bool:
+        """Checks if soft keyboard is currently visible on screen."""
         try:
             if self.device:
-                self.device.press("back")
-                self.smart_sleep(0.5, 1.0)
+                res = self.device.shell("dumpsys input_method")
+                output = res.output if hasattr(res, 'output') else str(res)
+                if "mInputShown=true" in output or "mIsInputViewShown=true" in output:
+                    return True
+        except Exception:
+            pass
+        return False
+
+    def hide_keyboard(self) -> bool:
+        """Hides on-screen soft keyboard using KEYCODE_ESCAPE (never back)."""
+        try:
             if self.adb_client:
                 self.adb_client.disable_soft_keyboard()
+            if self.device:
+                self.device.shell("input keyevent 111")
+                self.smart_sleep(0.3)
+                return True
         except Exception as e:
             logger.debug(f"Could not hide keyboard: {e}")
+        return False
 
     def teardown(self):
         """Teardown alias for close."""

@@ -274,20 +274,8 @@ def step_3_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 20)
                 gallery_opened = True
                 break
         else:
-            bot.log(f"⚠️ Could not find 'Add photos' on attempt {attempt + 1}. Pressing back and re-opening form...")
-            if bot.d:
-                bot.d.press("back")
-                bot.smart_sleep(1.5)
-                for discard_kw in ["discard", "bỏ bài viết", "bỏ bản nháp", "bỏ"]:
-                    discard_btn = bot.get_button_by_text(discard_kw, timeout=0.8)
-                    if discard_btn and discard_btn.exists:
-                        discard_btn.click_exists(timeout=2)
-                        bot.smart_sleep(1.0)
-                        break
-                try:
-                    step_2_open_listing_form(bot, timeout=10)
-                except Exception:
-                    pass
+            bot.log(f"⚠️ Could not find 'Add photos' on attempt {attempt + 1}...")
+            bot.smart_sleep(1.5)
 
     if not gallery_opened:
         raise Exception("❌ [Step 3 Anchor Failed] Could not open Gallery / Camera Roll picker.")
@@ -322,14 +310,31 @@ def step_3_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 20)
                 pass
 
         if unique_items:
-            actual_num = min(len(unique_items), max(1, photo_num))
-            bot.log(f"📸 Found {len(unique_items)} photos. Selecting {actual_num} from bottom up...")
-            for i in reversed(range(actual_num)):
+            unique_items.sort(key=lambda x: (x[1].get('bounds', {}).get('top', 0), x[1].get('bounds', {}).get('left', 0)))
+            total_count = len(unique_items)
+            actual_num = min(total_count, max(1, photo_num))
+            target_indices = list(range(total_count - 1, total_count - 1 - actual_num, -1))
+            bot.log(f"📸 Gallery has {total_count} photo(s). Selecting {actual_num} photo(s) from bottom up (indices: {target_indices})...")
+            
+            # Deselect any checked photo that is NOT in target_indices
+            for i in range(total_count):
+                if i not in target_indices:
+                    try:
+                        img_w, info = unique_items[i]
+                        if info.get("checked") or info.get("selected"):
+                            bot.log(f"   🧹 Deselecting stale photo at index {i}...")
+                            img_w.click_exists(timeout=2)
+                            bot.smart_sleep(0.3)
+                    except Exception:
+                        pass
+
+            # Select target photos from bottom up
+            for order, idx in enumerate(target_indices, start=1):
                 try:
-                    img_w, info = unique_items[i]
-                    if not info.get("checked") and not info.get("selected"):
-                        img_w.click_exists(timeout=2)
-                        bot.smart_sleep(0.5)
+                    img_w, info = unique_items[idx]
+                    img_w.click_exists(timeout=2)
+                    bot.log(f"   ✔️ Selected photo {order}/{actual_num} (index {idx}, bottom-up)")
+                    bot.smart_sleep(0.5)
                 except Exception:
                     pass
 
@@ -357,177 +362,209 @@ def step_3_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 20)
 
 
 # ==============================================================================
-# STEP 4: FILL LISTING TITLE
+# STEP 4: ADAPTIVE FORM FILLING (TITLE, PRICE, CATEGORY, CONDITION, LOCATION, DESCRIPTION)
 # ==============================================================================
 
-def step_4_fill_title(bot: BaseAutomator, title: str, timeout: int = 15) -> bool:
-    """
-    STEP 4:
-    - Finds and inputs listing title in uppercase.
-    - Anchor verification: Confirms text is set.
-    """
-    bot.log(f"✍️ [Step 4] Inputting Title: '{title[:30]}...'")
-    title_upper = title.upper() if title else "BÁN ĐẤT NGHỈ DƯỠNG VIEW ĐẸP ĐÀ LẠT"
+def _set_title(bot: BaseAutomator, title: str) -> bool:
+    """Enters listing title (in UPPERCASE) and verifies text was applied."""
+    if not bot.d:
+        return False
+    t_clean = str(title).strip() if title else ""
+    if not t_clean or t_clean.lower().startswith("") or d_clean in ("{", "}", '""', "''") or len(d_clean) < 10:
+        desc_text = "Bán đất nghỉ dưỡng view thung lũng cực đẹp tại Đà Lạt. Sổ hồng riêng chính chủ."
+    else:
+        desc_text = d_clean
 
-    title_group = bot.get_widget_by_text("android.view.ViewGroup", "title", timeout=timeout) or bot.d(resourceId="composer_v3_title")
-    if title_group and title_group.exists:
-        bot.swipe_widget_to_center(title_group)
-        title_group.click()
-        bot.smart_sleep(1.0)
-        title_input = bot.get_interactable_from_parent(title_group, "android.widget.EditText", timeout=5) or bot.d(className="android.widget.EditText")
-        if title_input and title_input.exists:
-            title_input.set_text(title_upper)
-            bot.smart_sleep(1.0)
-            bot.log("✔️ [Step 4 Anchor Verified] Title set successfully!")
-            return True
+    bot.log(f"📝 [Field: Description] Inputting ({len(desc_text)} chars)...")
 
-    edit_texts = bot.d(className="android.widget.EditText")
-    if edit_texts.exists and edit_texts.count > 0:
-        edit_texts[0].set_text(title_upper)
-        bot.smart_sleep(1.0)
-        bot.log("✔️ [Step 4 Anchor Verified] Title set via primary EditText!")
+    desc_elem = bot.d(resourceId="composer_v3_description")
+    if not desc_elem.exists:
+        desc_elem = bot.d(descriptionMatches="(?i).*Description.*")
+    if not desc_elem.exists:
+        desc_elem = bot.d(descriptionMatches="(?i).*Mô tả.*")
+    if not desc_elem.exists:
+        desc_elem = bot.get_widget_by_text("android.view.ViewGroup", "description", timeout=2)
+    if not desc_elem or not desc_elem.exists:
+        desc_elem = bot.get_widget_by_text("android.view.ViewGroup", "mô tả", timeout=2)
+
+    if desc_elem and desc_elem.exists:
+        bot.swipe_widget_to_center(desc_elem)
+        desc_elem.click()
+        bot.smart_sleep(0.5)
+
+        desc_input = desc_elem.child(className="android.widget.EditText")
+        if not desc_input.exists:
+            desc_input = bot.d(className="android.widget.EditText", descriptionMatches="(?i).*Description.*")
+        if not desc_input.exists:
+            desc_input = bot.get_interactable_from_parent(desc_elem, "android.widget.EditText", timeout=3)
+        if not desc_input.exists:
+            desc_input = bot.d(focused=True, className="android.widget.EditText")
+
+        if desc_input.exists:
+            try:
+                desc_input.clear_text()
+            except Exception:
+                pass
+            desc_input.set_text(desc_text)
+        else:
+            bot.d.send_keys(desc_text)
+
+        bot.smart_sleep(0.5)
+        bot.hide_keyboard()
+        bot.log("   ✔️ [Verify] Description entered successfully.")
         return True
-
-    raise Exception("❌ [Step 4 Anchor Failed] Could not find Title input field.")
-
-
-# ==============================================================================
-# STEP 5: FILL LISTING PRICE
-# ==============================================================================
-
-def step_5_fill_price(bot: BaseAutomator, price: Optional[str] = None, timeout: int = 15) -> bool:
-    """
-    STEP 5:
-    - Finds and inputs listing price.
-    - Anchor verification: Confirms price is set.
-    """
-    price_val = str(price) if price else str(randint(100, 999))
-    bot.log(f"💰 [Step 5] Inputting Price: '{price_val}'")
-
-    price_group = bot.get_widget_by_text("android.view.ViewGroup", "price", timeout=timeout) or bot.d(resourceId="composer_v3_price")
-    if price_group and price_group.exists:
-        bot.swipe_widget_to_center(price_group)
-        price_group.click()
-        bot.smart_sleep(1.0)
-        price_input = bot.get_interactable_from_parent(price_group, "android.widget.EditText", timeout=5)
-        if price_input and price_input.exists:
-            price_input.set_text(price_val)
-            bot.smart_sleep(1.0)
-            bot.log("✔️ [Step 5 Anchor Verified] Price set successfully!")
-            return True
-
-    edit_texts = bot.d(className="android.widget.EditText")
-    if edit_texts.exists and edit_texts.count >= 2:
-        edit_texts[1].set_text(price_val)
-        bot.smart_sleep(1.0)
-        bot.log("✔️ [Step 5 Anchor Verified] Price set via second EditText!")
-        return True
-
-    bot.log("⚠️ Price field skipped or already populated.")
-    return True
-
-
-# ==============================================================================
-# STEP 6: SELECT CATEGORY (RENTAL VS SALE)
-# ==============================================================================
-
-def step_6_select_category(bot: BaseAutomator, transaction_type: str = "sale", timeout: int = 15) -> bool:
-    """
-    STEP 6:
-    - Selects property category ('Home(s) for sale' or 'Home(s) for rent').
-    - Anchor verification: Category selected and returned to form.
-    """
-    bot.log(f"📂 [Step 6] Selecting category for transaction_type '{transaction_type}'...")
-
-    category_btn = bot.get_button_by_text("category", timeout=timeout) or bot.d(textMatches=r"(?i)^Category.*|^Hạng mục.*")
-    if category_btn and category_btn.exists:
-        bot.swipe_widget_to_center(category_btn)
-        category_btn.click()
-        bot.smart_sleep(1.5)
-
-        target_kw = "rent" if "rent" in str(transaction_type).lower() or "thue" in str(transaction_type).lower() else "sale"
-        option = bot.get_button_by_text(target_kw, timeout=10) or bot.d(textMatches=rf"(?i).*{target_kw}.*")
-        if option and option.exists:
-            option.click()
-            bot.smart_sleep(1.5)
-            bot.log("✔️ [Step 6 Anchor Verified] Category selected successfully!")
-            return True
-
-    bot.log("ℹ️ Category step completed or skipped.")
-    return True
-
-
-# ==============================================================================
-# STEP 7: SET LOCATION
-# ==============================================================================
-
-def step_7_set_location(bot: BaseAutomator, city_name: str = "Da Lat", timeout: int = 20) -> bool:
-    """
-    STEP 7:
-    - Updates listing location to target city.
-    - Anchor verification: Confirms location applied.
-    """
-    bot.log(f"📍 [Step 7] Setting location to '{city_name}'...")
-
-    location_btn = bot.get_button_by_text("location", timeout=timeout) or bot.d(textMatches=r"(?i)^Location.*|^Vị trí.*")
-    if location_btn and location_btn.exists:
-        bot.swipe_widget_to_center(location_btn)
-        location_btn.click()
-        bot.smart_sleep(2.0)
-
-        search_input = bot.d(className="android.widget.EditText")
-        if search_input.exists:
-            search_input.set_text(city_name)
-            bot.smart_sleep(2.0)
-
-            city_suggestion = bot.d(textMatches=rf"(?i).*{city_name}.*")
-            if city_suggestion.exists:
-                city_suggestion.click()
-                bot.smart_sleep(1.5)
-
-            apply_btn = bot.get_button_by_text("apply", timeout=5) or bot.d(textMatches=r"(?i)^Apply$|^Áp dụng$")
-            if apply_btn and apply_btn.exists:
-                apply_btn.click()
-                bot.smart_sleep(1.5)
-                bot.log("✔️ [Step 7 Anchor Verified] Location set successfully!")
-                return True
-
-    bot.log("ℹ️ Location step completed or skipped.")
-    return True
-
-
-# ==============================================================================
-# STEP 8: FILL DESCRIPTION
-# ==============================================================================
-
-def step_8_fill_description(bot: BaseAutomator, description: str, timeout: int = 15) -> bool:
-    """
-    STEP 8:
-    - Inputs listing description into the description container.
-    - Anchor verification: Confirms description is set.
-    """
-    bot.log("📝 [Step 8] Inputting Description...")
-    if not description:
-        description = "Bán đất nghỉ dưỡng view thung lũng cực đẹp tại Đà Lạt. Sổ hồng riêng chính chủ."
-
-    bot.swipe_up(scale=0.5)
-    bot.smart_sleep(1.0)
-
-    desc_group = bot.get_widget_by_text("android.view.ViewGroup", "description", timeout=timeout) or bot.d(resourceId="composer_v3_description")
-    if desc_group and desc_group.exists:
-        bot.swipe_widget_to_center(desc_group)
-        desc_group.click()
-        bot.smart_sleep(1.0)
-        desc_input = bot.get_interactable_from_parent(desc_group, "android.widget.EditText", timeout=5) or bot.d(className="android.widget.EditText")
-        if desc_input and desc_input.exists:
-            desc_input.set_text(description)
-            bot.smart_sleep(0.5)
-            bot.hide_keyboard()
-            bot.log("✔️ [Step 8 Anchor Verified] Description inputted successfully!")
-            return True
 
     bot.hide_keyboard()
-    bot.log("ℹ️ Description step completed.")
+    bot.log("⚠️ Description field not found in current view.")
+    return False
+
+
+def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll_cycles: int = 6) -> bool:
+    """
+    Adaptive Form Filling with verification & multi-pass scan:
+    1. Scan visible unfilled fields currently on screen.
+    2. Sort from top to bottom (by top_y).
+    3. Fill each visible field and verify immediately.
+    4. If any fields remain, scroll down (swipe up) and re-check in next cycle.
+    """
+    bot.log("📝 [Step 4] Starting adaptive listing details form filling...")
+
+    title = payload.get("title", "")
+    price = payload.get("price", "")
+    category = payload.get("category") or "sale"
+    condition = payload.get("condition") or "New"
+    location = payload.get("location", "Da Lat")
+    description = payload.get("description", "")
+
+    field_handlers = {
+        "title": lambda: _set_title(bot, title),
+        "price": lambda: _set_price(bot, price),
+        "category": lambda: _set_category(bot, category),
+        "condition": lambda: _set_condition(bot, condition),
+        "location": lambda: _set_location(bot, location),
+        "description": lambda: _set_description(bot, description),
+    }
+
+    def detect_field_position(field_name: str) -> Optional[int]:
+        if not bot.d:
+            return None
+        el = None
+        if field_name == "title":
+            el = bot.d(resourceId="composer_v3_title")
+            if not el.exists:
+                el = bot.d(descriptionMatches="(?i)^Title.*")
+            if not el.exists:
+                el = bot.get_widget_by_text("android.view.ViewGroup", "title", timeout=0.2)
+        elif field_name == "price":
+            el = bot.d(resourceId="composer_v3_price")
+            if not el.exists:
+                el = bot.d(descriptionMatches="(?i)^Price.*")
+            if not el.exists:
+                el = bot.get_widget_by_text("android.view.ViewGroup", "price", timeout=0.2)
+        elif field_name == "category":
+            el = bot.d(descriptionMatches="(?i)^Category.*")
+            if not el.exists:
+                el = bot.get_button_by_text("category", timeout=0.2) or bot.d(textMatches=r"(?i)^Category.*|^Hạng mục.*")
+        elif field_name == "condition":
+            el = bot.d(descriptionMatches="(?i)^(Condition|Tình trạng).*")
+            if not el.exists:
+                el = bot.get_button_by_text("condition", timeout=0.2) or bot.get_button_by_text("tình trạng", timeout=0.2)
+        elif field_name == "location":
+            el = bot.d(descriptionMatches="(?i).*Location.*")
+            if not el.exists:
+                el = bot.get_button_by_text("location", timeout=0.2) or bot.d(textMatches=r"(?i)^Location.*|^Vị trí.*")
+        elif field_name == "description":
+            el = bot.d(resourceId="composer_v3_description")
+            if not el.exists:
+                el = bot.d(descriptionMatches="(?i).*Description.*")
+            if not el.exists:
+                el = bot.d(descriptionMatches="(?i).*Mô tả.*")
+            if not el.exists:
+                el = bot.get_widget_by_text("android.view.ViewGroup", "description", timeout=0.2) or bot.get_widget_by_text("android.view.ViewGroup", "mô tả", timeout=0.2)
+
+        if el and el.exists:
+            try:
+                bounds = el.info.get('bounds', {})
+                if isinstance(bounds, dict) and 'top' in bounds:
+                    top_y = bounds['top']
+                    if 150 <= top_y <= 1900:
+                        return top_y
+            except Exception:
+                pass
+        return None
+
+    completed_fields = set()
+    all_fields = {"title", "price", "category", "condition", "location", "description"}
+
+    for cycle in range(max_scroll_cycles):
+        remaining_fields = all_fields - completed_fields
+        if not remaining_fields:
+            bot.log("🎉 All fields completed!")
+            break
+
+        # 1. Scan and detect positions of all remaining fields visible on screen
+        visible_fields = []
+        for field in list(remaining_fields):
+            top_y = detect_field_position(field)
+            if top_y is not None:
+                visible_fields.append((top_y, field))
+
+        # Sort fields by top_y (from top to bottom)
+        visible_fields.sort(key=lambda item: item[0])
+
+        if visible_fields:
+            field_names_in_order = [f[1] for f in visible_fields]
+            bot.log(f"📋 [Scan {cycle + 1}] Detected {len(visible_fields)} field(s) on screen: {field_names_in_order}")
+
+            # 2. Fill visible fields in order
+            for top_y, field in visible_fields:
+                if field in completed_fields:
+                    continue
+                bot.log(f"👉 Processing field: [{field}]...")
+                try:
+                    res = field_handlers[field]()
+                    if res is not False:
+                        completed_fields.add(field)
+                        bot.smart_sleep(0.8)
+                except Exception as fe:
+                    bot.log(f"⚠️ Error handling field [{field}]: {fe}")
+                    completed_fields.add(field)
+
+        # 3. Check if all essential fields are filled
+        remaining_fields = all_fields - completed_fields
+        if not remaining_fields or ({"title", "price", "description"}.issubset(completed_fields) and "location" in completed_fields):
+            bot.log("🎉 All required listing fields completed!")
+            break
+
+        # 4. Scroll down and re-check in next cycle
+        bot.log(f"🔄 Remaining fields: {list(remaining_fields)}. Scrolling down...")
+        sig1 = bot._get_screen_signature()
+        bot.swipe_up(scale=0.45)
+        bot.smart_sleep(1.2)
+        sig2 = bot._get_screen_signature()
+
+        if sig1 == sig2 and sig1 != 0:
+            bot.log("🏁 Reached bottom of form. Performing final pass on remaining fields...")
+            for field in list(remaining_fields):
+                top_y = detect_field_position(field)
+                if top_y is not None:
+                    try:
+                        field_handlers[field]()
+                        completed_fields.add(field)
+                    except Exception:
+                        pass
+            break
+
+    # Safety check for description
+    if "description" not in completed_fields:
+        bot.log("⚠️ Description was not completed during adaptive cycles. Attempting direct description fill...")
+        try:
+            _set_description(bot, description)
+            completed_fields.add("description")
+        except Exception:
+            pass
+
+    bot.log("✔️ [Step 4 Anchor Verified] Listing form details completed!")
     return True
 
 
@@ -668,25 +705,16 @@ class FBMarketplaceShareAction:
             photo_count = min(len(image_paths), 5) if image_paths else 1
             step_3_add_photos(self.automator, photo_num=photo_count, timeout=20)
 
-            # Step 4: Fill Title
-            current_step = "step_4_fill_title"
-            step_4_fill_title(self.automator, title=title, timeout=15)
-
-            # Step 5: Fill Price
-            current_step = "step_5_fill_price"
-            step_5_fill_price(self.automator, price=price, timeout=15)
-
-            # Step 6: Select Category
-            current_step = "step_6_select_category"
-            step_6_select_category(self.automator, transaction_type=transaction_type, timeout=15)
-
-            # Step 7: Set Location
-            current_step = "step_7_set_location"
-            step_7_set_location(self.automator, city_name=location, timeout=20)
-
-            # Step 8: Fill Description
-            current_step = "step_8_fill_description"
-            step_8_fill_description(self.automator, description=description, timeout=15)
+            # Step 4: Fill listing details (Adaptive scan + verification + multi-pass scroll)
+            current_step = "step_4_fill_listing_details"
+            fill_listing_details(self.automator, payload={
+                "title": title,
+                "price": price,
+                "category": transaction_type,
+                "condition": "New",
+                "location": location,
+                "description": description,
+            }, max_scroll_cycles=6)
 
             # Step 9: Click Next
             current_step = "step_9_click_next"
@@ -710,7 +738,7 @@ class FBMarketplaceShareAction:
 
         finally:
             if not is_success:
-                dump_error_view(self.automator, account_uid=self.account.uid, step_name=f"error_{current_step}")
+                dump_error_view(self.automator, account_uid=self.account.uid, step_name=current_step)
             if pushed_remotes:
                 self.automator.cleanup_media()
 

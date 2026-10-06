@@ -843,24 +843,34 @@ def select_pushed_images(bot: BaseAutomator, photo_count: int = 1, timeout: int 
                 logger.debug(f"Error inspecting photo item {idx}: {ex}")
 
         if unique_items:
+            unique_items.sort(key=lambda x: (x[1].get('bounds', {}).get('top', 0), x[1].get('bounds', {}).get('left', 0)))
             total_avail = len(unique_items)
-            actual_num = min(total_avail, target_num)
-            bot.log(f"📸 Found {total_avail} unique photo items in Gallery. Selecting {actual_num} photo(s) in reverse order...")
+            actual_num = min(total_avail, max(1, target_num))
+            target_indices = list(range(total_avail - 1, total_avail - 1 - actual_num, -1))
+            bot.log(f"📸 Gallery has {total_avail} photo(s). Selecting {actual_num} photo(s) from bottom up (indices: {target_indices})...")
 
-            for i in reversed(range(actual_num)):
+            # Deselect any checked photo that is NOT in target_indices
+            for i in range(total_avail):
+                if i not in target_indices:
+                    try:
+                        img_widget, info = unique_items[i]
+                        if info.get("checked") or info.get("selected"):
+                            bot.log(f"   🧹 Deselecting stale photo at index {i}...")
+                            img_widget.click_exists(timeout=2)
+                            bot.smart_sleep(0.3)
+                    except Exception:
+                        pass
+
+            # Select target photos from bottom up
+            for order, idx in enumerate(target_indices, start=1):
                 try:
-                    img_widget, info = unique_items[i]
-                    if info.get("checked") or info.get("selected"):
-                        bot.log(f"   ℹ️ Photo item {i + 1} is already selected, skipping click.")
-                        selected_count += 1
-                        continue
-
+                    img_widget, info = unique_items[idx]
                     img_widget.click_exists(timeout=2)
                     selected_count += 1
-                    bot.log(f"   ✔️ Selected photo item {i + 1}/{actual_num}")
+                    bot.log(f"   ✔️ Selected photo item {order}/{actual_num} (index {idx}, bottom-up)")
                     bot.smart_sleep(0.6)
                 except Exception as ce:
-                    logger.debug(f"Error selecting photo index {i}: {ce}")
+                    logger.debug(f"Error selecting photo index {idx}: {ce}")
 
             return selected_count
 
@@ -963,8 +973,8 @@ def click_post_button(bot: BaseAutomator, timeout: int = 25) -> bool:
                 break
 
         if clicked:
-            bot.log("⏳ Waiting for post to finish publishing...")
-            bot.smart_sleep(5.0)
+            bot.log("⏳ Waiting for post to finish publishing (10s)...")
+            bot.smart_sleep(10.0, 10.5)
 
             write_box = bot.d(textMatches=r"(?i).*Write something.*|.*Viết gì đó.*|.*Bạn đang nghĩ gì.*")
             if write_box.exists or not bot.d(textMatches=r"(?i)^Post$|^Đăng$").exists:
@@ -1090,7 +1100,7 @@ class FBDiscussionGroupAction:
 
         finally:
             if not is_success:
-                dump_error_view(self.automator, account_uid=self.account.uid, step_name=f"error_{current_step}")
+                dump_error_view(self.automator, account_uid=self.account.uid, step_name=current_step)
             if pushed_remotes:
                 self.automator.cleanup_media()
 

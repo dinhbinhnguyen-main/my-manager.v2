@@ -108,8 +108,9 @@ def install_apk_cmd(
     uids: Optional[str] = typer.Option(None, "--uids", "-u", help="Comma-separated list of account UIDs to install APK for"),
     install_all: bool = typer.Option(False, "--all", help="Install APK on ALL managed accounts/containers in database"),
     apk: str = typer.Option(..., "--apk", "-a", help="Path to APK file on PC host to install"),
+    threads: int = typer.Option(4, "--threads", "-t", help="Max concurrent threads for APK installation (default: 4)"),
 ):
-    """Install an APK file onto single or multiple Redroid containers (auto-creates containers for accounts if needed, skips if already installed)."""
+    """Install an APK file onto single or multiple Redroid containers (uses default direct IP without proxy, max 4 threads, closes containers after install)."""
     target_uids = []
     if install_all or target == "all":
         # 1. First prioritize all accounts registered in database
@@ -135,22 +136,22 @@ def install_apk_cmd(
 
     if len(target_uids) == 1:
         tgt = target_uids[0]
-        console.print(f"[cyan]Checking account & container '{tgt}' for APK '{apk}' (auto-creating/starting if needed)...[/cyan]")
+        console.print(f"[cyan]Checking account & container '{tgt}' for APK '{apk}' (default IP / no proxy, auto-close after install)...[/cyan]")
         try:
-            status = manager.install_apk_status(tgt, apk, auto_start=True)
+            status = manager.install_apk_status(tgt, apk, auto_start=True, use_proxy=False, stop_after=True, max_concurrent=threads)
             if status == "created":
-                console.print(f"[bold green]✔ Created Redroid container & installed APK '{apk}' for '{tgt}'![/bold green]")
+                console.print(f"[bold green]✔ Created Redroid container, installed APK '{apk}', and closed container for '{tgt}'![/bold green]")
             elif status == "installed":
-                console.print(f"[bold green]✔ Successfully installed APK '{apk}' on container '{tgt}'![/bold green]")
+                console.print(f"[bold green]✔ Successfully installed APK '{apk}' on container '{tgt}' (container closed)![/bold green]")
             elif status == "skipped":
-                console.print(f"[bold yellow]↷ APK '{apk}' is already installed on container '{tgt}'. Skipped.[/bold yellow]")
+                console.print(f"[bold yellow]↷ APK '{apk}' is already installed on container '{tgt}'. Skipped (container closed).[/bold yellow]")
             else:
                 console.print(f"[bold red]✖ Failed to install APK '{apk}' on container '{tgt}'. Check ADB logs.[/bold red]")
         except Exception as e:
             console.print(f"[bold red]Error installing APK: {e}[/bold red]")
     else:
-        console.print(f"[bold cyan]Checking accounts and installing APK on {len(target_uids)} target(s)...[/bold cyan]")
-        results = manager.install_apk_batch(target_uids, apk_path=apk)
+        console.print(f"[bold cyan]Installing APK '{apk}' on {len(target_uids)} target(s) with max {threads} threads (default IP / no proxy, auto-close after install)...[/bold cyan]")
+        results = manager.install_apk_batch(target_uids, apk_path=apk, max_workers=threads, use_proxy=False, stop_after=True)
 
         table = Table(title=f"Batch APK Installation Results ({apk})", show_lines=True)
         table.add_column("Account UID / Target", style="cyan")
@@ -167,13 +168,13 @@ def install_apk_cmd(
             acc_name = acc.username if acc else "-"
             if status == "created":
                 created_count += 1
-                status_str = "[bold green]✔ Container Created & APK Installed[/bold green]"
+                status_str = "[bold green]✔ Container Created & APK Installed (Closed)[/bold green]"
             elif status == "installed":
                 installed_count += 1
-                status_str = "[bold green]✔ APK Installed[/bold green]"
+                status_str = "[bold green]✔ APK Installed (Closed)[/bold green]"
             elif status == "skipped":
                 skipped_count += 1
-                status_str = "[bold yellow]↷ Skipped (Already Installed)[/bold yellow]"
+                status_str = "[bold yellow]↷ Skipped (Already Installed, Closed)[/bold yellow]"
             else:
                 failed_count += 1
                 status_str = "[bold red]✖ Failed / Error[/bold red]"
@@ -182,7 +183,7 @@ def install_apk_cmd(
 
         console.print(table)
         console.print(
-            f"[bold green]Completed Batch APK Install on {len(target_uids)} targets: [/bold green]"
+            f"[bold green]Completed Batch APK Install on {len(target_uids)} targets (max {threads} threads): [/bold green]"
             f"[green]{created_count} created[/green] | "
             f"[green]{installed_count} installed[/green] | "
             f"[yellow]{skipped_count} skipped[/yellow] | "

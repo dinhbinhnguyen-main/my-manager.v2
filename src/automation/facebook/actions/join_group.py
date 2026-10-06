@@ -212,10 +212,10 @@ class FBJoinGroupAction:
                     self.automator.smart_sleep(2.5, 4.0)
                     return True
 
-            # If not visible, swipe horizontally across tab bar (y ≈ 240)
+            # If not visible, swipe horizontally across tab bar (safely below status bar)
             try:
                 w, h = d.window_size()
-                tab_y = int(h * 0.125)  # approx y=240 on 1080x1920
+                tab_y = int(h * 0.16)
                 d.swipe(int(w * 0.85), tab_y, int(w * 0.15), tab_y, steps=12)
                 self.automator.smart_sleep(1.0, 1.5)
             except Exception as e:

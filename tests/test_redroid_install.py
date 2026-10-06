@@ -25,18 +25,26 @@ class TestRedroidInstall(unittest.TestCase):
              patch("src.db.repository.RedroidRepository.get_by_account_uid", return_value=None), \
              patch("src.db.repository.AccountRepository.get_by_uid", return_value=account), \
              patch.object(manager, "create_instance") as mock_create, \
+             patch.object(manager, "stop_instance") as mock_stop, \
              patch("src.db.repository.AccountRepository.bind_container") as mock_bind:
 
             mock_inst = MagicMock()
             mock_inst.container_id = "cid12345"
+            mock_inst.container_name = "redroid_test_uid_9999"
             mock_inst.adb_port = 5555
             mock_inst.device_profile_id = "prof1"
             mock_create.return_value = mock_inst
 
-            status = manager.install_apk_status("test_uid_9999", "data/apks/facebook.apk", auto_start=True)
+            status = manager.install_apk_status("test_uid_9999", "data/apks/facebook.apk", auto_start=True, use_proxy=False, stop_after=True)
             self.assertEqual(status, "created")
-            mock_create.assert_called_once_with(account_uid="test_uid_9999", apk_path="data/apks/facebook.apk")
+            mock_create.assert_called_once_with(
+                account_uid="test_uid_9999",
+                apk_path="data/apks/facebook.apk",
+                use_proxy=False,
+                max_concurrent=4,
+            )
             mock_bind.assert_called_once_with("test_uid_9999", "cid12345", "prof1")
+            mock_stop.assert_called_once_with("redroid_test_uid_9999")
 
     def test_install_apk_status_skips_if_already_installed(self):
         manager = RedroidManager()
@@ -52,6 +60,7 @@ class TestRedroidInstall(unittest.TestCase):
         with patch("src.db.repository.RedroidRepository.get_by_identifier", return_value=existing_inst), \
              patch.object(manager, "get_live_docker_status", return_value="running"), \
              patch("src.redroid.manager.ADBClient") as mock_adb_cls, \
+             patch.object(manager, "stop_instance") as mock_stop, \
              patch.object(manager, "ensure_app_permissions") as mock_perm:
 
             mock_client = MagicMock()
@@ -59,10 +68,11 @@ class TestRedroidInstall(unittest.TestCase):
             mock_client.is_app_installed.return_value = True  # Already installed!
             mock_adb_cls.return_value = mock_client
 
-            status = manager.install_apk_status("test_uid_8888", "data/apks/facebook.apk", auto_start=True)
+            status = manager.install_apk_status("test_uid_8888", "data/apks/facebook.apk", auto_start=True, stop_after=True)
             self.assertEqual(status, "skipped")
             mock_client.install_apk.assert_not_called()
             mock_perm.assert_called_once_with("redroid_test_uid", package_name="com.facebook.katana")
+            mock_stop.assert_called_once_with("redroid_test_uid")
 
     def test_install_apk_status_installs_if_not_installed(self):
         manager = RedroidManager()
@@ -78,6 +88,7 @@ class TestRedroidInstall(unittest.TestCase):
         with patch("src.db.repository.RedroidRepository.get_by_identifier", return_value=existing_inst), \
              patch.object(manager, "get_live_docker_status", return_value="running"), \
              patch("src.redroid.manager.ADBClient") as mock_adb_cls, \
+             patch.object(manager, "stop_instance") as mock_stop, \
              patch.object(manager, "ensure_app_permissions") as mock_perm:
 
             mock_client = MagicMock()
@@ -86,10 +97,21 @@ class TestRedroidInstall(unittest.TestCase):
             mock_client.install_apk.return_value = True
             mock_adb_cls.return_value = mock_client
 
-            status = manager.install_apk_status("test_uid_7777", "data/apks/facebook.apk", auto_start=True)
+            status = manager.install_apk_status("test_uid_7777", "data/apks/facebook.apk", auto_start=True, stop_after=True)
             self.assertEqual(status, "installed")
             mock_client.install_apk.assert_called_once_with("data/apks/facebook.apk")
             mock_perm.assert_called_once_with("redroid_test_uid", package_name="com.facebook.katana")
+            mock_stop.assert_called_once_with("redroid_test_uid")
+
+    def test_install_apk_batch_multithreaded(self):
+        manager = RedroidManager()
+        with patch.object(manager, "install_apk_status", return_value="installed") as mock_status:
+            targets = ["uid1", "uid2", "uid3", "uid4"]
+            res = manager.install_apk_batch(targets, "data/apks/facebook.apk", max_workers=4, use_proxy=False, stop_after=True)
+            self.assertEqual(len(res), 4)
+            for t in targets:
+                self.assertEqual(res[t], "installed")
+            self.assertEqual(mock_status.call_count, 4)
 
 
 if __name__ == "__main__":
