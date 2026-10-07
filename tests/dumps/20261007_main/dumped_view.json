@@ -1,12 +1,12 @@
 {
-  "device": "127.0.0.1:6557",
-  "timestamp": "20261003_181430",
+  "device": "127.0.0.1:6556",
+  "timestamp": "20261007_095754",
   "app_current": {
     "package": "com.facebook.katana",
     "activity": ".immersiveactivity.ImmersiveActivity",
-    "pid": 2456
+    "pid": 1196
   },
-  "total_elements": 78,
+  "total_elements": 77,
   "elements": [
     {
       "class": "android.widget.FrameLayout",
@@ -189,7 +189,7 @@
       "short_class": "ImageView",
       "resource_id": "",
       "text": "",
-      "content_desc": "Cover photo of group Bất động sản Đà Lạt và vùng ven Đà Lạt✅. Description is unavailable.",
+      "content_desc": "Cover photo of group THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .. Description is unavailable.",
       "clickable": true,
       "enabled": true,
       "checked": false,
@@ -203,140 +203,96 @@
         1080,
         373
       ],
-      "suggested_selector": "d(description=\"Cover photo of group Bất động sản Đà Lạt và vùng ven Đà Lạt✅. Description is unavailable.\")",
-      "xpath": "//*[@content-desc=\"Cover photo of group Bất động sản Đà Lạt và vùng ven Đà Lạt✅. Description is unavailable.\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "Group by Admin Hỗ Trợ",
-      "content_desc": "Group by Admin Hỗ Trợ",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,577][1048,617]",
-      "center": [
-        540,
-        597
-      ],
-      "size": [
-        1016,
-        40
-      ],
-      "suggested_selector": "d(text=\"Group by Admin Hỗ Trợ\")",
-      "xpath": "//*[@text=\"Group by Admin Hỗ Trợ\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "Admin Hỗ Trợ",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[175,577][385,617]",
-      "center": [
-        280,
-        597
-      ],
-      "size": [
-        210,
-        40
-      ],
-      "suggested_selector": "d(text=\"Admin Hỗ Trợ\")",
-      "xpath": "//*[@text=\"Admin Hỗ Trợ\"]"
+      "suggested_selector": "d(description=\"Cover photo of group THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .. Description is unavailable.\")",
+      "xpath": "//*[@content-desc=\"Cover photo of group THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .. Description is unavailable.\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Bất động sản Đà Lạt và vùng ven Đà Lạt✅,   Public group · 217K members",
+      "content_desc": "THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .,   Public group · 94K members",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[21,673][1059,895]",
+      "bounds": "[21,584][1059,806]",
       "center": [
         540,
-        784
+        695
       ],
       "size": [
         1038,
         222
       ],
-      "suggested_selector": "d(description=\"Bất động sản Đà Lạt và vùng ven Đà Lạt✅,   Public group · 217K members\")",
-      "xpath": "//*[@content-desc=\"Bất động sản Đà Lạt và vùng ven Đà Lạt✅,   Public group · 217K members\"]"
+      "suggested_selector": "d(description=\"THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .,   Public group · 94K members\")",
+      "xpath": "//*[@content-desc=\"THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .,   Public group · 94K members\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Bất động sản Đà Lạt và vùng ven Đà Lạt✅  ",
-      "content_desc": "Bất động sản Đà Lạt và vùng ven Đà Lạt✅  ",
+      "text": "THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .  ",
+      "content_desc": "THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .  ",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,681][1048,827]",
+      "bounds": "[32,592][1048,738]",
       "center": [
         540,
-        754
+        665
       ],
       "size": [
         1016,
         146
       ],
-      "suggested_selector": "d(text=\"Bất động sản Đà Lạt và vùng ven Đà Lạt✅  \")",
-      "xpath": "//*[@text=\"Bất động sản Đà Lạt và vùng ven Đà Lạt✅  \"]"
+      "suggested_selector": "d(text=\"THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .  \")",
+      "xpath": "//*[@text=\"THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .  \"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "  Public group · 217K members",
-      "content_desc": "  Public group · 217K members",
+      "text": "  Public group · 94K members",
+      "content_desc": "  Public group · 94K members",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,842][1048,882]",
+      "bounds": "[32,753][1048,793]",
       "center": [
         540,
-        862
+        773
       ],
       "size": [
         1016,
         40
       ],
-      "suggested_selector": "d(text=\"  Public group · 217K members\")",
-      "xpath": "//*[@text=\"  Public group · 217K members\"]"
+      "suggested_selector": "d(text=\"  Public group · 94K members\")",
+      "xpath": "//*[@text=\"  Public group · 94K members\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "joined Bất động sản Đà Lạt và vùng ven Đà Lạt✅ group",
+      "content_desc": "joined THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT . group",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,916][529,1011]",
+      "bounds": "[32,827][529,922]",
       "center": [
         280,
-        963
+        874
       ],
       "size": [
         497,
         95
       ],
-      "suggested_selector": "d(description=\"joined Bất động sản Đà Lạt và vùng ven Đà Lạt✅ group\")",
-      "xpath": "//*[@content-desc=\"joined Bất động sản Đà Lạt và vùng ven Đà Lạt✅ group\"]"
+      "suggested_selector": "d(description=\"joined THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT . group\")",
+      "xpath": "//*[@content-desc=\"joined THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT . group\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -348,10 +304,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[221,941][340,987]",
+      "bounds": "[221,852][340,898]",
       "center": [
         280,
-        964
+        875
       ],
       "size": [
         119,
@@ -365,22 +321,22 @@
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "invite others to join Bất động sản Đà Lạt và vùng ven Đà Lạt✅",
+      "content_desc": "invite others to join THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[551,916][1048,1011]",
+      "bounds": "[551,827][1048,922]",
       "center": [
         799,
-        963
+        874
       ],
       "size": [
         497,
         95
       ],
-      "suggested_selector": "d(description=\"invite others to join Bất động sản Đà Lạt và vùng ven Đà Lạt✅\")",
-      "xpath": "//*[@content-desc=\"invite others to join Bất động sản Đà Lạt và vùng ven Đà Lạt✅\"]"
+      "suggested_selector": "d(description=\"invite others to join THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .\")",
+      "xpath": "//*[@content-desc=\"invite others to join THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -392,10 +348,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[780,941][876,987]",
+      "bounds": "[780,852][876,898]",
       "center": [
         828,
-        964
+        875
       ],
       "size": [
         96,
@@ -414,10 +370,10 @@
       "enabled": false,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1043][1080,1138]",
+      "bounds": "[0,954][1080,1049]",
       "center": [
         540,
-        1090
+        1001
       ],
       "size": [
         1080,
@@ -436,10 +392,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": true,
-      "bounds": "[0,1043][1080,1138]",
+      "bounds": "[0,954][1080,1049]",
       "center": [
         540,
-        1090
+        1001
       ],
       "size": [
         1080,
@@ -453,44 +409,66 @@
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "You",
+      "content_desc": "Featured, new content",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1043][226,1138]",
+      "bounds": "[32,954][251,1049]",
       "center": [
-        129,
-        1090
+        141,
+        1001
       ],
       "size": [
-        194,
+        219,
         95
       ],
-      "suggested_selector": "d(description=\"You\")",
-      "xpath": "//*[@content-desc=\"You\"]"
+      "suggested_selector": "d(description=\"Featured, new content\")",
+      "xpath": "//*[@content-desc=\"Featured, new content\"]"
     },
     {
-      "class": "android.widget.ImageView",
-      "short_class": "ImageView",
+      "class": "android.widget.Button",
+      "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Profile picture",
-      "clickable": false,
+      "content_desc": "Reels",
+      "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[48,1059][111,1122]",
+      "bounds": "[271,954][432,1049]",
       "center": [
-        79,
-        1090
+        351,
+        1001
       ],
       "size": [
-        63,
-        63
+        161,
+        95
       ],
-      "suggested_selector": "d(description=\"Profile picture\")",
-      "xpath": "//*[@content-desc=\"Profile picture\"]"
+      "suggested_selector": "d(description=\"Reels\")",
+      "xpath": "//*[@content-desc=\"Reels\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Buy and Sell, new content",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[452,954][732,1049]",
+      "center": [
+        592,
+        1001
+      ],
+      "size": [
+        280,
+        95
+      ],
+      "suggested_selector": "d(description=\"Buy and Sell, new content\")",
+      "xpath": "//*[@content-desc=\"Buy and Sell, new content\"]"
     },
     {
       "class": "android.widget.Button",
@@ -502,10 +480,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[246,1043][434,1138]",
+      "bounds": "[752,954][940,1049]",
       "center": [
-        340,
-        1090
+        846,
+        1001
       ],
       "size": [
         188,
@@ -519,88 +497,22 @@
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Events",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[454,1043][635,1138]",
-      "center": [
-        544,
-        1090
-      ],
-      "size": [
-        181,
-        95
-      ],
-      "suggested_selector": "d(description=\"Events\")",
-      "xpath": "//*[@content-desc=\"Events\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Files",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[655,1043][801,1138]",
-      "center": [
-        728,
-        1090
-      ],
-      "size": [
-        146,
-        95
-      ],
-      "suggested_selector": "d(description=\"Files\")",
-      "xpath": "//*[@content-desc=\"Files\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
       "content_desc": "Albums",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[821,1043][1019,1138]",
+      "bounds": "[960,954][1080,1049]",
       "center": [
-        920,
-        1090
+        1020,
+        1001
       ],
       "size": [
-        198,
+        120,
         95
       ],
       "suggested_selector": "d(description=\"Albums\")",
       "xpath": "//*[@content-desc=\"Albums\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Reels",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[1039,1043][1080,1138]",
-      "center": [
-        1059,
-        1090
-      ],
-      "size": [
-        41,
-        95
-      ],
-      "suggested_selector": "d(description=\"Reels\")",
-      "xpath": "//*[@content-desc=\"Reels\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -612,10 +524,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1170][1080,1339]",
+      "bounds": "[0,1081][1080,1250]",
       "center": [
         540,
-        1254
+        1165
       ],
       "size": [
         1080,
@@ -625,70 +537,26 @@
       "xpath": ""
     },
     {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1202][200,1307]",
-      "center": [
-        116,
-        1254
-      ],
-      "size": [
-        168,
-        105
-      ],
-      "suggested_selector": "d(className=\"android.view.ViewGroup\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "Action chip profile picture",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[32,1202][200,1307]",
-      "center": [
-        116,
-        1254
-      ],
-      "size": [
-        168,
-        105
-      ],
-      "suggested_selector": "d(description=\"Action chip profile picture\")",
-      "xpath": "//*[@content-desc=\"Action chip profile picture\"]"
-    },
-    {
       "class": "android.widget.ImageView",
       "short_class": "ImageView",
       "resource_id": "",
       "text": "",
-      "content_desc": "Action chip profile picture",
-      "clickable": false,
+      "content_desc": "Show profile",
+      "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[53,1223][116,1286]",
+      "bounds": "[32,1113][137,1218]",
       "center": [
         84,
-        1254
+        1165
       ],
       "size": [
-        63,
-        63
+        105,
+        105
       ],
-      "suggested_selector": "d(description=\"Action chip profile picture\")",
-      "xpath": "//*[@content-desc=\"Action chip profile picture\"]"
+      "suggested_selector": "d(description=\"Show profile\")",
+      "xpath": "//*[@content-desc=\"Show profile\"]"
     },
     {
       "class": "android.widget.Button",
@@ -700,13 +568,13 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[210,1209][942,1300]",
+      "bounds": "[158,1120][942,1211]",
       "center": [
-        576,
-        1254
+        550,
+        1165
       ],
       "size": [
-        732,
+        784,
         91
       ],
       "suggested_selector": "d(text=\"Write something...\")",
@@ -722,10 +590,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[953,1207][1048,1302]",
+      "bounds": "[953,1118][1048,1213]",
       "center": [
         1000,
-        1254
+        1165
       ],
       "size": [
         95,
@@ -739,44 +607,154 @@
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Most relevant",
+      "content_desc": "Recent activity",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1339][1080,1455]",
+      "bounds": "[0,1250][1080,1366]",
       "center": [
         540,
-        1397
+        1308
       ],
       "size": [
         1080,
         116
       ],
-      "suggested_selector": "d(description=\"Most relevant\")",
-      "xpath": "//*[@content-desc=\"Most relevant\"]"
+      "suggested_selector": "d(description=\"Recent activity\")",
+      "xpath": "//*[@content-desc=\"Recent activity\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Most relevant",
-      "content_desc": "Most relevant",
+      "text": "Recent activity",
+      "content_desc": "Recent activity",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1381][953,1413]",
+      "bounds": "[32,1292][953,1324]",
       "center": [
         492,
-        1397
+        1308
       ],
       "size": [
         921,
         32
       ],
-      "suggested_selector": "d(text=\"Most relevant\")",
-      "xpath": "//*[@text=\"Most relevant\"]"
+      "suggested_selector": "d(text=\"Recent activity\")",
+      "xpath": "//*[@text=\"Recent activity\"]"
+    },
+    {
+      "class": "android.widget.HorizontalScrollView",
+      "short_class": "HorizontalScrollView",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1387][606,1482]",
+      "center": [
+        303,
+        1434
+      ],
+      "size": [
+        606,
+        95
+      ],
+      "suggested_selector": "d(className=\"android.widget.HorizontalScrollView\")",
+      "xpath": ""
+    },
+    {
+      "class": "android.widget.TabWidget",
+      "short_class": "TabWidget",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "All topics, 1 of 2",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,1387][259,1482]",
+      "center": [
+        145,
+        1434
+      ],
+      "size": [
+        227,
+        95
+      ],
+      "suggested_selector": "d(description=\"All topics, 1 of 2\")",
+      "xpath": "//*[@content-desc=\"All topics, 1 of 2\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "All topics",
+      "content_desc": "All topics",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[64,1412][227,1458]",
+      "center": [
+        145,
+        1435
+      ],
+      "size": [
+        163,
+        46
+      ],
+      "suggested_selector": "d(text=\"All topics\")",
+      "xpath": "//*[@text=\"All topics\"]"
+    },
+    {
+      "class": "android.widget.TabWidget",
+      "short_class": "TabWidget",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Nhà cho thuê, 2 of 2",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[280,1387][574,1482]",
+      "center": [
+        427,
+        1434
+      ],
+      "size": [
+        294,
+        95
+      ],
+      "suggested_selector": "d(description=\"Nhà cho thuê, 2 of 2\")",
+      "xpath": "//*[@content-desc=\"Nhà cho thuê, 2 of 2\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "Nhà cho thuê",
+      "content_desc": "Nhà cho thuê",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[312,1412][542,1458]",
+      "center": [
+        427,
+        1435
+      ],
+      "size": [
+        230,
+        46
+      ],
+      "suggested_selector": "d(text=\"Nhà cho thuê\")",
+      "xpath": "//*[@text=\"Nhà cho thuê\"]"
     },
     {
       "class": "android.view.ViewGroup",
@@ -788,10 +766,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1455][1080,1624]",
+      "bounds": "[0,1482][1080,1651]",
       "center": [
         540,
-        1539
+        1566
       ],
       "size": [
         1080,
@@ -805,66 +783,66 @@
       "short_class": "ImageView",
       "resource_id": "",
       "text": "",
-      "content_desc": "Open Phạm Văn Hưng's story, unseen story",
+      "content_desc": "Nga Kiury profile picture",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1487][137,1592]",
+      "bounds": "[32,1514][137,1619]",
       "center": [
         84,
-        1539
+        1566
       ],
       "size": [
         105,
         105
       ],
-      "suggested_selector": "d(description=\"Open Phạm Văn Hưng's story, unseen story\")",
-      "xpath": "//*[@content-desc=\"Open Phạm Văn Hưng's story, unseen story\"]"
+      "suggested_selector": "d(description=\"Nga Kiury profile picture\")",
+      "xpath": "//*[@content-desc=\"Nga Kiury profile picture\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "Phạm Văn Hưng•Follow",
-      "content_desc": "Phạm Văn Hưng•Follow",
+      "text": "Nga Kiury•Follow",
+      "content_desc": "Nga Kiury•Follow",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[158,1486][948,1535]",
+      "bounds": "[158,1513][948,1562]",
       "center": [
         553,
-        1510
+        1537
       ],
       "size": [
         790,
         49
       ],
-      "suggested_selector": "d(text=\"Phạm Văn Hưng•Follow\")",
-      "xpath": "//*[@text=\"Phạm Văn Hưng•Follow\"]"
+      "suggested_selector": "d(text=\"Nga Kiury•Follow\")",
+      "xpath": "//*[@text=\"Nga Kiury•Follow\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
-      "text": "Phạm Văn Hưng",
+      "text": "Nga Kiury",
       "content_desc": "",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[158,1486][462,1535]",
+      "bounds": "[158,1513][342,1562]",
       "center": [
-        310,
-        1510
+        250,
+        1537
       ],
       "size": [
-        304,
+        184,
         49
       ],
-      "suggested_selector": "d(text=\"Phạm Văn Hưng\")",
-      "xpath": "//*[@text=\"Phạm Văn Hưng\"]"
+      "suggested_selector": "d(text=\"Nga Kiury\")",
+      "xpath": "//*[@text=\"Nga Kiury\"]"
     },
     {
       "class": "android.widget.Button",
@@ -876,10 +854,10 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[494,1486][617,1535]",
+      "bounds": "[374,1513][497,1562]",
       "center": [
-        555,
-        1510
+        435,
+        1537
       ],
       "size": [
         123,
@@ -892,133 +870,133 @@
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "AI content•23h•Shared with: Public group",
-      "content_desc": "AI content•23h•Shared with: Public group",
+      "text": "2m•Shared with: Public group",
+      "content_desc": "2m•Shared with: Public group",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[169,1546][462,1584]",
+      "bounds": "[169,1573][276,1611]",
       "center": [
-        315,
-        1565
+        222,
+        1592
       ],
       "size": [
-        293,
+        107,
         38
       ],
-      "suggested_selector": "d(text=\"AI content•23h•Shared with: Public group\")",
-      "xpath": "//*[@text=\"AI content•23h•Shared with: Public group\"]"
-    },
-    {
-      "class": "android.widget.Button",
-      "short_class": "Button",
-      "resource_id": "",
-      "text": "AI content",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[169,1546][318,1584]",
-      "center": [
-        243,
-        1565
-      ],
-      "size": [
-        149,
-        38
-      ],
-      "suggested_selector": "d(text=\"AI content\")",
-      "xpath": "//*[@text=\"AI content\"]"
+      "suggested_selector": "d(text=\"2m•Shared with: Public group\")",
+      "xpath": "//*[@text=\"2m•Shared with: Public group\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "More options for Phạm Văn Hưng’s post",
+      "content_desc": "More options for Nga Kiury’s post",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[969,1455][1080,1565]",
+      "bounds": "[969,1482][1080,1592]",
       "center": [
         1024,
-        1510
+        1537
       ],
       "size": [
         111,
         110
       ],
-      "suggested_selector": "d(description=\"More options for Phạm Văn Hưng’s post\")",
-      "xpath": "//*[@content-desc=\"More options for Phạm Văn Hưng’s post\"]"
+      "suggested_selector": "d(description=\"More options for Nga Kiury’s post\")",
+      "xpath": "//*[@content-desc=\"More options for Nga Kiury’s post\"]"
     },
     {
       "class": "android.view.ViewGroup",
       "short_class": "ViewGroup",
       "resource_id": "",
-      "text": "2h5 sổ đất bằng phẳng như sân đường nước điện đón OK",
-      "content_desc": "2h5 sổ đất bằng phẳng như sân đường nước điện đón OK",
+      "text": "Cho thuê nhà nguyên căn hẻm oto đường Lữ Gia p9, Đà Lạt… more",
+      "content_desc": "Cho thuê nhà nguyên căn hẻm oto đường Lữ Gia p9, Đà Lạt… more",
       "clickable": true,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[32,1624][1048,1739]",
+      "bounds": "[32,1651][1048,1766]",
       "center": [
         540,
-        1681
+        1708
       ],
       "size": [
         1016,
         115
       ],
-      "suggested_selector": "d(text=\"2h5 sổ đất bằng phẳng như sân đường nước điện đón OK\")",
-      "xpath": "//*[@text=\"2h5 sổ đất bằng phẳng như sân đường nước điện đón OK\"]"
+      "suggested_selector": "d(text=\"Cho thuê nhà nguyên căn hẻm oto đường Lữ Gia p9, Đà Lạt… more\")",
+      "xpath": "//*[@text=\"Cho thuê nhà nguyên căn hẻm oto đường Lữ Gia p9, Đà Lạt… more\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "more",
+      "content_desc": "",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[191,1695][287,1744]",
+      "center": [
+        239,
+        1719
+      ],
+      "size": [
+        96,
+        49
+      ],
+      "suggested_selector": "d(text=\"more\")",
+      "xpath": "//*[@text=\"more\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Photo 1 of 4, expand photo",
+      "content_desc": "Photo 1 of 8, expand photo",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[0,1739][716,1794]",
+      "bounds": "[0,1766][536,1794]",
       "center": [
-        358,
-        1766
+        268,
+        1780
       ],
       "size": [
-        716,
-        55
+        536,
+        28
       ],
-      "suggested_selector": "d(description=\"Photo 1 of 4, expand photo\")",
-      "xpath": "//*[@content-desc=\"Photo 1 of 4, expand photo\"]"
+      "suggested_selector": "d(description=\"Photo 1 of 8, expand photo\")",
+      "xpath": "//*[@content-desc=\"Photo 1 of 8, expand photo\"]"
     },
     {
       "class": "android.widget.Button",
       "short_class": "Button",
       "resource_id": "",
       "text": "",
-      "content_desc": "Photo 2 of 4, expand photo",
+      "content_desc": "Photo 2 of 8, expand photo",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[724,1739][1080,1794]",
+      "bounds": "[544,1766][1080,1794]",
       "center": [
-        902,
-        1766
+        812,
+        1780
       ],
       "size": [
-        356,
-        55
+        536,
+        28
       ],
-      "suggested_selector": "d(description=\"Photo 2 of 4, expand photo\")",
-      "xpath": "//*[@content-desc=\"Photo 2 of 4, expand photo\"]"
+      "suggested_selector": "d(description=\"Photo 2 of 8, expand photo\")",
+      "xpath": "//*[@content-desc=\"Photo 2 of 8, expand photo\"]"
     },
     {
       "class": "android.widget.LinearLayout",
@@ -1135,7 +1113,7 @@
       "short_class": "ImageView",
       "resource_id": "com.facebook.katana:id/(name removed)",
       "text": "",
-      "content_desc": "Search in Bất động sản Đà Lạt và vùng ven Đà Lạt✅",
+      "content_desc": "Search in THUÊ - CHO THUÊ NHÀ NGUYÊN CĂN TP ĐÀ LẠT .",
       "clickable": true,
       "enabled": true,
       "checked": false,
@@ -1530,19 +1508,19 @@
       "class": "android.widget.TextView",
       "short_class": "TextView",
       "resource_id": "com.android.systemui:id/clock",
-      "text": "11:14",
-      "content_desc": "11:14 AM",
+      "text": "2:57",
+      "content_desc": "2:57 AM",
       "clickable": false,
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[21,0][133,63]",
+      "bounds": "[21,0][112,63]",
       "center": [
-        77,
+        66,
         31
       ],
       "size": [
-        112,
+        91,
         63
       ],
       "suggested_selector": "d(resourceId=\"com.android.systemui:id/clock\")",
@@ -1558,13 +1536,13 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[133,0][513,63]",
+      "bounds": "[112,0][513,63]",
       "center": [
-        323,
+        312,
         31
       ],
       "size": [
-        380,
+        401,
         63
       ],
       "suggested_selector": "d(resourceId=\"com.android.systemui:id/notification_icon_area\")",
@@ -1580,13 +1558,13 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[133,0][513,63]",
+      "bounds": "[112,0][513,63]",
       "center": [
-        323,
+        312,
         31
       ],
       "size": [
-        380,
+        401,
         63
       ],
       "suggested_selector": "d(resourceId=\"com.android.systemui:id/notification_icon_area_inner\")",
@@ -1602,13 +1580,13 @@
       "enabled": true,
       "checked": false,
       "scrollable": false,
-      "bounds": "[133,0][513,63]",
+      "bounds": "[112,0][513,63]",
       "center": [
-        323,
+        312,
         31
       ],
       "size": [
-        380,
+        401,
         63
       ],
       "suggested_selector": "d(resourceId=\"com.android.systemui:id/notificationIcons\")",

@@ -193,13 +193,15 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
             ban_btn = bot.get_button_by_text("bạn đang bán gì", timeout=1)
             public_badge = bot.get_button_by_text("public group", timeout=1)
             joined_btn = bot.get_button_by_text("joined", timeout=1)
+            buy_sell_btn = bot.d(descriptionMatches=r"(?i).*(buy and sell|mua và bán|mua bán).*") if bot.d else None
 
             if (
                 (selling_btn and selling_btn.exists) or 
                 (item_btn and item_btn.exists) or 
                 (ban_btn and ban_btn.exists) or 
                 (public_badge and public_badge.exists) or 
-                (joined_btn and joined_btn.exists)
+                (joined_btn and joined_btn.exists) or
+                (buy_sell_btn and buy_sell_btn.exists)
             ):
                 bot.log(f"✔️ Successfully accessed Group {group_id}!")
                 bot.smart_sleep(1.5)
@@ -211,6 +213,110 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
     return True
 
 
+def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
+    """
+    Checks if group view has a 'Buy and Sell' / 'Mua và bán' tab or button.
+    If present, clicks it to navigate into the Buy and Sell feed before searching for listing composer.
+    """
+    if not bot.d:
+        return False
+
+    buy_sell_patterns = [
+        r"(?i).*(buy and sell|buy & sell|mua và bán|mua & bán|mua bán).*"
+    ]
+
+    try:
+        # 1. Look for Button with description matching Buy and Sell (e.g. 'Buy and Sell, new content')
+        for p in buy_sell_patterns:
+            btn_desc = bot.d(className="android.widget.Button", descriptionMatches=p)
+            if btn_desc.exists and btn_desc.count > 0:
+                for idx in range(btn_desc.count):
+                    try:
+                        elem = btn_desc[idx]
+                        info = elem.info
+                        b = info.get("bounds", {})
+                        if b.get("top", 0) >= 180:
+                            desc = info.get("contentDescription", "")
+                            bot.log(f"👆 Found 'Buy and Sell' tab button (desc='{desc}'). Clicking...")
+                            elem.click()
+                            bot.smart_sleep(2.0)
+                            return True
+                    except Exception as e:
+                        logger.debug(f"Error clicking buy_sell desc button: {e}")
+
+        # 2. Look for Button with text matching Buy and Sell
+        for p in buy_sell_patterns:
+            btn_txt = bot.d(className="android.widget.Button", textMatches=p)
+            if btn_txt.exists and btn_txt.count > 0:
+                for idx in range(btn_txt.count):
+                    try:
+                        elem = btn_txt[idx]
+                        info = elem.info
+                        b = info.get("bounds", {})
+                        if b.get("top", 0) >= 180:
+                            txt = info.get("text", "")
+                            bot.log(f"👆 Found 'Buy and Sell' tab button (text='{txt}'). Clicking...")
+                            elem.click()
+                            bot.smart_sleep(2.0)
+                            return True
+                    except Exception as e:
+                        logger.debug(f"Error clicking buy_sell text button: {e}")
+
+        # 3. Look for clickable TabWidget / ViewGroup / generic clickable element matching Buy and Sell
+        for p in buy_sell_patterns:
+            tab_desc = bot.d(clickable=True, descriptionMatches=p)
+            if tab_desc.exists and tab_desc.count > 0:
+                for idx in range(tab_desc.count):
+                    try:
+                        elem = tab_desc[idx]
+                        info = elem.info
+                        b = info.get("bounds", {})
+                        if b.get("top", 0) >= 180:
+                            desc = info.get("contentDescription", "")
+                            bot.log(f"👆 Found 'Buy and Sell' clickable tab (desc='{desc}'). Clicking...")
+                            elem.click()
+                            bot.smart_sleep(2.0)
+                            return True
+                    except Exception as e:
+                        logger.debug(f"Error clicking buy_sell clickable tab: {e}")
+
+            tab_txt = bot.d(clickable=True, textMatches=p)
+            if tab_txt.exists and tab_txt.count > 0:
+                for idx in range(tab_txt.count):
+                    try:
+                        elem = tab_txt[idx]
+                        info = elem.info
+                        b = info.get("bounds", {})
+                        if b.get("top", 0) >= 180:
+                            txt = info.get("text", "")
+                            bot.log(f"👆 Found 'Buy and Sell' clickable tab (text='{txt}'). Clicking...")
+                            elem.click()
+                            bot.smart_sleep(2.0)
+                            return True
+                    except Exception as e:
+                        logger.debug(f"Error clicking buy_sell clickable text tab: {e}")
+
+        # 4. Keyword helper lookup fallback
+        for kw in ["buy and sell", "mua và bán", "mua bán", "buy & sell"]:
+            btn = bot.get_button_by_text(kw, timeout=0.5)
+            if btn and btn.exists:
+                try:
+                    info = btn.info
+                    b = info.get("bounds", {})
+                    if b.get("top", 0) >= 180:
+                        bot.log(f"👆 Found '{kw}' button helper. Clicking...")
+                        btn.click_exists(timeout=2)
+                        bot.smart_sleep(2.0)
+                        return True
+                except Exception:
+                    pass
+
+    except Exception as ex:
+        logger.debug(f"Error checking 'Buy and Sell' tab: {ex}")
+
+    return False
+
+
 # ==============================================================================
 # STEP 2: CLICK 'WHAT ARE YOU SELLING?' / 'BẠN ĐANG BÁN GÌ?'
 # ==============================================================================
@@ -218,11 +324,15 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
 def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
     """
     STEP 2:
+    - First check if group view has a 'Buy and Sell' ('Mua và bán') tab or button and click it.
     - Search and click 'What are you selling?' (or 'Bạn đang bán gì?', 'Sell something', 'Item', 'Tạo bài niêm yết').
     - Tries current view, and if not found, scrolls down up to 3 times.
     - If Facebook displays intermediate category layout (e.g. 'Items' / 'Mặt hàng'), click 'Items'.
     - Wait logic: Wait for Listing Composer form to load.
     """
+    # Check and click 'Buy and Sell' tab if present on group landing view
+    check_and_click_buy_sell_tab(bot)
+
     bot.log("🔍 [Step 2] Searching for 'What are you selling?' button (with up to 3 scroll attempts)...")
 
     sell_keywords = [
@@ -284,6 +394,9 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
             bot.log(f"📜 [Scroll {scroll_idx + 1}/3] Scrolling down to find 'What are you selling?' button...")
             bot.swipe_up(scale=0.35)
             bot.smart_sleep(1.2)
+            # Re-check if Buy & Sell tab appeared after scroll
+            if check_and_click_buy_sell_tab(bot):
+                bot.smart_sleep(1.0)
             if _try_click_sell():
                 clicked = True
                 break
