@@ -268,9 +268,14 @@ class BaseAutomator:
         else:
             self.adb_client.stop_app(self.package_name)
 
-    def smart_sleep(self, min_sec: float = 1.5, max_sec: float = 3.5):
-        """Sleeps for a random duration to mimic human pause."""
-        time.sleep(random.uniform(min_sec, max_sec))
+    def smart_sleep(self, min_sec: Optional[float] = None, max_sec: Optional[float] = None):
+        """Sleeps for a random duration (min_sec..max_sec) or fixed duration (min_sec) to mimic human pause."""
+        if min_sec is not None and max_sec is not None:
+            time.sleep(random.uniform(min_sec, max_sec))
+        elif min_sec is not None:
+            time.sleep(min_sec)
+        else:
+            time.sleep(random.uniform(1.5, 3.5))
 
     def click_element(self, text: Optional[str] = None, resource_id: Optional[str] = None, xpath: Optional[str] = None, timeout: float = 10.0) -> bool:
         """Clicks an element by text, resource-id, or xpath with smart waiting."""
