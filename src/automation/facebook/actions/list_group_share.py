@@ -193,7 +193,7 @@ def open_facebook_group(bot: BaseAutomator, raw_group: str, timeout: int = 15) -
             ban_btn = bot.get_button_by_text("bạn đang bán gì", timeout=1)
             public_badge = bot.get_button_by_text("public group", timeout=1)
             joined_btn = bot.get_button_by_text("joined", timeout=1)
-            buy_sell_btn = bot.d(descriptionMatches=r"(?i).*(buy and sell|mua và bán|mua bán).*") if bot.d else None
+            buy_sell_btn = bot.d(descriptionMatches=r"(?i)^(buy and sell|buy & sell|mua và bán|mua & bán)(\s*,.*)?$") if bot.d else None
 
             if (
                 (selling_btn and selling_btn.exists) or 
@@ -222,8 +222,20 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
         return False
 
     buy_sell_patterns = [
-        r"(?i).*(buy and sell|buy & sell|mua và bán|mua & bán|mua bán).*"
+        r"(?i)^(buy and sell|buy & sell|mua và bán|mua & bán)(\s*,.*)?$",
+        r"(?i)^mua bán(\s*,.*)?$"
     ]
+    excluded_keywords = [
+        "members", "thành viên", "public group", "private group",
+        "nhóm công khai", "nhóm riêng tư", "đã tham gia", "joined",
+        "invite", "mời", "follow", "theo dõi"
+    ]
+
+    def _is_invalid(text_val: str) -> bool:
+        if not text_val:
+            return False
+        lower = text_val.lower()
+        return any(ex in lower for ex in excluded_keywords)
 
     try:
         # 1. Look for Button with description matching Buy and Sell (e.g. 'Buy and Sell, new content')
@@ -234,9 +246,11 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
                     try:
                         elem = btn_desc[idx]
                         info = elem.info
+                        desc = info.get("contentDescription", "")
+                        if _is_invalid(desc):
+                            continue
                         b = info.get("bounds", {})
                         if b.get("top", 0) >= 180:
-                            desc = info.get("contentDescription", "")
                             bot.log(f"👆 Found 'Buy and Sell' tab button (desc='{desc}'). Clicking...")
                             elem.click()
                             bot.smart_sleep(2.0)
@@ -252,9 +266,11 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
                     try:
                         elem = btn_txt[idx]
                         info = elem.info
+                        txt = info.get("text", "")
+                        if _is_invalid(txt):
+                            continue
                         b = info.get("bounds", {})
                         if b.get("top", 0) >= 180:
-                            txt = info.get("text", "")
                             bot.log(f"👆 Found 'Buy and Sell' tab button (text='{txt}'). Clicking...")
                             elem.click()
                             bot.smart_sleep(2.0)
@@ -270,9 +286,11 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
                     try:
                         elem = tab_desc[idx]
                         info = elem.info
+                        desc = info.get("contentDescription", "")
+                        if _is_invalid(desc):
+                            continue
                         b = info.get("bounds", {})
                         if b.get("top", 0) >= 180:
-                            desc = info.get("contentDescription", "")
                             bot.log(f"👆 Found 'Buy and Sell' clickable tab (desc='{desc}'). Clicking...")
                             elem.click()
                             bot.smart_sleep(2.0)
@@ -286,9 +304,11 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
                     try:
                         elem = tab_txt[idx]
                         info = elem.info
+                        txt = info.get("text", "")
+                        if _is_invalid(txt):
+                            continue
                         b = info.get("bounds", {})
                         if b.get("top", 0) >= 180:
-                            txt = info.get("text", "")
                             bot.log(f"👆 Found 'Buy and Sell' clickable tab (text='{txt}'). Clicking...")
                             elem.click()
                             bot.smart_sleep(2.0)
@@ -297,11 +317,14 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
                         logger.debug(f"Error clicking buy_sell clickable text tab: {e}")
 
         # 4. Keyword helper lookup fallback
-        for kw in ["buy and sell", "mua và bán", "mua bán", "buy & sell"]:
+        for kw in ["buy and sell", "mua và bán", "buy & sell"]:
             btn = bot.get_button_by_text(kw, timeout=0.5)
             if btn and btn.exists:
                 try:
                     info = btn.info
+                    txt = info.get("text", "") or info.get("contentDescription", "")
+                    if _is_invalid(txt):
+                        continue
                     b = info.get("bounds", {})
                     if b.get("top", 0) >= 180:
                         bot.log(f"👆 Found '{kw}' button helper. Clicking...")

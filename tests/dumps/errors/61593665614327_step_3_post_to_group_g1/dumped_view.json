@@ -1,12 +1,12 @@
 {
-  "adb_port": 6557,
-  "account_uid": "61593648862255",
-  "failed_step": "step_3_post_to_group_g2",
-  "timestamp": "20261008_150146",
+  "adb_port": 6580,
+  "account_uid": "61593665614327",
+  "failed_step": "step_3_post_to_group_g1",
+  "timestamp": "20261008_145443",
   "current_app": {
     "package": "com.facebook.katana",
     "activity": ".activity.react.ImmersiveReactActivity",
-    "pid": 5562
+    "pid": 2418
   },
   "total_elements": 28,
   "elements": [
@@ -432,8 +432,8 @@
       "class": "android.widget.TextView",
       "short_class": "TextView",
       "resource_id": "com.android.systemui:id/clock",
-      "text": "8:01",
-      "content_desc": "8:01 AM",
+      "text": "7:54",
+      "content_desc": "7:54 AM",
       "clickable": false,
       "enabled": true,
       "checked": false,

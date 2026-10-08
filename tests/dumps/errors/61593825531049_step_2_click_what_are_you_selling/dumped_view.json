@@ -1,103 +1,15 @@
 {
-  "adb_port": 6557,
-  "account_uid": "61593648862255",
-  "failed_step": "step_3_post_to_group_g2",
-  "timestamp": "20261008_150146",
+  "device_id": "6567",
+  "account_uid": "61593825531049",
+  "failed_step": "step_2_click_what_are_you_selling",
+  "timestamp": "20261008_102134",
   "current_app": {
     "package": "com.facebook.katana",
-    "activity": ".activity.react.ImmersiveReactActivity",
-    "pid": 5562
+    "activity": ".immersiveactivity.ImmersiveActivity",
+    "pid": 2068
   },
-  "total_elements": 28,
+  "total_elements": 47,
   "elements": [
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,804][824,1117]",
-      "center": [
-        412,
-        960
-      ],
-      "size": [
-        824,
-        313
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[15,814][771,1043]",
-      "center": [
-        393,
-        928
-      ],
-      "size": [
-        756,
-        229
-      ],
-      "suggested_selector": "d(className=\"android.widget.FrameLayout\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "You can find tips for how to improve your listing photos here.",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[15,825][771,1043]",
-      "center": [
-        393,
-        934
-      ],
-      "size": [
-        756,
-        218
-      ],
-      "suggested_selector": "d(description=\"You can find tips for how to improve your listing photos here.\")",
-      "xpath": "//*[@content-desc=\"You can find tips for how to improve your listing photos here.\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "You can find tips for how to improve your listing photos here.",
-      "content_desc": "You can find tips for how to improve your listing photos here.",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[57,880][729,979]",
-      "center": [
-        393,
-        929
-      ],
-      "size": [
-        672,
-        99
-      ],
-      "suggested_selector": "d(text=\"You can find tips for how to improve your listing photos here.\")",
-      "xpath": "//*[@text=\"You can find tips for how to improve your listing photos here.\"]"
-    },
     {
       "class": "android.widget.FrameLayout",
       "short_class": "FrameLayout",
@@ -321,6 +233,512 @@
     {
       "class": "android.widget.FrameLayout",
       "short_class": "FrameLayout",
+      "resource_id": "android:id/content",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,63][1080,1794]",
+      "center": [
+        540,
+        928
+      ],
+      "size": [
+        1080,
+        1731
+      ],
+      "suggested_selector": "d(resourceId=\"android:id/content\")",
+      "xpath": "//*[@resource-id=\"android:id/content\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,63][1080,1794]",
+      "center": [
+        540,
+        928
+      ],
+      "size": [
+        1080,
+        1731
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,63][1080,1794]",
+      "center": [
+        540,
+        928
+      ],
+      "size": [
+        1080,
+        1731
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Close",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[6,74][122,190]",
+      "center": [
+        64,
+        132
+      ],
+      "size": [
+        116,
+        116
+      ],
+      "suggested_selector": "d(description=\"Close\")",
+      "xpath": "//*[@content-desc=\"Close\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Confirm identity",
+      "content_desc": "Confirm identity",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[384,106][645,157]",
+      "center": [
+        514,
+        131
+      ],
+      "size": [
+        261,
+        51
+      ],
+      "suggested_selector": "d(text=\"Confirm identity\")",
+      "xpath": "//*[@text=\"Confirm identity\"]"
+    },
+    {
+      "class": "android.widget.ImageView",
+      "short_class": "ImageView",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Profile photo",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[461,232][619,390]",
+      "center": [
+        540,
+        311
+      ],
+      "size": [
+        158,
+        158
+      ],
+      "suggested_selector": "d(description=\"Profile photo\")",
+      "xpath": "//*[@content-desc=\"Profile photo\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Confirm your identity to access groups, Before you can access groups, we need to make sure you're really you.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,433][1048,707]",
+      "center": [
+        540,
+        570
+      ],
+      "size": [
+        1016,
+        274
+      ],
+      "suggested_selector": "d(description=\"Confirm your identity to access groups, Before you can access groups, we need to make sure you're really you.\")",
+      "xpath": "//*[@content-desc=\"Confirm your identity to access groups, Before you can access groups, we need to make sure you're really you.\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Confirm your identity to access groups",
+      "content_desc": "Confirm your identity to access groups",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,433][1048,580]",
+      "center": [
+        540,
+        506
+      ],
+      "size": [
+        1016,
+        147
+      ],
+      "suggested_selector": "d(text=\"Confirm your identity to access groups\")",
+      "xpath": "//*[@text=\"Confirm your identity to access groups\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Before you can access groups, we need to make sure you're really you.",
+      "content_desc": "Before you can access groups, we need to make sure you're really you.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,580][1048,707]",
+      "center": [
+        540,
+        643
+      ],
+      "size": [
+        1016,
+        127
+      ],
+      "suggested_selector": "d(text=\"Before you can access groups, we need to make sure you're really you.\")",
+      "xpath": "//*[@text=\"Before you can access groups, we need to make sure you're really you.\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "What happened?",
+      "content_desc": "What happened?",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[32,760][421,819]",
+      "center": [
+        226,
+        789
+      ],
+      "size": [
+        389,
+        59
+      ],
+      "suggested_selector": "d(text=\"What happened?\")",
+      "xpath": "//*[@text=\"What happened?\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "We noticed unusual activity, Before you can join groups, we need to make sure you're really you.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,840][1080,1038]",
+      "center": [
+        540,
+        939
+      ],
+      "size": [
+        1080,
+        198
+      ],
+      "suggested_selector": "d(description=\"We noticed unusual activity, Before you can join groups, we need to make sure you're really you.\")",
+      "xpath": "//*[@content-desc=\"We noticed unusual activity, Before you can join groups, we need to make sure you're really you.\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "We noticed unusual activity, Before you can join groups, we need to make sure you're really you.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,862][1048,1016]",
+      "center": [
+        587,
+        939
+      ],
+      "size": [
+        921,
+        154
+      ],
+      "suggested_selector": "d(description=\"We noticed unusual activity, Before you can join groups, we need to make sure you're really you.\")",
+      "xpath": "//*[@content-desc=\"We noticed unusual activity, Before you can join groups, we need to make sure you're really you.\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "We noticed unusual activity",
+      "content_desc": "We noticed unusual activity",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,862][669,918]",
+      "center": [
+        398,
+        890
+      ],
+      "size": [
+        542,
+        56
+      ],
+      "suggested_selector": "d(text=\"We noticed unusual activity\")",
+      "xpath": "//*[@text=\"We noticed unusual activity\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Before you can join groups, we need to make sure you're really you.",
+      "content_desc": "Before you can join groups, we need to make sure you're really you.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,918][1048,1016]",
+      "center": [
+        587,
+        967
+      ],
+      "size": [
+        921,
+        98
+      ],
+      "suggested_selector": "d(text=\"Before you can join groups, we need to make sure you're really you.\")",
+      "xpath": "//*[@text=\"Before you can join groups, we need to make sure you're really you.\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Confirm your identity, We'll confirm your identity by having you record a video selfie. Learn more",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,1038][1080,1236]",
+      "center": [
+        540,
+        1137
+      ],
+      "size": [
+        1080,
+        198
+      ],
+      "suggested_selector": "d(description=\"Confirm your identity, We'll confirm your identity by having you record a video selfie. Learn more\")",
+      "xpath": "//*[@content-desc=\"Confirm your identity, We'll confirm your identity by having you record a video selfie. Learn more\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Confirm your identity, We'll confirm your identity by having you record a video selfie. Learn more",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,1060][1048,1214]",
+      "center": [
+        587,
+        1137
+      ],
+      "size": [
+        921,
+        154
+      ],
+      "suggested_selector": "d(description=\"Confirm your identity, We'll confirm your identity by having you record a video selfie. Learn more\")",
+      "xpath": "//*[@content-desc=\"Confirm your identity, We'll confirm your identity by having you record a video selfie. Learn more\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Confirm your identity",
+      "content_desc": "Confirm your identity",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,1060][543,1116]",
+      "center": [
+        335,
+        1088
+      ],
+      "size": [
+        416,
+        56
+      ],
+      "suggested_selector": "d(text=\"Confirm your identity\")",
+      "xpath": "//*[@text=\"Confirm your identity\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "We'll confirm your identity by having you record a video selfie. Learn more",
+      "content_desc": "We'll confirm your identity by having you record a video selfie. Learn more",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[127,1116][1048,1214]",
+      "center": [
+        587,
+        1165
+      ],
+      "size": [
+        921,
+        98
+      ],
+      "suggested_selector": "d(text=\"We'll confirm your identity by having you record a video selfie. Learn more\")",
+      "xpath": "//*[@text=\"We'll confirm your identity by having you record a video selfie. Learn more\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "Learn more",
+      "content_desc": "Learn more",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[343,1167][543,1213]",
+      "center": [
+        443,
+        1190
+      ],
+      "size": [
+        200,
+        46
+      ],
+      "suggested_selector": "d(text=\"Learn more\")",
+      "xpath": "//*[@text=\"Learn more\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Continue",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[33,1548][1047,1643]",
+      "center": [
+        540,
+        1595
+      ],
+      "size": [
+        1014,
+        95
+      ],
+      "suggested_selector": "d(description=\"Continue\")",
+      "xpath": "//*[@content-desc=\"Continue\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Continue",
+      "content_desc": "Continue",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[462,1571][619,1621]",
+      "center": [
+        540,
+        1596
+      ],
+      "size": [
+        157,
+        50
+      ],
+      "suggested_selector": "d(text=\"Continue\")",
+      "xpath": "//*[@text=\"Continue\"]"
+    },
+    {
+      "class": "android.widget.Button",
+      "short_class": "Button",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "Not now",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[33,1666][1047,1761]",
+      "center": [
+        540,
+        1713
+      ],
+      "size": [
+        1014,
+        95
+      ],
+      "suggested_selector": "d(description=\"Not now\")",
+      "xpath": "//*[@content-desc=\"Not now\"]"
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "Not now",
+      "content_desc": "Not now",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[467,1689][613,1739]",
+      "center": [
+        540,
+        1714
+      ],
+      "size": [
+        146,
+        50
+      ],
+      "suggested_selector": "d(text=\"Not now\")",
+      "xpath": "//*[@text=\"Not now\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
       "resource_id": "com.android.systemui:id/status_bar_launch_animation_container",
       "text": "",
       "content_desc": "",
@@ -432,8 +850,8 @@
       "class": "android.widget.TextView",
       "short_class": "TextView",
       "resource_id": "com.android.systemui:id/clock",
-      "text": "8:01",
-      "content_desc": "8:01 AM",
+      "text": "3:21",
+      "content_desc": "3:21 AM",
       "clickable": false,
       "enabled": true,
       "checked": false,

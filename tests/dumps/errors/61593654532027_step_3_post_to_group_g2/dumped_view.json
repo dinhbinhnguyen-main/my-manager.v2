@@ -1,103 +1,15 @@
 {
-  "adb_port": 6557,
-  "account_uid": "61593648862255",
+  "adb_port": 6561,
+  "account_uid": "61593654532027",
   "failed_step": "step_3_post_to_group_g2",
-  "timestamp": "20261008_150146",
+  "timestamp": "20261008_145957",
   "current_app": {
     "package": "com.facebook.katana",
     "activity": ".activity.react.ImmersiveReactActivity",
-    "pid": 5562
+    "pid": 5621
   },
   "total_elements": 28,
   "elements": [
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "com.facebook.katana:id/(name removed)",
-      "text": "",
-      "content_desc": "",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[0,804][824,1117]",
-      "center": [
-        412,
-        960
-      ],
-      "size": [
-        824,
-        313
-      ],
-      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
-      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
-    },
-    {
-      "class": "android.widget.FrameLayout",
-      "short_class": "FrameLayout",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "",
-      "clickable": true,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[15,814][771,1043]",
-      "center": [
-        393,
-        928
-      ],
-      "size": [
-        756,
-        229
-      ],
-      "suggested_selector": "d(className=\"android.widget.FrameLayout\")",
-      "xpath": ""
-    },
-    {
-      "class": "android.view.View",
-      "short_class": "View",
-      "resource_id": "",
-      "text": "",
-      "content_desc": "You can find tips for how to improve your listing photos here.",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[15,825][771,1043]",
-      "center": [
-        393,
-        934
-      ],
-      "size": [
-        756,
-        218
-      ],
-      "suggested_selector": "d(description=\"You can find tips for how to improve your listing photos here.\")",
-      "xpath": "//*[@content-desc=\"You can find tips for how to improve your listing photos here.\"]"
-    },
-    {
-      "class": "android.view.ViewGroup",
-      "short_class": "ViewGroup",
-      "resource_id": "",
-      "text": "You can find tips for how to improve your listing photos here.",
-      "content_desc": "You can find tips for how to improve your listing photos here.",
-      "clickable": false,
-      "enabled": true,
-      "checked": false,
-      "scrollable": false,
-      "bounds": "[57,880][729,979]",
-      "center": [
-        393,
-        929
-      ],
-      "size": [
-        672,
-        99
-      ],
-      "suggested_selector": "d(text=\"You can find tips for how to improve your listing photos here.\")",
-      "xpath": "//*[@text=\"You can find tips for how to improve your listing photos here.\"]"
-    },
     {
       "class": "android.widget.FrameLayout",
       "short_class": "FrameLayout",
@@ -432,8 +344,8 @@
       "class": "android.widget.TextView",
       "short_class": "TextView",
       "resource_id": "com.android.systemui:id/clock",
-      "text": "8:01",
-      "content_desc": "8:01 AM",
+      "text": "7:59",
+      "content_desc": "7:59 AM",
       "clickable": false,
       "enabled": true,
       "checked": false,
@@ -625,6 +537,94 @@
       ],
       "suggested_selector": "d(resourceId=\"com.android.systemui:id/battery\")",
       "xpath": "//*[@resource-id=\"com.android.systemui:id/battery\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "com.facebook.katana:id/(name removed)",
+      "text": "",
+      "content_desc": "",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[0,804][824,1117]",
+      "center": [
+        412,
+        960
+      ],
+      "size": [
+        824,
+        313
+      ],
+      "suggested_selector": "d(resourceId=\"com.facebook.katana:id/(name removed)\")",
+      "xpath": "//*[@resource-id=\"com.facebook.katana:id/(name removed)\"]"
+    },
+    {
+      "class": "android.widget.FrameLayout",
+      "short_class": "FrameLayout",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "",
+      "clickable": true,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[15,814][771,1043]",
+      "center": [
+        393,
+        928
+      ],
+      "size": [
+        756,
+        229
+      ],
+      "suggested_selector": "d(className=\"android.widget.FrameLayout\")",
+      "xpath": ""
+    },
+    {
+      "class": "android.view.View",
+      "short_class": "View",
+      "resource_id": "",
+      "text": "",
+      "content_desc": "You can find tips for how to improve your listing photos here.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[15,825][771,1043]",
+      "center": [
+        393,
+        934
+      ],
+      "size": [
+        756,
+        218
+      ],
+      "suggested_selector": "d(description=\"You can find tips for how to improve your listing photos here.\")",
+      "xpath": "//*[@content-desc=\"You can find tips for how to improve your listing photos here.\"]"
+    },
+    {
+      "class": "android.view.ViewGroup",
+      "short_class": "ViewGroup",
+      "resource_id": "",
+      "text": "You can find tips for how to improve your listing photos here.",
+      "content_desc": "You can find tips for how to improve your listing photos here.",
+      "clickable": false,
+      "enabled": true,
+      "checked": false,
+      "scrollable": false,
+      "bounds": "[57,880][729,979]",
+      "center": [
+        393,
+        929
+      ],
+      "size": [
+        672,
+        99
+      ],
+      "suggested_selector": "d(text=\"You can find tips for how to improve your listing photos here.\")",
+      "xpath": "//*[@text=\"You can find tips for how to improve your listing photos here.\"]"
     }
   ]
 }
