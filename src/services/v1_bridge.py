@@ -257,10 +257,12 @@ class V1DatabaseBridge:
     ) -> Optional[Dict[str, Any]]:
         return self.get_random_active_product(category="real_estate", transaction_type=transaction_type)
 
-    def get_product_images(self, product_id: str) -> List[str]:
+    def get_product_images(self, product_id: str, is_watermark: bool = True) -> List[str]:
         """
         Retrieves absolute paths of image files for a specific product ID from v1_image_dir.
-        Takes images strictly from the original source directory (source_*), avoiding watermark images.
+        Prioritizes watermarked images (with_watermark_* or directories containing 'watermark') by default (is_watermark=True),
+        with fallback to original source directory (source_*).
+        If is_watermark=False, prioritizes the source directory with fallback to watermark.
         """
         image_base = Path(self._image_dir)
         valid_exts = {".jpg", ".jpeg", ".png", ".webp"}
@@ -268,32 +270,60 @@ class V1DatabaseBridge:
 
         target_dirs = [
             image_base / str(product_id),
+            Path("/Volumes/KINGSTON/Ext_dev/python/my-manager.v1.repositories/images") / str(product_id),
             Path("/home/dinhbinhnguyen/Devs/my-manager.v1/bin/products") / str(product_id),
             Path("/home/dinhbinhnguyen/Devs/phonemanager.v1/repositories/images") / str(product_id),
             Path("/home/dinhbinhnguyen/Devs/my-manager.v1/assets/images") / str(product_id),
+            Path("/Users/dinhbinhnguyen/Dev/my-manager.v1/bin/products") / str(product_id),
+            Path("/Users/dinhbinhnguyen/Dev/phonemanager.v1/repositories/images") / str(product_id),
+            Path("/Users/dinhbinhnguyen/Dev/my-manager.v1/assets/images") / str(product_id),
         ]
+
+        primary_match = (
+            (lambda d: "watermark" in d.name.lower())
+            if is_watermark
+            else (lambda d: d.name.lower().startswith("source") or "source" in d.name.lower())
+        )
+        fallback_match = (
+            (lambda d: d.name.lower().startswith("source") or "source" in d.name.lower())
+            if is_watermark
+            else (lambda d: "watermark" in d.name.lower())
+        )
 
         for p_dir in target_dirs:
             if p_dir.exists():
-                # 1. Prioritize source_* directory (source_<id>, source_*, etc.)
-                src_dirs = [
+                # 1. Primary directory check (watermark by default, or source)
+                primary_dirs = [
                     d for d in p_dir.iterdir()
-                    if d.is_dir() and d.name.lower().startswith("source")
+                    if d.is_dir() and primary_match(d)
                 ]
-                for s_dir in src_dirs:
+                for d in primary_dirs:
                     found = [
-                        str(f) for f in sorted(s_dir.iterdir())
+                        str(f) for f in sorted(d.iterdir())
                         if f.is_file() and f.suffix.lower() in valid_exts and not f.name.startswith(".")
                     ]
                     if found:
                         images = found
                         break
 
-                # 2. Fallback: scan p_dir but explicitly exclude any watermark directory
+                # 2. Fallback directory check
+                if not images:
+                    fallback_dirs = [
+                        d for d in p_dir.iterdir()
+                        if d.is_dir() and fallback_match(d)
+                    ]
+                    for d in fallback_dirs:
+                        found = [
+                            str(f) for f in sorted(d.iterdir())
+                            if f.is_file() and f.suffix.lower() in valid_exts and not f.name.startswith(".")
+                        ]
+                        if found:
+                            images = found
+                            break
+
+                # 3. Direct files in p_dir or any remaining subfolder
                 if not images:
                     for root, dirs, files in os.walk(p_dir):
-                        # Filter out watermark directories in-place so os.walk does not traverse them
-                        dirs[:] = [d for d in dirs if "watermark" not in d.lower()]
                         for fname in sorted(files):
                             if not fname.startswith(".") and Path(fname).suffix.lower() in valid_exts:
                                 images.append(str(Path(root) / fname))
@@ -301,21 +331,33 @@ class V1DatabaseBridge:
                 if images:
                     break
 
-        # Global fallback: if product dir had no images, grab sample images from image_base (excluding watermark)
+        # Global fallback: if product dir had no images, grab sample images from image_base
         if not images and image_base.exists():
             logger.warning(f"No images found in product dir '{product_id}', searching global image_base '{image_base}'...")
-            for root, dirs, files in os.walk(image_base):
-                dirs[:] = [d for d in dirs if "watermark" not in d.lower()]
-                for fname in sorted(files):
-                    if not fname.startswith(".") and Path(fname).suffix.lower() in valid_exts:
-                        images.append(str(Path(root) / fname))
-                        if len(images) >= 5:
-                            break
-                if len(images) >= 5:
-                    break
+            if is_watermark:
+                for root, dirs, files in os.walk(image_base):
+                    if "watermark" in root.lower():
+                        for fname in sorted(files):
+                            if not fname.startswith(".") and Path(fname).suffix.lower() in valid_exts:
+                                images.append(str(Path(root) / fname))
+                                if len(images) >= 5:
+                                    break
+                    if len(images) >= 5:
+                        break
+
+            if not images:
+                for root, dirs, files in os.walk(image_base):
+                    for fname in sorted(files):
+                        if not fname.startswith(".") and Path(fname).suffix.lower() in valid_exts:
+                            images.append(str(Path(root) / fname))
+                            if len(images) >= 5:
+                                break
+                    if len(images) >= 5:
+                        break
 
         images.sort()
-        logger.info(f"Found {len(images)} source images for product ID '{product_id}'")
+        img_type = "watermarked" if is_watermark else "source"
+        logger.info(f"Found {len(images)} {img_type} images for product ID '{product_id}'")
         return images
 
     def get_template(

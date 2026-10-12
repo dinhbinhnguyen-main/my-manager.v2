@@ -11,7 +11,9 @@ console = Console()
 
 
 @app.command("random")
-def get_random_product():
+def get_random_product(
+    watermark: bool = typer.Option(True, "--watermark/--no-watermark", help="Prioritize watermarked images"),
+):
     """Get a random active selling real estate product from v1 DB."""
     bridge = V1DatabaseBridge()
     product = bridge.get_random_active_real_estate()
@@ -20,7 +22,7 @@ def get_random_product():
         return
 
     title, desc = bridge.format_product_summary(product)
-    images = bridge.get_product_images(str(product.get("id")))
+    images = bridge.get_product_images(str(product.get("id")), is_watermark=watermark)
 
     console.print(f"[bold cyan]Product ID:[/bold cyan] {product.get('id')} ({product.get('pid')})")
     console.print(f"[bold green]Title:[/bold green] {title}")
