@@ -72,6 +72,5 @@ htmlcov/
 /logs/
 *.log
 *.apk
-/test
-tests/dumps/
-tests/dumps/**
+/tests/dumps
+
