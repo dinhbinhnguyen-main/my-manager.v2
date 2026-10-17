@@ -1927,25 +1927,12 @@ def _is_matching_location(desc: str) -> bool:
 
 def _is_matching_transaction_type(desc: str, transaction_type: str = "rental") -> bool:
     """
-    Checks if group title matches the account's transaction type:
-    - Rental: ["thuê", "căn hộ", "sang nhượng", "thue", "can ho", "sang nhuong"]
-    - Sale: ["mua", "bán", "ban"]
+    Checks if group title matches the account's transaction type.
+    Delegates to canonical is_group_matching_transaction_type.
     """
-    text = desc.lower()
-    trans_clean = str(transaction_type or "rental").lower().strip()
-
-    if trans_clean in ("rental", "rent", "thue", "cho_thue"):
-        rental_kws = ["thuê", "căn hộ", "sang nhượng", "thue", "can ho", "sang nhuong"]
-        return any(kw in text for kw in rental_kws)
-    elif trans_clean in ("sale", "ban", "mua", "buy", "buy_sell"):
-        sale_kws = ["mua", "bán"]
-        if any(kw in text for kw in sale_kws):
-            return True
-        if re.search(r'\b(mua|ban)\b', text):
-            return True
-        return False
-
-    return False
+    from src.automation.facebook.actions.discussion_group import is_group_matching_transaction_type
+    is_prio, is_conf = is_group_matching_transaction_type(desc, transaction_type)
+    return is_prio and not is_conf
 
 
 def filter_and_rank_groups_by_transaction_type(
@@ -1957,14 +1944,17 @@ def filter_and_rank_groups_by_transaction_type(
     Filters and ranks groups based on:
     1. Mandatory: Group title must contain 'đà lạt' or 'lâm đồng'.
     2. Minimum members threshold (count >= min_members).
-    3. Transaction type priority:
-       - rental -> keywords in ['thuê', 'căn hộ', 'sang nhượng']
-       - sale   -> keywords in ['mua', 'bán']
-    4. Sorter: Prioritized matching groups first, then secondary location-matching groups,
+    3. Transaction type matching:
+       - Strict exclusion of conflicting groups (e.g. rental groups when transaction_type='sale').
+       - Prioritized matching groups first (e.g. sale groups for sale accounts).
+       - Secondary non-conflicting general groups (e.g. general BĐS Đà Lạt).
+    4. Sorter: Prioritized matching groups first, then secondary non-conflicting groups,
        all sorted descending by member count.
 
     Returns a list of tuples: (group_desc, member_count, is_transaction_priority_match)
     """
+    from src.automation.facebook.actions.discussion_group import is_group_matching_transaction_type
+
     # 1. Filter by mandatory location & min_members
     location_matched = {
         desc: count for desc, count in collected_groups.items()
@@ -1974,12 +1964,17 @@ def filter_and_rank_groups_by_transaction_type(
     if not location_matched:
         return []
 
-    # 2. Separate into priority (matches transaction_type) and secondary (location matched only)
+    # 2. Separate into priority and secondary, strictly discarding conflicting groups
     priority_groups = []
     secondary_groups = []
 
     for desc, count in location_matched.items():
-        if _is_matching_transaction_type(desc, transaction_type):
+        is_priority, is_conflicting = is_group_matching_transaction_type(desc, transaction_type)
+        if is_conflicting:
+            logger.debug(f"Excluding conflicting group for transaction_type '{transaction_type}': {desc}")
+            continue
+
+        if is_priority:
             priority_groups.append((desc, count, True))
         else:
             secondary_groups.append((desc, count, False))
@@ -1988,7 +1983,7 @@ def filter_and_rank_groups_by_transaction_type(
     priority_groups.sort(key=lambda x: x[1], reverse=True)
     secondary_groups.sort(key=lambda x: x[1], reverse=True)
 
-    # Combine: priority groups first, then remaining location-matched groups
+    # Combine: priority groups first, then remaining non-conflicting location-matched groups
     return priority_groups + secondary_groups
 
 

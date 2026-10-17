@@ -31,9 +31,26 @@ def create_batch(
     # Validate actions_json
     try:
         actions_list = json.loads(actions_json)
-        if not isinstance(actions_list, list):
-            console.print("[red]Error: --actions must be a valid JSON list of action objects.[/red]")
+        if not isinstance(actions_list, list) or not actions_list:
+            console.print("[red]Error: --actions must be a non-empty JSON list of action objects.[/red]")
             return
+        for idx, act in enumerate(actions_list):
+            if not isinstance(act, dict):
+                console.print(f"[red]Error: Step {idx + 1} in --actions must be a JSON object/dict.[/red]")
+                return
+            act_name = act.get("action") or act.get("name")
+            if not act_name:
+                if any(k in act for k in ("max_swipes", "min_delay", "max_delay", "max_likes", "scroll_count")):
+                    console.print(
+                        f"[yellow]Detected feed scroll parameters without an 'action' field in step {idx + 1}. Auto-adding 'action': 'scroll_feed'...[/yellow]"
+                    )
+                    act["action"] = "scroll_feed"
+                else:
+                    console.print(
+                        f"[red]Error: Step {idx + 1} in --actions is missing the required 'action' field.\n"
+                        f"Example: --actions '[{{\"action\": \"scroll_feed\", \"params\": {{\"max_swipes\": 25}}}}]'[/red]"
+                    )
+                    return
     except Exception as e:
         console.print(f"[red]Invalid JSON in --actions: {e}[/red]")
         return
@@ -464,6 +481,24 @@ ACTION_REGISTRY = {
         ],
         "single_cli": 'python main-cli.py run action --action discussion_group --uids "61599900011122" --auto-stop',
         "script_json": '{"action": "discussion_group", "params": {"use_v1_product": true, "use_ai": true}}',
+    },
+    "reel_interactions": {
+        "name": "reel_interactions",
+        "aliases": ["fb_reel_interactions", "reel", "fb_reel", "reels"],
+        "summary": "Full Facebook Reel Interactions: Deeplink, Watch 15s, Like, Save, Comment, and Share to Groups",
+        "description": "Opens reel via direct intent URI handler deeplink -> Delays 15s watching simulation -> Analyzes & clicks Like (skips if already liked) -> Saves reel to collection and returns -> Posts comment and returns -> Shares reel to specified number of Facebook groups.",
+        "params": [
+            {"name": "reel_id", "type": "str", "required": True, "default": "N/A", "desc": "Facebook Reel ID (e.g. '3046151639050612')"},
+            {"name": "like", "type": "bool", "required": False, "default": "true", "desc": "Like the reel (skips if already liked)"},
+            {"name": "comment", "type": "bool", "required": False, "default": "false", "desc": "Post a comment on the reel"},
+            {"name": "comment_content", "type": "str", "required": False, "default": '""', "desc": "Text content of the comment"},
+            {"name": "share", "type": "bool", "required": False, "default": "false", "desc": "Share the reel to Facebook groups"},
+            {"name": "share_num", "type": "int", "required": False, "default": "1", "desc": "Number of groups to share to (max 10)"},
+            {"name": "save", "type": "bool", "required": False, "default": "false", "desc": "Save the reel to collections"},
+            {"name": "watch_delay", "type": "float", "required": False, "default": "15.0", "desc": "Seconds to delay simulating watching the reel"}
+        ],
+        "single_cli": 'python main-cli.py run reel-interactions --reel-id "3046151639050612" --uids "61588749472767" --like --comment --comment-content "Video rất hay" --share --share-num 1 --save',
+        "script_json": '{"action": "reel_interactions", "params": {"reel_id": "3046151639050612", "like": true, "comment": true, "comment_content": "Tuyệt vời", "share": true, "share_num": 1, "save": true}}',
     }
 }
 

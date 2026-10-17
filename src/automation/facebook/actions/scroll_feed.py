@@ -79,7 +79,9 @@ class FBScrollFeedAction:
             swipes_performed += 1
 
             # Pause to simulate human reading
-            sleep_time = random.uniform(min_delay, max_delay)
+            actual_min = min(min_delay, max_delay)
+            actual_max = max(min_delay, max_delay)
+            sleep_time = random.uniform(actual_min, actual_max)
             logger.info(f"⏳ Reading post for {sleep_time:.1f}s...")
             self.automator.smart_sleep(min_sec=sleep_time, max_sec=sleep_time + 1.0)
 
@@ -90,42 +92,11 @@ class FBScrollFeedAction:
                 if self.automator.try_click_see_more():
                     logger.info("🔍 Clicked 'See more' to read full post.")
 
-            # Interaction 2: Like / React to post (7% chance)
-            if likes_done < max_likes and random.random() < 0.07:
-                like_clicked = False
-                # Try via UIAutomator2 native selector first
-                like_btn = d(className="android.widget.Button", descriptionMatches=r"(?i).*(Like button|Nút thích|Nút Thích|^Like$|^Thích$).*")
-                if not like_btn.exists:
-                    like_btn = d(descriptionMatches=r"(?i).*(Like button|Nút thích|Nút Thích|^Like$|^Thích$).*")
-                if not like_btn.exists:
-                    like_btn = d(textMatches=r"(?i)^(Like|Thích)$")
-
-                if like_btn.exists:
-                    try:
-                        like_btn.click()
-                        likes_done += 1
-                        logger.info(f"❤️ Liked random post to increase engagement ({likes_done}/{max_likes})")
-                        self.automator.smart_sleep(1.5, 3.0)
-                        like_clicked = True
-                    except Exception as e:
-                        logger.debug(f"Could not click Like: {e}")
-
-                if not like_clicked:
-                    like_xpaths = [
-                        "//android.widget.Button[contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích') or contains(@content-desc, 'Nút Thích') or @content-desc='Like' or @content-desc='Thích']",
-                        "//android.widget.Button[contains(@text, 'Like') or contains(@text, 'Thích')]",
-                        "//*[@content-desc='Like' or @content-desc='Thích' or contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích')]"
-                    ]
-                    for xpath in like_xpaths:
-                        if d.xpath(xpath).exists:
-                            try:
-                                d.xpath(xpath).click()
-                                likes_done += 1
-                                logger.info(f"❤️ Liked random post to increase engagement ({likes_done}/{max_likes})")
-                                self.automator.smart_sleep(1.5, 3.0)
-                                break
-                            except Exception as e:
-                                logger.debug(f"Could not click Like via xpath: {e}")
+            # Interaction 2: Like / React to post (evaluated when target not yet reached)
+            if likes_done < max_likes and random.random() < 0.35:
+                if self.automator.try_like_post():
+                    likes_done += 1
+                    logger.info(f"❤️ Liked post to increase engagement ({likes_done}/{max_likes})")
 
             # Interaction 3: Open comments (4% chance)
             if random.random() < 0.04:

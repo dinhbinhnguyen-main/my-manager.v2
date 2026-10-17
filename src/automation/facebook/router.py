@@ -15,6 +15,7 @@ from src.automation.facebook.actions.list_group_share import FBGroupShareAction
 from src.automation.facebook.actions.list_marketplace_share import FBMarketplaceShareAction
 from src.automation.facebook.actions.single_listing import FBSingleListingAction
 from src.automation.facebook.actions.scroll_feed import FBScrollFeedAction
+from src.automation.facebook.actions.reel_interactions import FBReelInteractionsAction
 
 logger = logging.getLogger(__name__)
 
@@ -26,11 +27,14 @@ class FBActionRouter:
     def dispatch(
         automator: BaseAutomator,
         account: Account,
-        action_name: str,
+        action_name: Optional[str],
         params: Optional[Dict[str, Any]] = None
     ) -> bool:
         params = params or {}
-        action = action_name.lower().strip()
+        if not action_name:
+            logger.error(f"Cannot dispatch Facebook action: action_name is None or empty for account UID {account.uid}")
+            return False
+        action = str(action_name).lower().strip()
         logger.info(f"Routing Facebook action '{action}' for account UID {account.uid}...")
 
         if action in ["login", "fb_login"]:
@@ -130,14 +134,35 @@ class FBActionRouter:
                 transaction_type=params.get("transaction_type")
             )
 
+        elif action in ["reel_interactions", "fb_reel_interactions", "reel", "fb_reel", "reels"]:
+            reel_id = params.get("reel_id")
+            if not reel_id:
+                logger.error("Missing required parameter 'reel_id' for reel_interactions action.")
+                return False
+
+            act = FBReelInteractionsAction(automator, account)
+            return act.execute(
+                reel_id=str(reel_id),
+                like=params.get("like", True),
+                comment=params.get("comment", False),
+                comment_content=params.get("comment_content", ""),
+                share=params.get("share", False),
+                share_num=int(params.get("share_num", 1)),
+                save=params.get("save", False),
+                watch_delay=float(params.get("watch_delay", 15.0)),
+            )
+
         else:
             logger.error(f"Unsupported Facebook action '{action_name}'.")
             return False
 
 
-def execute_action(action_name: str, adb_port: int, params: Dict[str, Any]) -> Dict[str, Any]:
+def execute_action(action_name: Optional[str], adb_port: int, params: Dict[str, Any]) -> Dict[str, Any]:
     """Top-level action execution dispatcher used by JobRunner."""
     from src.db.repository import AccountRepository
+
+    if not action_name:
+        return {"status": "failed", "message": "Action name is required and cannot be None or empty."}
 
     account_uid = params.get("account_uid", "")
     account = AccountRepository.get_by_uid(account_uid)

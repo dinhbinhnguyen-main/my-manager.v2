@@ -58,13 +58,13 @@ class RedisTracker:
         key = f"my_manager:job:{job_id}"
         state = {
             "job_id": str(job_id),
-            "account_uid": account_uid,
-            "status": status,
+            "account_uid": str(account_uid or ""),
+            "status": str(status or ""),
             "current_step": str(current_step),
             "total_steps": str(total_steps),
-            "current_action": current_action,
-            "container_id": container_id,
-            "message": message,
+            "current_action": str(current_action or ""),
+            "container_id": str(container_id or ""),
+            "message": str(message or ""),
         }
 
         if self._connected and self._client:

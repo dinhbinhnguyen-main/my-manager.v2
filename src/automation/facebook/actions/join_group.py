@@ -10,6 +10,7 @@ from src.core.models import Account, AccountStatus
 from src.db.repository import AccountRepository
 from src.automation.base_automator import BaseAutomator
 from src.automation.checkpoint_handler import CheckpointDetector
+from src.automation.facebook.actions.discussion_group import is_group_matching_transaction_type
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +139,16 @@ class FBJoinGroupAction:
                 clicked_coords.add(coord_key)
                 found_new_on_screen = True
 
-                # Try extracting group title for logging
+                # Try extracting group title for logging & transaction_type validation
                 group_title = self._extract_group_title(btn)
+
+                trans_type = getattr(self.account, "transaction_type", None)
+                if trans_type and group_title and group_title != "Unknown Group":
+                    is_priority, is_conflicting = is_group_matching_transaction_type(group_title, trans_type)
+                    if is_conflicting:
+                        logger.info(f"[{self.account.uid}] ⛔ Skipping conflicting group for '{trans_type}': '{group_title}'")
+                        continue
+
                 logger.info(f"[{self.account.uid}] 👉 Found group ({joined_count + 1}/{group_count}): '{group_title}'. Clicking Join...")
 
                 try:

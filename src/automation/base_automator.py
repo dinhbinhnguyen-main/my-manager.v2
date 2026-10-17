@@ -243,7 +243,10 @@ class BaseAutomator:
 
         if deeplink:
             logger.info(f"Launching app via Deep Link: '{deeplink}'")
-            cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' {self.package_name}"
+            if self.package_name == "com.facebook.katana":
+                cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' -n com.facebook.katana/com.facebook.katana.IntentUriHandler"
+            else:
+                cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' {self.package_name}"
             self.device.shell(cmd)
         else:
             self.device.app_start(self.package_name, stop=False)
@@ -342,34 +345,113 @@ class BaseAutomator:
         self.device.swipe(w // 2, sy, w // 2, ey, steps=10)
 
     def try_click_see_more(self) -> bool:
-        """Clicks 'See more / Xem thêm' button if visible."""
+        """Clicks 'See more / Xem thêm' text expansion button if visible.
+
+        Strictly excludes 3-dot overflow options menu ('See more options...', 'More options...').
+        """
         if not self.device:
             return False
+
+        # Dismiss 3-dots options sheet if accidentally open
+        for kw in ["Save post", "Lưu bài viết", "Hide post", "Ẩn bài viết", "Report post", "Báo cáo bài viết"]:
+            if self.device(text=kw).exists:
+                logger.info(f"Detected open options bottom sheet ('{kw}'). Dismissing with Back...")
+                self.device.press("back")
+                self.smart_sleep(0.5, 1.0)
+                break
+
+        # 1. Native UIAutomator2 regex - exact match on text or description
+        see_more_pattern = r"(?i)^(\.\.\.\s*|…\s*)?(See more|Xem thêm)$"
+        btn = self.device(textMatches=see_more_pattern)
+        if not btn.exists:
+            btn = self.device(descriptionMatches=see_more_pattern)
+
+        if btn.exists:
+            try:
+                info = btn.info
+                desc = (info.get("contentDescription") or "").lower()
+                text = (info.get("text") or "").lower()
+                if "option" not in desc and "tùy chọn" not in desc and "option" not in text and "tùy chọn" not in text:
+                    btn.click()
+                    self.smart_sleep(1.5, 2.5)
+                    return True
+            except Exception as e:
+                logger.debug(f"Error clicking see more button: {e}")
+
+        # 2. Robust XPath fallback (strictly excluding options menu)
         xpaths = [
-            "//*[contains(@text, 'See more') or contains(@text, 'Xem thêm') or contains(@text, 'See More')]",
-            "//*[contains(@content-desc, 'See more') or contains(@content-desc, 'Xem thêm')]"
+            "//*[(contains(@text, 'See more') or contains(@text, 'Xem thêm') or contains(@text, 'See More') or contains(@text, '… Xem thêm') or contains(@text, '… See more')) and not(contains(@text, 'option')) and not(contains(@text, 'tùy chọn')) and not(contains(@content-desc, 'option')) and not(contains(@content-desc, 'tùy chọn'))]",
+            "//*[@clickable='true' and (@content-desc='See more' or @content-desc='Xem thêm' or @content-desc='See More')]"
         ]
         for xp in xpaths:
-            if self.device.xpath(xp).exists:
-                self.device.xpath(xp).click()
-                self.smart_sleep(1.5, 3.0)
-                return True
+            elem = self.device.xpath(xp)
+            if elem.exists:
+                try:
+                    elem.click()
+                    self.smart_sleep(1.5, 2.5)
+                    return True
+                except Exception as e:
+                    logger.debug(f"Error clicking see more via xpath: {e}")
         return False
 
     def try_like_post(self) -> bool:
-        """Likes current post if button is visible."""
+        """Likes current post if an unliked button is visible on screen.
+
+        Strictly excludes already liked posts ('Like button, pressed', 'Reacted:', 'Đã thích', etc.).
+        """
         if not self.device:
             return False
+
+        # Dismiss 3-dots options sheet if open
+        for kw in ["Save post", "Lưu bài viết", "Hide post", "Ẩn bài viết"]:
+            if self.device(text=kw).exists:
+                logger.info(f"Detected open options bottom sheet ('{kw}'). Dismissing with Back...")
+                self.device.press("back")
+                self.smart_sleep(0.5, 1.0)
+                break
+
+        # Regex pattern matching UNLIKED states only
+        # Word boundary \bpressed\b matches 'pressed' but NOT 'unpressed'
+        unliked_pattern = r"(?i)^(?!.*(\bpressed\b|đã nhấn|reacted|đã thích)).*(Like button|Nút thích|Nút Thích|^Like$|^Thích$)"
+
+        # 1. Native UIAutomator2 search
+        like_btn = self.device(className="android.widget.Button", descriptionMatches=unliked_pattern)
+        if not like_btn.exists:
+            like_btn = self.device(descriptionMatches=unliked_pattern)
+        if not like_btn.exists:
+            like_btn = self.device(className="android.widget.Button", textMatches=r"(?i)^(Like|Thích)$")
+
+        if like_btn.exists:
+            try:
+                # Check button bounds to ensure it's comfortably inside visible viewport
+                bounds = like_btn.info.get("bounds", {})
+                top = bounds.get("top", 0)
+                bottom = bounds.get("bottom", 0)
+                display_h = self.device.info.get("displayHeight", 1920)
+                if top < 120 or bottom > display_h - 100:
+                    logger.debug(f"Like button out of safe viewport bounds ([top={top}, bottom={bottom}]). Skipping.")
+                else:
+                    like_btn.click()
+                    self.smart_sleep(1.5, 2.5)
+                    return True
+            except Exception as e:
+                logger.debug(f"Error clicking like button: {e}")
+
+        # 2. Robust XPath fallback (excluding already-liked indicators)
         xpaths = [
-            "//android.widget.Button[contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích') or contains(@content-desc, 'Nút Thích') or @content-desc='Like' or @content-desc='Thích']",
-            "//android.widget.Button[contains(@text, 'Like') or contains(@text, 'Thích')]",
-            "//*[@content-desc='Like' or @content-desc='Thích' or contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích')]"
+            "//android.widget.Button[(contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích') or contains(@content-desc, 'Nút Thích') or @content-desc='Like' or @content-desc='Thích') and not(contains(@content-desc, ', pressed')) and not(contains(@content-desc, 'đã nhấn')) and not(contains(@content-desc, 'Reacted')) and not(contains(@content-desc, 'Đã thích'))]",
+            "//android.widget.Button[(@text='Like' or @text='Thích') and not(contains(@content-desc, ', pressed')) and not(contains(@content-desc, 'đã nhấn'))]",
+            "//*[@clickable='true' and (contains(@content-desc, 'Like button') or contains(@content-desc, 'Nút thích')) and not(contains(@content-desc, ', pressed')) and not(contains(@content-desc, 'đã nhấn')) and not(contains(@content-desc, 'Reacted'))]"
         ]
         for xp in xpaths:
-            if self.device.xpath(xp).exists:
-                self.device.xpath(xp).click()
-                self.smart_sleep(1.0, 2.0)
-                return True
+            elem = self.device.xpath(xp)
+            if elem.exists:
+                try:
+                    elem.click()
+                    self.smart_sleep(1.5, 2.5)
+                    return True
+                except Exception as e:
+                    logger.debug(f"Error clicking like via xpath: {e}")
         return False
 
     def scroll_down(self, steps: int = 10):

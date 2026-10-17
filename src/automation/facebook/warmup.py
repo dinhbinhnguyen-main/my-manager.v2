@@ -51,8 +51,8 @@ class FBWarmupAction:
             if random.random() < 0.25:
                 self.automator.try_click_see_more()
 
-            # Random Like / React (7% chance)
-            if likes_done < max_likes and random.random() < 0.15:
+            # Random Like / React (evaluated when target not yet reached)
+            if likes_done < max_likes and random.random() < 0.35:
                 if self.automator.try_like_post():
                     likes_done += 1
                     logger.info(f"Liked post for {self.account.uid} ({likes_done}/{max_likes})")

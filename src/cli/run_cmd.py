@@ -23,6 +23,17 @@ console = Console()
 manager = RedroidManager()
 
 
+def _parse_uids(uids: List[str]) -> List[str]:
+    """Flattens and parses comma-separated UIDs, stripping spaces, quotes, and empty values."""
+    parsed = []
+    for item in uids:
+        for u in str(item).split(","):
+            clean = re.sub(r'[\'"\s]', '', u)
+            if clean and clean not in parsed:
+                parsed.append(clean)
+    return parsed
+
+
 def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = False):
     uid = re.sub(r'[\'"\s]', '', str(uid))
     """Worker task executing action on single account's Redroid container with auto-start & proxy."""
@@ -102,7 +113,7 @@ import json
 
 @app.command("action")
 def run_action(
-    action: str = typer.Option(..., help="Action type: login, warmup, marketplace, list_group_share, list_marketplace_share, single_listing, discussion_group, scroll_feed, join_group"),
+    action: str = typer.Option(..., help="Action type: login, warmup, marketplace, list_group_share, list_marketplace_share, single_listing, discussion_group, scroll_feed, join_group, reel_interactions"),
     uids: List[str] = typer.Option(..., help="List of Facebook UIDs to execute action on"),
     params: str = typer.Option("{}", help="JSON string of parameters for the action"),
     concurrency: int = typer.Option(2, help="Number of concurrent workers"),
@@ -117,10 +128,11 @@ def run_action(
             console.print(f"[bold red]Failed to parse --params JSON: {e}[/bold red]")
             return
 
-    console.print(f"[bold green]Starting batch action '{action}' on {len(uids)} accounts with concurrency {concurrency}...[/bold green]")
+    target_uids = _parse_uids(uids)
+    console.print(f"[bold green]Starting batch action '{action}' on {len(target_uids)} accounts with concurrency {concurrency}...[/bold green]")
     
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(_run_single_account, uid, action, parsed_params, auto_stop) for uid in uids]
+        futures = [executor.submit(_run_single_account, uid, action, parsed_params, auto_stop) for uid in target_uids]
         for f in futures:
             f.result()
 
@@ -146,9 +158,10 @@ def run_discussion_group_cmd(
         "use_v1_product": use_v1_product,
         "custom_content": content,
     }
-    console.print(f"[bold green]🚀 Running Discussion Group on {len(uids)} accounts (Trans: {transaction_type})...[/bold green]")
+    target_uids = _parse_uids(uids)
+    console.print(f"[bold green]🚀 Running Discussion Group on {len(target_uids)} accounts (Trans: {transaction_type})...[/bold green]")
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(_run_single_account, uid, "discussion_group", params, auto_stop) for uid in uids]
+        futures = [executor.submit(_run_single_account, uid, "discussion_group", params, auto_stop) for uid in target_uids]
         for f in futures:
             f.result()
     console.print("[bold green]✅ Finished Discussion Group execution![/bold green]")
@@ -173,9 +186,10 @@ def run_group_share_cmd(
         "use_ai": use_ai,
         "use_v1_product": use_v1_product,
     }
-    console.print(f"[bold green]🚀 Running Group Share on {len(uids)} accounts (Group: {group_id}, Share Count: {share_count})...[/bold green]")
+    target_uids = _parse_uids(uids)
+    console.print(f"[bold green]🚀 Running Group Share on {len(target_uids)} accounts (Group: {group_id}, Share Count: {share_count})...[/bold green]")
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(_run_single_account, uid, "list_group_share", params, auto_stop) for uid in uids]
+        futures = [executor.submit(_run_single_account, uid, "list_group_share", params, auto_stop) for uid in target_uids]
         for f in futures:
             f.result()
     console.print("[bold green]✅ Finished Group Share execution![/bold green]")
@@ -200,9 +214,10 @@ def run_marketplace_share_cmd(
         "use_ai": use_ai,
         "use_v1_product": use_v1_product,
     }
-    console.print(f"[bold green]🚀 Running Marketplace Listing & Share on {len(uids)} accounts (Location: {location})...[/bold green]")
+    target_uids = _parse_uids(uids)
+    console.print(f"[bold green]🚀 Running Marketplace Listing & Share on {len(target_uids)} accounts (Location: {location})...[/bold green]")
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(_run_single_account, uid, "list_marketplace_share", params, auto_stop) for uid in uids]
+        futures = [executor.submit(_run_single_account, uid, "list_marketplace_share", params, auto_stop) for uid in target_uids]
         for f in futures:
             f.result()
     console.print("[bold green]✅ Finished Marketplace Listing & Share execution![/bold green]")
@@ -225,9 +240,10 @@ def run_single_listing_cmd(
         "use_ai": use_ai,
         "use_v1_product": use_v1_product,
     }
-    console.print(f"[bold green]🚀 Running Single Listing on {len(uids)} accounts ({group_count} groups each)...[/bold green]")
+    target_uids = _parse_uids(uids)
+    console.print(f"[bold green]🚀 Running Single Listing on {len(target_uids)} accounts ({group_count} groups each)...[/bold green]")
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(_run_single_account, uid, "single_listing", params, auto_stop) for uid in uids]
+        futures = [executor.submit(_run_single_account, uid, "single_listing", params, auto_stop) for uid in target_uids]
         for f in futures:
             f.result()
     console.print("[bold green]✅ Finished Single Listing execution![/bold green]")
@@ -243,15 +259,58 @@ def run_join_group(
 ):
     """Directly executes keyword-based group search and join action."""
     params = {"keyword": keyword, "group_count": group_count}
+    target_uids = _parse_uids(uids)
     console.print(
-        f"[bold green]🚀 Starting 'join_group' action with keyword '{keyword}' ({group_count} groups/acc) for {len(uids)} accounts (concurrency {concurrency})...[/bold green]"
+        f"[bold green]🚀 Starting 'join_group' action with keyword '{keyword}' ({group_count} groups/acc) for {len(target_uids)} accounts (concurrency {concurrency})...[/bold green]"
     )
 
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(_run_single_account, uid, "join_group", params, auto_stop) for uid in uids]
+        futures = [executor.submit(_run_single_account, uid, "join_group", params, auto_stop) for uid in target_uids]
         for f in futures:
             f.result()
 
     console.print(f"[bold green]✅ Finished 'join_group' action![/bold green]")
+
+
+@app.command("reel-interactions")
+def run_reel_interactions(
+    uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs to execute on"),
+    reel_id: str = typer.Option(..., "--reel-id", "-r", help="Facebook Reel ID (e.g. '3046151639050612')"),
+    like: bool = typer.Option(True, "--like/--no-like", help="Like the reel (skips if already liked)"),
+    comment: bool = typer.Option(False, "--comment/--no-comment", help="Comment on the reel"),
+    comment_content: str = typer.Option("", "--comment-content", "-c", help="Content of the comment (picks random from preset list if omitted or empty)"),
+    share: bool = typer.Option(False, "--share/--no-share", help="Share reel to Facebook groups"),
+    share_num: int = typer.Option(1, "--share-num", "-s", help="Number of groups to share to (max 10)"),
+    save: bool = typer.Option(False, "--save/--no-save", help="Save reel to collections"),
+    watch_delay: float = typer.Option(15.0, "--watch-delay", "-w", help="Delay seconds to simulate watching the reel"),
+    concurrency: int = typer.Option(2, "--concurrency", "-m", help="Number of accounts to run concurrently"),
+    auto_stop: bool = typer.Option(False, "--auto-stop", help="Automatically stop container and release proxy after completion"),
+):
+    """Executes full Facebook Reel interactions: watch simulation, like, save, comment, and share to groups."""
+    params = {
+        "reel_id": reel_id,
+        "like": like,
+        "comment": comment,
+        "comment_content": comment_content,
+        "share": share,
+        "share_num": share_num,
+        "save": save,
+        "watch_delay": watch_delay,
+    }
+    target_uids = _parse_uids(uids)
+    if not target_uids:
+        console.print("[bold red]No valid account UIDs provided.[/bold red]")
+        return
+
+    console.print(
+        f"[bold green]🚀 Starting 'reel_interactions' on Reel '{reel_id}' for {len(target_uids)} accounts (concurrency {concurrency})...[/bold green]"
+    )
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [executor.submit(_run_single_account, uid, "reel_interactions", params, auto_stop) for uid in target_uids]
+        for f in futures:
+            f.result()
+
+    console.print(f"[bold green]✅ Finished 'reel_interactions' action![/bold green]")
 
 

@@ -33,6 +33,65 @@ class JobRunner:
         account_uid = re.sub(r'[\'"\s]', '', str(job.account_uid or ''))
         logger.info(f"[Job-{job.id}] Starting execution for account {account_uid}...")
 
+        # 0. Early validation & normalization of actions_json before consuming proxy or starting container
+        try:
+            raw_actions = json.loads(job.actions_json) if job.actions_json else []
+            if not isinstance(raw_actions, list) or not raw_actions:
+                raise ValueError(f"Job actions_json must be a non-empty list of action objects, got: {job.actions_json}")
+
+            normalized_actions = []
+            for idx, step in enumerate(raw_actions):
+                if not isinstance(step, dict):
+                    raise ValueError(f"Step {idx + 1} must be an object/dict, got: {type(step).__name__}")
+
+                action_name = step.get("action") or step.get("name")
+                params = step.get("params")
+                if not isinstance(params, dict):
+                    params = {k: v for k, v in step.items() if k not in ("action", "name", "step")}
+                else:
+                    extra = {k: v for k, v in step.items() if k not in ("action", "name", "step", "params")}
+                    params = {**extra, **params}
+
+                if not action_name:
+                    if any(k in step for k in ("max_swipes", "min_delay", "max_delay", "max_likes", "scroll_count")):
+                        logger.warning(
+                            f"[Job-{job.id}] Step {idx + 1} is missing 'action' but contains feed scroll parameters. "
+                            f"Auto-inferring action as 'scroll_feed'."
+                        )
+                        action_name = "scroll_feed"
+                    elif any(k in step for k in ("group_ids", "share_groups_count")):
+                        logger.warning(
+                            f"[Job-{job.id}] Step {idx + 1} is missing 'action' but contains group share parameters. "
+                            f"Auto-inferring action as 'list_group_share'."
+                        )
+                        action_name = "list_group_share"
+                    elif any(k in step for k in ("transaction_type", "listing_type")):
+                        logger.warning(
+                            f"[Job-{job.id}] Step {idx + 1} is missing 'action' but contains marketplace parameters. "
+                            f"Auto-inferring action as 'marketplace'."
+                        )
+                        action_name = "marketplace"
+                    else:
+                        raise ValueError(
+                            f"Step {idx + 1} is missing required 'action' field (e.g. 'scroll_feed', 'login', 'single_listing'): {step}"
+                        )
+
+                normalized_actions.append({"action": str(action_name).strip(), "params": params})
+
+        except Exception as e:
+            err_msg = f"Invalid job actions configuration: {e}"
+            logger.error(f"[Job-{job.id}] {err_msg}")
+            AutomationJobRepository.update_status(
+                job.id, status="failed", result_message=err_msg
+            )
+            self.redis_tracker.update_job_state(
+                job_id=job.id,
+                account_uid=account_uid,
+                status="failed",
+                message=err_msg,
+            )
+            return False
+
         # 1. Acquire Proxy (Wait up to 90s for an available proxy in the pool)
         proxy = None
         max_wait_sec = 90
@@ -102,13 +161,12 @@ class JobRunner:
                 job.id, status="running", container_id=container_id
             )
 
-            # 4. Parse action steps
-            actions = json.loads(job.actions_json)
-            total_steps = len(actions)
+            # 4. Use validated & normalized action steps
+            total_steps = len(normalized_actions)
 
             # 5. Execute action pipeline step-by-step
-            for index, step in enumerate(actions):
-                action_name = step.get("action")
+            for index, step in enumerate(normalized_actions):
+                action_name = step["action"]
                 params = step.get("params", {})
                 params["account_uid"] = account_uid
 

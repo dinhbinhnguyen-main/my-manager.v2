@@ -182,40 +182,43 @@ def is_group_matching_transaction_type(group_title: str, transaction_type: str =
     title = group_title.lower()
     t_type = str(transaction_type or "rental").lower().strip()
 
-    rental_exclusive_terms = [
+    rental_keywords = [
         "cho thuê", "cho thue", "for rent", "nhà trọ", "phòng trọ", "nha tro",
         "phong tro", "apartment for rent", "house for rent", "căn hộ cho thuê",
-        "can ho cho thue", "nhà cho thuê", "nha cho thue"
-    ]
-    rental_terms = rental_exclusive_terms + [
-        "thuê", "thue", "rent", "rental", "căn hộ", "can ho", "sang nhượng", "sang nhuong"
-    ]
-
-    sale_terms = [
-        "bán", "ban", "mua bán", "mua ban", "sale", "mua", "đất", "dat",
-        "nhà đất", "nha dat", "bất động sản", "bat dong san", "bds", "đất nền",
-        "dat nen", "nhà đẹp", "nha dep", "chính chủ", "chinh chu"
+        "can ho cho thue", "nhà cho thuê", "nha cho thue", "tìm phòng", "tim phong",
+        "ở ghép", "o ghep", "homestay", "mặt bằng cho thuê", "mat bang cho thue",
+        "thuê", "thue", "rent", "rental"
     ]
 
-    is_pure_rental = any(r in title for r in rental_exclusive_terms)
-    has_rental = any(r in title for r in rental_terms) or bool(re.search(r'\b(thue|rent|rental)\b', title))
-    has_sale = any(s in title for s in sale_terms) or bool(re.search(r'\b(ban|sale|mua)\b', title))
+    sale_exclusive_keywords = [
+        "bán", "ban", "mua bán", "mua ban", "sale", "mua", "đất nền",
+        "dat nen", "bán nhà", "ban nha", "bán đất", "ban dat", "chính chủ"
+    ]
+
+    has_rental = any(r in title for r in rental_keywords) or bool(re.search(r'\b(thue|rent|rental)\b', title))
+    has_sale = any(s in title for s in sale_exclusive_keywords) or bool(re.search(r'\b(ban|sale|mua)\b', title))
+    is_general_bds = any(g in title for g in ["bất động sản", "bat dong san", "bds", "nhà đất", "nha dat", "đất", "dat"])
 
     if t_type in ("sale", "ban", "mua_ban", "0"):
-        if is_pure_rental:
-            return False, True
-        if has_rental and not ("mua bán" in title or "mua ban" in title or "bán" in title or "bds" in title or "bất động sản" in title):
+        if has_rental:
+            # Allow only if it is explicitly a dual buy/sell + rent group (e.g. 'mua bán và cho thuê')
+            if ("mua bán" in title or "mua ban" in title or "bán" in title) and not any(ex in title for ex in ["nhà trọ", "phòng trọ", "ở ghép"]):
+                return True, False
             return False, True
         if has_sale:
             return True, False
+        if is_general_bds:
+            return False, False
         return False, False
 
     elif t_type in ("rental", "rent", "thue", "cho_thue", "1"):
         if has_rental:
             return True, False
-        if ("chuyên bán" in title or "mua bán đất" in title) and not has_rental:
-            return False, True
-        if has_sale:
+        if has_sale and not has_rental:
+            if any(ex in title for ex in ["đất nền", "đất sào", "chuyên bán", "bán đất", "mua bán đất"]):
+                return False, True
+            return False, False
+        if is_general_bds:
             return False, False
         return False, False
 
