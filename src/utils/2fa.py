@@ -1,43 +1,43 @@
 #!/usr/bin/env python3
+import subprocess
 import sys
 import time
-import subprocess
 import pyotp
 
 
 def get_totp(raw_secret: str) -> str:
-    # Loại bỏ khoảng trắng và chuẩn hóa viết hoa
+    # Remove whitespace and normalize to uppercase
     clean_secret = raw_secret.replace(" ", "").strip().upper()
 
     if not clean_secret:
-        print("Lỗi: Secret key không được để trống.")
-        raise ValueError("Secret key không được để trống.")
+        print("Error: Secret key cannot be empty.")
+        raise ValueError("Secret key cannot be empty.")
 
     try:
         totp = pyotp.TOTP(clean_secret)
         code = totp.now()
         remaining = 30 - (int(time.time()) % 30)
 
-        print(f"Mã OTP: \033[1;32m{code}\033[0m (Còn lại: {remaining}s)")
+        print(f"OTP Code: \033[1;32m{code}\033[0m (Remaining: {remaining}s)")
 
-        # Tự động sao chép mã OTP vào Clipboard trên macOS
+        # Automatically copy OTP to clipboard on macOS
         try:
             subprocess.run("pbcopy", text=True, input=code, check=True)
-            print("→ Đã tự động sao chép mã vào Clipboard (Cmd + V để dán).")
+            print("→ Copied to clipboard automatically (Cmd + V to paste).")
         except Exception:
             pass
 
         return code
     except Exception as e:
-        print(f"Lỗi: Secret key không hợp lệ ({e})")
+        print(f"Error: Invalid secret key ({e})")
         raise
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Cách dùng:")
+        print("Usage:")
         print('  python3 2fa.py "<raw_secret>"')
-        print("Ví dụ:")
+        print("Example:")
         print('  python3 2fa.py "5IYN VBXI TEAG CQTK Y3KM ZLIB Y36F XL7U"')
         sys.exit(1)
 
