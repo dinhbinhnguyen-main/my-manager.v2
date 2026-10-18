@@ -344,6 +344,69 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
 # STEP 2: CLICK 'WHAT ARE YOU SELLING?' / 'BẠN ĐANG BÁN GÌ?'
 # ==============================================================================
 
+def dismiss_listing_tooltip_popups(bot: BaseAutomator) -> bool:
+    """
+    Kiểm tra và đóng các tooltip / popover / coachmark hiển thị đè lên form niêm yết
+    (ví dụ: 'You can find tips for how to improve your listing photos here.').
+    Những tooltip này là PopupWindow riêng biệt, sẽ chiếm quyền accessibility khiến
+    UIAutomator không thể nhìn thấy các trường 'Title', 'Price', 'Location' hay 'Add photos'.
+    """
+    if not bot.d:
+        return False
+
+    tooltip_patterns = [
+        r"(?i).*improve your listing photos.*",
+        r"(?i).*tips for how to.*",
+        r"(?i).*listing photos here.*",
+        r"(?i).*improve your listing.*",
+        r"(?i).*mẹo cải thiện ảnh.*",
+        r"(?i).*mẹo.*ảnh niêm yết.*",
+        r"(?i).*mẹo cho ảnh.*",
+    ]
+
+    try:
+        for p in tooltip_patterns:
+            tip_desc = bot.d(descriptionMatches=p)
+            if tip_desc.exists:
+                bot.log(f"🧹 Phát hiện tooltip che khuất form niêm yết (desc: '{p}'). Đang click đóng...")
+                tip_desc.click_exists(timeout=2)
+                bot.smart_sleep(1.0)
+                return True
+
+            tip_text = bot.d(textMatches=p)
+            if tip_text.exists:
+                bot.log(f"🧹 Phát hiện tooltip che khuất form niêm yết (text: '{p}'). Đang click đóng...")
+                tip_text.click_exists(timeout=2)
+                bot.smart_sleep(1.0)
+                return True
+
+        tip_generic = bot.d(className="android.view.ViewGroup", descriptionMatches=r"(?i).*(tips|mẹo).*")
+        if tip_generic.exists:
+            bot.log("🧹 Phát hiện popup tooltip ('tips/mẹo'). Đang click đóng...")
+            tip_generic.click_exists(timeout=2)
+            bot.smart_sleep(1.0)
+            return True
+
+        popup_frame = bot.d(className="android.widget.FrameLayout", clickable=True)
+        if popup_frame.exists:
+            bounds = popup_frame.info.get("bounds", {})
+            if bounds:
+                top = bounds.get("top", 0)
+                bottom = bounds.get("bottom", 0)
+                height = bottom - top
+                if 50 < height < 500:
+                    tip_child = bot.d(descriptionMatches=r"(?i).*(tip|photo|ảnh|here|đây).*")
+                    if tip_child.exists:
+                        bot.log("🧹 Phát hiện popup FrameLayout lơ lửng. Đang click để dismiss...")
+                        popup_frame.click_exists(timeout=2)
+                        bot.smart_sleep(1.0)
+                        return True
+    except Exception as ex:
+        logger.debug(f"Error dismissing listing tooltip popups: {ex}")
+
+    return False
+
+
 def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
     """
     STEP 2:
@@ -431,6 +494,9 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
     start_time = time.time()
     form_opened = False
     while time.time() - start_time < timeout:
+        # Check and dismiss any listing tooltip popup (e.g. "improve your listing photos")
+        dismiss_listing_tooltip_popups(bot)
+
         # Check if draft discard prompt appeared ("Discard draft?" / "Bỏ bản nháp?" / "Bỏ bài viết")
         for discard_kw in ["discard", "bỏ bài viết", "bỏ bản nháp"]:
             discard_btn = bot.get_button_by_text(discard_kw, timeout=0.3)
@@ -473,20 +539,31 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
                     bot.smart_sleep(1.5)
                     break
 
-        # Check if Listing Form is loaded
-        add_photos = bot.get_button_by_text("add photos", timeout=1)
-        them_anh = bot.get_button_by_text("thêm ảnh", timeout=1)
-        title_field = bot.get_widget_by_text("android.view.ViewGroup", "composer_v3_title", timeout=1)
-        next_btn = bot.get_button_by_text("next", timeout=1)
+        # Check if Listing Form is loaded (multiple flexible selectors)
+        is_form_loaded = False
+        if bot.d:
+            if (
+                bot.d(resourceId="composer_v3_title").exists or
+                bot.d(textMatches=r"(?i)^Title$|^Tiêu đề$").exists or
+                bot.d(descriptionMatches=r"(?i)^Title.*|^Tiêu đề.*").exists or
+                bot.d(textMatches=r"(?i)^Add photos$|^Thêm ảnh$").exists or
+                bot.d(descriptionMatches=r"(?i).*Add photos.*|.*Thêm ảnh.*").exists or
+                bot.d(textMatches=r"(?i)^Price$|^Giá$").exists or
+                bot.d(descriptionMatches=r"(?i)^Price.*|^Giá.*").exists
+            ):
+                is_form_loaded = True
 
-        if (
-            (add_photos and add_photos.exists) or 
-            (them_anh and them_anh.exists) or 
-            (title_field and title_field.exists) or 
-            (next_btn and next_btn.exists)
-        ):
+        if not is_form_loaded:
+            add_photos = bot.get_button_by_text("add photos", timeout=0.5)
+            them_anh = bot.get_button_by_text("thêm ảnh", timeout=0.5)
+            next_btn = bot.get_button_by_text("next", timeout=0.5)
+            if (add_photos and add_photos.exists) or (them_anh and them_anh.exists) or (next_btn and next_btn.exists):
+                is_form_loaded = True
+
+        if is_form_loaded:
             bot.log("✔️ Successfully opened Listing Form!")
             bot.smart_sleep(1.5)
+            dismiss_listing_tooltip_popups(bot)
             form_opened = True
             return True
 
@@ -510,6 +587,48 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
 # ==============================================================================
 # STEP 3: CLICK 'ADD PHOTOS' AND SELECT PHOTOS
 # ==============================================================================
+
+def check_and_handle_gallery_retry(bot: BaseAutomator, wait_after_click: float = 2.5) -> bool:
+    """
+    Kiểm tra xem màn hình chọn ảnh (Gallery / Camera Roll) có hiển thị thông báo lỗi
+    'An unexpected error occurred.' kèm nút 'Retry' (hoặc 'Thử lại') hay không.
+    Nếu phát hiện, thực hiện click vào nút 'Retry' để tải lại danh sách ảnh.
+
+    Returns:
+        bool: True nếu phát hiện và đã click Retry thành công, False nếu không gặp lỗi.
+    """
+    if not bot.d:
+        return False
+
+    try:
+        err_text = bot.d(textMatches=r"(?i).*unexpected error.*|.*đã xảy ra lỗi.*")
+        retry_btn = bot.d(textMatches=r"(?i)^retry$|^thử lại$")
+        if not retry_btn.exists:
+            retry_btn = bot.d(descriptionMatches=r"(?i)^retry$|^thử lại$")
+        if not retry_btn.exists:
+            retry_btn = bot.d(className="android.widget.Button", textMatches=r"(?i)^retry$|^thử lại$")
+
+        if err_text.exists or (retry_btn and retry_btn.exists):
+            bot.log("⚠️ Phát hiện lỗi 'An unexpected error occurred' trong Gallery. Đang nhấn nút 'Retry'...")
+            clicked = False
+            if retry_btn and retry_btn.exists:
+                clicked = retry_btn.click_exists(timeout=3)
+            if not clicked:
+                r = bot.get_button_by_text("retry", timeout=1.5) or bot.get_button_by_text("thử lại", timeout=1.5)
+                if r and r.exists:
+                    clicked = r.click_exists(timeout=2)
+
+            if clicked:
+                bot.log("🔄 Đã nhấn nút 'Retry'. Chờ gallery tải lại hình ảnh...")
+                bot.smart_sleep(wait_after_click)
+                return True
+            else:
+                bot.log("⚠️ Tìm thấy trạng thái lỗi nhưng không click được nút 'Retry'.")
+    except Exception as ex:
+        logger.debug(f"Error checking/handling gallery retry: {ex}")
+
+    return False
+
 
 def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, max_retries: int = 2) -> bool:
     """
@@ -574,27 +693,50 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
                     return True
         return False
 
+    def _is_gallery_ready() -> bool:
+        if not bot.d:
+            return False
+        cam_box = bot.d(descriptionMatches=r"(?i).*Photo.*taken on.*|.*Photo taken on.*|.*Ảnh.*chụp.*")
+        if not cam_box.exists:
+            cam_box = bot.d(descriptionMatches=r"(?i)^Photo, item \d+.*")
+        if not cam_box.exists:
+            cam_box = bot.d(className="android.widget.Button", descriptionMatches=r"(?i)^Photo.*|^Ảnh.*")
+        if not cam_box.exists:
+            cam_box = bot.d(resourceIdMatches=".*camera_roll_image.*")
+        if not cam_box.exists:
+            cam_box = bot.d(className="android.widget.CheckBox")
+        grid = bot.get_elements_by_widget("android.widget.GridView", timeout=1) or (bot.d(className="android.widget.GridView") if bot.d else None)
+        return bool((cam_box.exists and cam_box.count > 0) or (grid and grid.exists))
+
     max_open_attempts = max(max_retries, 20)
     gallery_ready = False
 
     for attempt in range(max_open_attempts):
         bot.log(f"🖼️ [Step 3] Finding and clicking 'Add photos' button (Attempt {attempt + 1}/{max_open_attempts})...")
 
-        # Check if already on the Retry screen before clicking
-        retry_btn = None
-        if bot.d:
-            retry_btn = bot.d(textMatches="(?i)^retry$|^thử lại$")
-            if not retry_btn.exists:
-                retry_btn = bot.get_button_by_text("retry", timeout=1) or bot.get_button_by_text("thử lại", timeout=1)
+        # Check and dismiss any overlay tooltip before clicking add photos
+        dismiss_listing_tooltip_popups(bot)
 
-        if retry_btn and retry_btn.exists:
-            bot.log("⚠️ Found 'Retry' button on UI (Error screen). Clicking 'Retry' to return to listing form...")
-            retry_btn.click_exists(timeout=3)
-            bot.smart_sleep(2.0)
+        # Check if already on the Retry screen before clicking
+        if check_and_handle_gallery_retry(bot):
+            if _is_gallery_ready():
+                bot.log("✔️ Gallery / Camera Roll is ready after clicking Retry!")
+                gallery_ready = True
+                break
+
+        if _is_gallery_ready():
+            bot.log("✔️ Gallery / Camera Roll is already open and ready!")
+            gallery_ready = True
+            break
 
         # 1. Click 'Add photos'
         clicked = _trigger_add_photos_button()
         if not clicked:
+            # Check if retry screen or gallery was already opened
+            if check_and_handle_gallery_retry(bot) or _is_gallery_ready():
+                gallery_ready = True
+                break
+
             bot.log(f"⚠️ Could not find 'Add photos' button on attempt {attempt + 1}. Pressing 'back' and re-clicking 'What are you selling? / Sell something'...")
             if bot.d:
                 bot.d.press("back")
@@ -618,42 +760,18 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
         # 2. Wait and inspect screen transition
         bot.smart_sleep(2.0)
 
-        # CASE A: Screen displays 'An unexpected error occurred' with 'Retry' button (port_5562_retry)
-        err_screen = False
-        if bot.d:
-            err_retry = bot.d(textMatches="(?i)^retry$|^thử lại$")
-            err_text = bot.d(textMatches="(?i).*unexpected error.*|.*đã xảy ra lỗi.*")
-            if err_retry.exists or err_text.exists:
-                err_screen = True
-                bot.log("⚠️ Detected 'An unexpected error occurred' (Retry screen). Clicking 'Retry'...")
-                if err_retry.exists:
-                    err_retry.click()
-                else:
-                    r_btn = bot.get_button_by_text("retry", timeout=2) or bot.get_button_by_text("thử lại", timeout=2)
-                    if r_btn and r_btn.exists:
-                        r_btn.click()
-                bot.smart_sleep(2.0)
-                bot.log("🔄 Returned to main listing form (port_5562_main). Re-clicking 'Add photos'...")
-                # Loop will re-attempt clicking 'Add photos' on main listing form
-                continue
-
-        # CASE B: Camera Roll / Gallery opened successfully
-        if bot.d:
-            cam_box = bot.d(descriptionMatches=r"(?i).*Photo.*taken on.*|.*Photo taken on.*|.*Ảnh.*chụp.*")
-            if not cam_box.exists:
-                cam_box = bot.d(descriptionMatches=r"(?i)^Photo, item \d+.*")
-            if not cam_box.exists:
-                cam_box = bot.d(className="android.widget.Button", descriptionMatches=r"(?i)^Photo.*|^Ảnh.*")
-            if not cam_box.exists:
-                cam_box = bot.d(resourceIdMatches=".*camera_roll_image.*")
-            if not cam_box.exists:
-                cam_box = bot.d(className="android.widget.CheckBox")
-            grid = bot.get_elements_by_widget("android.widget.GridView", timeout=1) or (bot.d(className="android.widget.GridView") if bot.d else None)
-
-            if (cam_box.exists and cam_box.count > 0) or (grid and grid.exists):
-                bot.log("✔️ Gallery / Camera Roll is now open and ready!")
+        # CASE A: Screen displays 'An unexpected error occurred' with 'Retry' button
+        if check_and_handle_gallery_retry(bot):
+            if _is_gallery_ready():
+                bot.log("✔️ Gallery / Camera Roll loaded successfully after Retry!")
                 gallery_ready = True
                 break
+
+        # CASE B: Camera Roll / Gallery opened successfully
+        if _is_gallery_ready():
+            bot.log("✔️ Gallery / Camera Roll is now open and ready!")
+            gallery_ready = True
+            break
 
         # Check if still stuck on main listing form
         main_form_check = bot.d(descriptionMatches="(?i).*add photos.*").exists or bot.d(textMatches="(?i).*add photos.*").exists
@@ -828,7 +946,12 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
         if not bot.d:
             break
 
-        # Check and activate 'Select multiple' mode if button is present
+        # Check and handle gallery retry error if it appears during photo loading
+        if check_and_handle_gallery_retry(bot):
+            bot.log("🔄 Đã bấm 'Retry' khi tải ảnh Gallery. Đặt lại timeout để tiếp tục quét ảnh...")
+            start_time = time.time()
+            bot.smart_sleep(1.0)
+            continue
 
         # Check and activate 'Select multiple' mode if button is present
         _ensure_select_multiple_mode()
@@ -1565,7 +1688,11 @@ def fill_listing_details(bot: BaseAutomator, payload: Dict[str, Any], max_scroll
     completed_fields = set()
     all_fields = set(field_handlers.keys())
 
+    # Dismiss any tooltip overlay (e.g. photo tips) blocking form fields
+    dismiss_listing_tooltip_popups(bot)
+
     for cycle in range(max_scroll_cycles):
+        dismiss_listing_tooltip_popups(bot)
         remaining_fields = all_fields - completed_fields
         if not remaining_fields:
             bot.log("🎉 All fields completed!")

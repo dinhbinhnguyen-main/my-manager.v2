@@ -702,8 +702,9 @@ def click_gallery_button(bot: BaseAutomator, timeout: int = 15) -> bool:
                 return True
 
         photo_item = bot.d(descriptionMatches=r"(?i).*Photo, item \d+.*|.*Ảnh, mục \d+.*|.*Photo.*taken on.*")
-        if photo_item.exists:
-            bot.log("ℹ️ Media picker / Gallery is already open.")
+        has_retry = bot.d(textMatches=r"(?i)^retry$|^thử lại$").exists or bot.d(textMatches=r"(?i).*unexpected error.*|.*đã xảy ra lỗi.*").exists
+        if photo_item.exists or has_retry:
+            bot.log("ℹ️ Media picker / Gallery is already open (or in retry state).")
             return True
 
         bot.smart_sleep(1.0)
@@ -795,6 +796,14 @@ def select_pushed_images(bot: BaseAutomator, photo_count: int = 1, timeout: int 
         if not bot.d:
             break
 
+        # Check and handle gallery retry error if it appears during photo loading
+        from src.automation.facebook.actions.list_group_share import check_and_handle_gallery_retry
+        if check_and_handle_gallery_retry(bot):
+            bot.log("🔄 Đã bấm 'Retry' khi tải ảnh Gallery (Discussion). Đặt lại timeout để tiếp tục quét ảnh...")
+            start_time = time.time()
+            bot.smart_sleep(1.0)
+            continue
+
         photo_elem = bot.d(descriptionMatches=r"(?i).*Photo, item \d+.*|.*Ảnh, mục \d+.*|.*Photo.*taken on.*|.*Ảnh.*chụp.*")
         grid = bot.d(className="android.widget.GridView")
         comp_btn = bot.d(className="android.widget.CompoundButton")
@@ -805,8 +814,12 @@ def select_pushed_images(bot: BaseAutomator, photo_count: int = 1, timeout: int 
         bot.smart_sleep(1.0)
 
     if not photos_ready:
-        bot.log("⚠️ Photo grid not immediately detected, waiting a moment...")
-        bot.smart_sleep(1.5)
+        from src.automation.facebook.actions.list_group_share import check_and_handle_gallery_retry
+        if check_and_handle_gallery_retry(bot):
+            bot.smart_sleep(2.0)
+        else:
+            bot.log("⚠️ Photo grid not immediately detected, waiting a moment...")
+            bot.smart_sleep(1.5)
 
     if _has_selected_photos(bot):
         bot.log("📸 Photo(s) ALREADY selected in Gallery. Skipping re-selection.")

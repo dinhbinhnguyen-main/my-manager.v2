@@ -74,10 +74,22 @@ class ADBClient:
     def launch_app(self, package_name: str):
         """Launches an application by package name."""
         logger.info(f"Launching {package_name} on {self.target}...")
-        subprocess.run(
-            ["adb", "-s", self.target, "shell", "monkey", "-p", package_name, "-c", "android.intent.category.LAUNCHER", "1"],
-            capture_output=True
+        resolve_res = subprocess.run(
+            ["adb", "-s", self.target, "shell", f"cmd package resolve-activity --brief {package_name}"],
+            capture_output=True, text=True
         )
+        lines = [line.strip() for line in resolve_res.stdout.splitlines() if line.strip() and not line.startswith("priority=")]
+        if lines:
+            target_activity = lines[-1]
+            subprocess.run(
+                ["adb", "-s", self.target, "shell", "am", "start", "-n", target_activity],
+                capture_output=True
+            )
+        else:
+            subprocess.run(
+                ["adb", "-s", self.target, "shell", "monkey", "-p", package_name, "-c", "android.intent.category.LAUNCHER", "1"],
+                capture_output=True
+            )
 
     def stop_app(self, package_name: str):
         """Force stops an application."""

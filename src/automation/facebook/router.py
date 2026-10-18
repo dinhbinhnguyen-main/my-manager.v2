@@ -39,7 +39,10 @@ class FBActionRouter:
 
         if action in ["login", "fb_login"]:
             act = FBLoginAction(automator, account)
-            return act.execute()
+            return act.execute(
+                deeplink=params.get("deeplink", "fb://feed"),
+                apk_path=params.get("apk_path")
+            )
 
         elif action in ["warmup", "scroll", "scroll_feed", "fb_scroll_feed"]:
             act = FBScrollFeedAction(automator, account)

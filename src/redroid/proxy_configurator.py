@@ -40,6 +40,39 @@ class ContainerProxyConfigurator:
         if not proxy_url:
             return False
 
+        # If a proxy rotation API URL is passed (e.g. proxyxoay.shop/api/get.php), rotate and extract HTTP proxy
+        if "api" in proxy_url.lower() or "key=" in proxy_url.lower() or ".php" in proxy_url.lower():
+            logger.info(f"Resolving HTTP proxy IP:PORT from rotation API URL: {proxy_url[:45]}...")
+            try:
+                from src.proxy.service import ProxyService
+                success, parsed_proxy, msg, status = ProxyService.rotate_proxy_api(proxy_url)
+                if success and parsed_proxy and "formatted_url" in parsed_proxy:
+                    proxy_url = parsed_proxy["formatted_url"]
+                else:
+                    # Fallback to current_proxy_http in database if rotation was in cooldown or failed
+                    from src.db.repository import ProxyRepository
+                    for p in ProxyRepository.list_all():
+                        if p.url == proxy_url and p.current_proxy_http:
+                            parsed_fallback = ProxyService.parse_proxy_http_string(p.current_proxy_http)
+                            if parsed_fallback:
+                                proxy_url = parsed_fallback["formatted_url"]
+                                logger.info(f"Using cached current_proxy_http for container: {proxy_url}")
+                                break
+            except Exception as e:
+                logger.warning(f"Error rotating/resolving proxy API URL: {e}")
+
+        # If passed as raw host:port or host:port:user:pass without protocol
+        if "://" not in proxy_url and ":" in proxy_url:
+            try:
+                from src.proxy.service import ProxyService
+                parsed_raw = ProxyService.parse_proxy_http_string(proxy_url)
+                if parsed_raw:
+                    proxy_url = parsed_raw["formatted_url"]
+                else:
+                    proxy_url = f"http://{proxy_url}"
+            except Exception:
+                proxy_url = f"http://{proxy_url}"
+
         parsed = urlparse(proxy_url)
         proxy_ip = parsed.hostname
         proxy_port = parsed.port

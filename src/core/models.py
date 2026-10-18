@@ -12,6 +12,7 @@ class AccountStatus(str, Enum):
     BANNED = "banned"
     WARMUP = "warmup"
     IDLE = "idle"
+    ERROR = "error"
 
 
 class ProxyType(str, Enum):

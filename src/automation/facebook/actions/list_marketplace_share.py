@@ -264,8 +264,15 @@ def step_3_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 20)
 
     gallery_opened = False
     for attempt in range(5):
+        from src.automation.facebook.actions.list_group_share import check_and_handle_gallery_retry
+        if check_and_handle_gallery_retry(bot):
+            gallery_opened = True
+            break
         if _trigger_add_photos():
             bot.smart_sleep(2.0)
+            if check_and_handle_gallery_retry(bot):
+                gallery_opened = True
+                break
             if bot.d and (
                 bot.d(descriptionMatches=r"(?i).*Photo.*taken on.*|.*Photo, item \d+.*|.*Ảnh.*chụp.*").exists or
                 bot.d(className="android.widget.GridView").exists or

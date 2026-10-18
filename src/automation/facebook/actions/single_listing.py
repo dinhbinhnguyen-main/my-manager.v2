@@ -47,7 +47,9 @@ from src.automation.facebook.actions.list_group_share import (
     click_add_photos as click_add_photos_listing,
     fill_listing_details,
     click_next_button as click_next_listing,
-    click_publish_or_done
+    click_publish_or_done,
+    check_and_handle_gallery_retry,
+    dismiss_listing_tooltip_popups
 )
 
 logger = logging.getLogger(__name__)

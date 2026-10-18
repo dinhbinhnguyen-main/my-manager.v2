@@ -243,10 +243,7 @@ class BaseAutomator:
 
         if deeplink:
             logger.info(f"Launching app via Deep Link: '{deeplink}'")
-            if self.package_name == "com.facebook.katana":
-                cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' -n com.facebook.katana/com.facebook.katana.IntentUriHandler"
-            else:
-                cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' {self.package_name}"
+            cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' {self.package_name}"
             self.device.shell(cmd)
         else:
             self.device.app_start(self.package_name, stop=False)

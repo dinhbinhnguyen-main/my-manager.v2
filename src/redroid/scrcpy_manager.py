@@ -14,6 +14,7 @@ from rich.table import Table
 
 from src.db.repository import RedroidRepository
 from src.redroid.manager import RedroidManager
+from src.redroid.window_layout import WindowBounds, calculate_scrcpy_layout, reposition_scrcpy_window
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -25,6 +26,7 @@ class ScrcpyManager:
     def __init__(self):
         self.docker_mgr = RedroidManager()
         self._keyboard_hidden_targets: Set[str] = set()
+        self._active_window_bounds: Dict[int, WindowBounds] = {}
 
     def hide_virtual_keyboard(self, target: Any) -> bool:
         """Disables virtual on-screen soft keyboard for target container/port."""
@@ -63,12 +65,21 @@ class ScrcpyManager:
             logger.error(f"Error checking running scrcpy processes: {e}")
         return port_to_pids
 
-    def open_scrcpy(self, adb_port: int, window_title: Optional[str] = None) -> bool:
-        """Launches a scrcpy window for a given ADB port if not already open."""
+    def open_scrcpy(
+        self,
+        adb_port: int,
+        window_title: Optional[str] = None,
+        bounds: Optional[WindowBounds] = None,
+        force_reopen: bool = False
+    ) -> bool:
+        """Launches a scrcpy window for a given ADB port if not already open (or if force_reopen is True)."""
         pids = self.get_running_scrcpy_pids().get(adb_port, [])
-        if pids:
+        if pids and not force_reopen:
             logger.debug(f"scrcpy already running for port {adb_port} (PID: {pids}).")
             return True
+
+        if force_reopen and pids:
+            self.close_scrcpy(adb_port)
 
         # Ensure virtual keyboard is disabled
         self.hide_virtual_keyboard(adb_port)
@@ -94,6 +105,15 @@ class ScrcpyManager:
         except Exception:
             return False
 
+        # Compute default bounds if not provided
+        if bounds is None:
+            active_p = [adb_port]
+            for p in self.get_running_scrcpy_pids().keys():
+                if p not in active_p:
+                    active_p.append(p)
+            layout = calculate_scrcpy_layout(active_p)
+            bounds = layout.get(adb_port)
+
         title = window_title or f"Redroid Container (Port {adb_port})"
         cmd = [
             "scrcpy",
@@ -111,12 +131,20 @@ class ScrcpyManager:
             "--keyboard=sdk",
         ]
 
+        if bounds:
+            cmd.extend([
+                f"--window-x={bounds.x}",
+                f"--window-y={bounds.y}",
+                f"--window-width={bounds.width}",
+                f"--window-height={bounds.height}",
+            ])
+
         env = os.environ.copy()
         if "DISPLAY" not in env or not env["DISPLAY"]:
             env["DISPLAY"] = ":0"
 
         try:
-            logger.info(f"Opening scrcpy window for {adb_target} ('{title}')...")
+            logger.info(f"Opening scrcpy window for {adb_target} ('{title}') at {bounds}...")
             logs_dir = Path("data/logs/scrcpy")
             logs_dir.mkdir(parents=True, exist_ok=True)
             log_file = logs_dir / f"scrcpy_{adb_port}.log"
@@ -130,6 +158,8 @@ class ScrcpyManager:
                 stderr=log_handle,
                 preexec_fn=os.setpgrp,
             )
+            if bounds:
+                self._active_window_bounds[adb_port] = bounds
             return True
         except Exception as e:
             logger.error(f"Failed to open scrcpy for port {adb_port}: {e}")
@@ -193,6 +223,7 @@ class ScrcpyManager:
                 pass
             except Exception as e:
                 logger.warning(f"Failed to terminate scrcpy PID {pid}: {e}")
+        self._active_window_bounds.pop(adb_port, None)
         return killed
 
     def sync_auto_scrcpy(
@@ -211,24 +242,44 @@ class ScrcpyManager:
 
         opened = 0
         closed = 0
-        active_ports = set()
+        rearranged = 0
 
+        # 1. Determine active running ports
+        active_instances = [inst for inst in instances if inst.container_name in running_containers]
+        active_ports = [inst.adb_port for inst in active_instances]
+
+        # 2. Compute dynamic layout for all active ports
+        target_layouts = calculate_scrcpy_layout(active_ports)
+
+        # 3. Synchronize each registered instance
         for inst in instances:
             try:
                 is_running = inst.container_name in running_containers
                 port = inst.adb_port
 
                 if is_running:
-                    active_ports.add(port)
                     # Automatically ensure virtual keyboard is hidden for running container (once per run)
                     if inst.container_name not in self._keyboard_hidden_targets:
                         self.hide_virtual_keyboard(inst.container_name)
 
-                    # Container is running, open scrcpy if not running
+                    target_bounds = target_layouts.get(port)
+                    title = f"Redroid [UID: {inst.account_uid or 'Unknown'}] (Port: {port})"
+
+                    # Case A: Container running, scrcpy NOT open -> open with computed bounds
                     if port not in scrcpy_pids:
-                        title = f"Redroid [UID: {inst.account_uid or 'Unknown'}] (Port: {port})"
-                        if self.open_scrcpy(port, window_title=title):
+                        if self.open_scrcpy(port, window_title=title, bounds=target_bounds):
                             opened += 1
+                    # Case B: Container running, scrcpy ALREADY open -> check if bounds changed
+                    else:
+                        current_bounds = self._active_window_bounds.get(port)
+                        if target_bounds and current_bounds != target_bounds:
+                            # Attempt OS-level repositioning
+                            moved = reposition_scrcpy_window(port, target_bounds)
+                            if not moved:
+                                # Fallback: smoothly reopen with new geometry
+                                self.open_scrcpy(port, window_title=title, bounds=target_bounds, force_reopen=True)
+                            self._active_window_bounds[port] = target_bounds
+                            rearranged += 1
                 else:
                     self._keyboard_hidden_targets.discard(inst.container_name)
                     # Container is not running, close scrcpy if open
@@ -237,12 +288,19 @@ class ScrcpyManager:
             except Exception as e:
                 logger.warning(f"Error syncing container {inst.container_name}: {e}")
 
-        # Also close any orphaned scrcpy processes for ports not in registered running instances
-        for port, pids in scrcpy_pids.items():
-            if port not in active_ports:
+        # 4. Also close any orphaned scrcpy processes for ports not in registered running instances
+        active_ports_set = set(active_ports)
+        for port, pids in list(scrcpy_pids.items()):
+            if port not in active_ports_set:
                 closed += self.close_scrcpy(port)
 
-        return {"opened": opened, "closed": closed, "running_containers": len(active_ports)}
+        return {
+            "opened": opened,
+            "closed": closed,
+            "rearranged": rearranged,
+            "running_containers": len(active_ports),
+            "layout": target_layouts
+        }
 
     def watch_loop(self, interval_seconds: float = 1.0):
         """Continuously monitors Redroid processes and auto toggles scrcpy windows in real-time with instant in-memory rendering."""
@@ -282,7 +340,11 @@ class ScrcpyManager:
 
                 if pids:
                     pid_str = ", ".join(map(str, pids))
-                    s_status = f"[bold bright_green]▶ OPEN (PID: {pid_str})[/bold bright_green]"
+                    bounds = self._active_window_bounds.get(inst.adb_port)
+                    if bounds:
+                        s_status = f"[bold bright_green]▶ OPEN ({bounds.width}x{bounds.height} @ {bounds.x},{bounds.y})[/bold bright_green]"
+                    else:
+                        s_status = f"[bold bright_green]▶ OPEN (PID: {pid_str})[/bold bright_green]"
                 else:
                     if live_status == "running":
                         s_status = "[bold yellow]⏳ CONNECTING...[/bold yellow]"

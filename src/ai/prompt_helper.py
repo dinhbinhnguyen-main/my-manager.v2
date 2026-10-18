@@ -6,38 +6,80 @@ from typing import Optional, List, Dict
 REAL_ESTATE_ANGLES = [
     {
         "name": "Thực tế & Súc tích",
-        "description": "Đi thẳng vào thông số cốt lõi (vị trí, diện tích, công năng, giá), không văn vẻ rườm rà."
+        "description": "Đi thẳng vào thông số cốt lõi (vị trí, diện tích, công năng, giá), không văn vẻ rườm rà.",
     },
     {
         "name": "Trải nghiệm sống & Tiện ích",
-        "description": "Nêu bật không gian sống thoáng đãng, thuận tiện đi lại, gần trường, chợ, siêu thị."
+        "description": "Nêu bật không gian sống thoáng đãng, thuận tiện đi lại, gần trường, chợ, siêu thị.",
     },
     {
         "name": "Góc nhìn giá trị & Tiềm năng",
-        "description": "Sắc bén, nhấn mạnh vị trí đẹp, tính thanh khoản cao, phù hợp ở hoặc khai thác cho thuê."
+        "description": "Sắc bén, nhấn mạnh vị trí đẹp, tính thanh khoản cao, phù hợp ở hoặc khai thác cho thuê.",
     },
     {
         "name": "Gợi mở nhu cầu",
-        "description": "Mở đầu tự nhiên bằng gợi ý tìm nhà an cư hoặc giữ tài sản hợp lý trong tầm tài chính."
+        "description": "Mở đầu tự nhiên bằng gợi ý tìm nhà an cư hoặc giữ tài sản hợp lý trong tầm tài chính.",
     },
     {
         "name": "Review chân thực",
-        "description": "Khách quan, gần gũi như người đi xem nhà thực tế chia sẻ lại các điểm cộng lớn."
-    }
+        "description": "Khách quan, gần gũi như người đi xem nhà thực tế chia sẻ lại các điểm cộng lớn.",
+    },
 ]
 
 FORBIDDEN_CLICHES = [
-    "siêu phẩm", "cực phẩm", "cơ hội vàng", "đẹp lung linh", "đẹp ngỡ ngàng",
-    "không thể bỏ qua", "nhanh tay kẻo lỡ", "hoa hậu", "hàng hiếm",
-    "đỉnh cao", "rẻ tụt quần", "rẻ sập sàn", "rẻ nhất quả đất", "sốc", "khủng",
-    "vỡ nợ", "cắt lỗ", "bán tháo", "ngộp thở", "ngộp ngân hàng", "phát mãi",
-    "túng tiền", "cam kết sinh lời", "bao lời", "lời gấp đôi",
-    "chính chủ", "chia sẻ ngay", "tag bạn bè", "thả tim", "chấm bài"
+    "siêu phẩm",
+    "cực phẩm",
+    "cơ hội vàng",
+    "đẹp lung linh",
+    "đẹp ngỡ ngàng",
+    "không thể bỏ qua",
+    "nhanh tay kẻo lỡ",
+    "hoa hậu",
+    "hàng hiếm",
+    "đỉnh cao",
+    "rẻ tụt quần",
+    "rẻ sập sàn",
+    "rẻ nhất quả đất",
+    "sốc",
+    "khủng",
+    "vỡ nợ",
+    "cắt lỗ",
+    "bán tháo",
+    "ngộp thở",
+    "ngộp ngân hàng",
+    "phát mãi",
+    "túng tiền",
+    "cam kết sinh lời",
+    "bao lời",
+    "lời gấp đôi",
+    "chính chủ",
+    "chia sẻ ngay",
+    "tag bạn bè",
+    "thả tim",
+    "chấm bài",
 ]
 
 RANDOM_ICONS_POOL = [
-    "🏡", "📍", "🌿", "🔑", "✨", "📌", "☀️", "🏷️", "🏢", "🛋️",
-    "📐", "🚗", "🌳", "🪴", "💎", "💰", "🎯", "🏠", "📜", "📞"
+    "🏡",
+    "📍",
+    "🌿",
+    "🔑",
+    "✨",
+    "📌",
+    "☀️",
+    "🏷️",
+    "🏢",
+    "🛋️",
+    "📐",
+    "🚗",
+    "🌳",
+    "🪴",
+    "💎",
+    "💰",
+    "🎯",
+    "🏠",
+    "📜",
+    "📞",
 ]
 
 
@@ -46,24 +88,35 @@ class AIPromptHelper:
 
     @staticmethod
     def build_real_estate_rewrite_prompt(
-        raw_title: str,
-        raw_desc: str,
-        is_rental: bool = False
+        raw_title: str, raw_desc: str, is_rental: bool = False
     ) -> str:
         angle = random.choice(REAL_ESTATE_ANGLES)
-        cliches_sample = ", ".join([f'"{c}"' for c in random.sample(FORBIDDEN_CLICHES, min(6, len(FORBIDDEN_CLICHES)))])
-        sample_icons = " ".join(random.sample(RANDOM_ICONS_POOL, min(4, len(RANDOM_ICONS_POOL))))
-
-        contact_rule = (
-            '5. Kêu gọi liên hệ (BẮT BUỘC): Cuối bài luôn phải có đầy đủ thông tin liên hệ chuẩn xác sau: '
-            '"📞 LH: 0375 155 525 (Zalo, WhatsApp) | Telegram: @dinhbinhnguyen". '
-            'Tuyệt đối không tự ý bịa số điện thoại khác hay bỏ thông tin Telegram.'
+        cliches_sample = ", ".join(
+            [
+                f'"{c}"'
+                for c in random.sample(
+                    FORBIDDEN_CLICHES, min(6, len(FORBIDDEN_CLICHES))
+                )
+            ]
+        )
+        sample_icons = " ".join(
+            random.sample(RANDOM_ICONS_POOL, min(4, len(RANDOM_ICONS_POOL)))
         )
 
         if is_rental:
             rental_rule = "- QUY ĐỊNH PHÁP LÝ (BẮT BUỘC): Đây là bài đăng CHO THUÊ BĐS. TUYỆT ĐỐI KHÔNG nhắc đến bất kỳ vấn đề pháp lý mua bán hay quyền sở hữu nào (như: mua bán vi bằng, sổ riêng xây dựng, sổ hồng, sổ đỏ, công chứng sang tên, đất thổ cư, quy hoạch...). Chỉ tập trung vào công năng, nội thất, tiện ích sinh hoạt, vị trí và giá thuê."
+            contact_rule = (
+                "5. Kêu gọi liên hệ (BẮT BUỘC): Cuối bài luôn phải có đầy đủ thông tin liên hệ chuẩn xác sau: "
+                '"📞 LH: 0375 155 525 (Zalo, WhatsApp) | Telegram: @dinhbinhnguyen". '
+                "Tuyệt đối không tự ý bịa số điện thoại khác hay bỏ thông tin Telegram."
+            )
         else:
-            rental_rule = "- QUY ĐỊNH PHÁP LÝ (BẮT BUỘC): Đây là bài đăng MUA BÁN BĐS. Trình bày rõ diện tích, vị trí, pháp lý nếu có."
+            rental_rule = "- QUY ĐỊNH PHÁP LÝ (BẮT BUỘC): Đây là bài đăng MUA BÁN BĐS. Trình bày rõ diện tích, vị trí.  TUYỆT ĐỐI KHÔNG nhắc đến bất kỳ vấn đề pháp lý nếu có."
+            contact_rule = (
+                "5. Kêu gọi liên hệ (BẮT BUỘC): Cuối bài luôn phải có đầy đủ thông tin liên hệ chuẩn xác sau: "
+                '"📞 LH: 0375 155 525 (Zalo, WhatsApp)". '
+                "Tuyệt đối không tự ý bịa số điện thoại khác hay bỏ thông tin Telegram."
+            )
 
         prompt = f"""Bạn là chuyên gia viết bài BĐS chuẩn SEO Facebook, tuân thủ nghiêm ngặt chính sách và thuật toán chống spam của Meta.
 
@@ -95,18 +148,25 @@ CHỈ TRẢ VỀ DUY NHẤT BÀI ĐĂNG HOÀN CHỈNH (Không lời chào, khôn
 
     @staticmethod
     def build_real_estate_listing_prompt(
-        raw_title: str,
-        raw_desc: str,
-        is_rental: bool = False
+        raw_title: str, raw_desc: str, is_rental: bool = False
     ) -> str:
         angle = random.choice(REAL_ESTATE_ANGLES)
-        cliches_sample = ", ".join([f'"{c}"' for c in random.sample(FORBIDDEN_CLICHES, min(6, len(FORBIDDEN_CLICHES)))])
-        sample_icons = " ".join(random.sample(RANDOM_ICONS_POOL, min(4, len(RANDOM_ICONS_POOL))))
+        cliches_sample = ", ".join(
+            [
+                f'"{c}"'
+                for c in random.sample(
+                    FORBIDDEN_CLICHES, min(6, len(FORBIDDEN_CLICHES))
+                )
+            ]
+        )
+        sample_icons = " ".join(
+            random.sample(RANDOM_ICONS_POOL, min(4, len(RANDOM_ICONS_POOL)))
+        )
 
         contact_rule = (
-            '5. Kêu gọi liên hệ (BẮT BUỘC): Cuối bài luôn phải có đầy đủ thông tin liên hệ chuẩn xác sau: '
+            "5. Kêu gọi liên hệ (BẮT BUỘC): Cuối bài luôn phải có đầy đủ thông tin liên hệ chuẩn xác sau: "
             '"📞 LH: 0375 155 525 (Zalo, WhatsApp) | Telegram: @dinhbinhnguyen". '
-            'Tuyệt đối không tự ý bịa số điện thoại khác hay bỏ thông tin Telegram.'
+            "Tuyệt đối không tự ý bịa số điện thoại khác hay bỏ thông tin Telegram."
         )
 
         if is_rental:

@@ -1,6 +1,7 @@
 """CLI Subcommands for Direct Automation Action Execution."""
 
 import re
+import time
 import typer
 from rich.console import Console
 from typing import List, Optional
@@ -8,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from src.db.repository import AccountRepository, RedroidRepository, ProxyRepository
 from src.automation.base_automator import BaseAutomator
-from src.automation.facebook.login import FBLoginAction
+from src.automation.facebook.login import FBLoginAction, record_login_result
 from src.automation.facebook.warmup import FBWarmupAction
 from src.automation.facebook.marketplace import FBMarketplaceAction
 
@@ -82,13 +83,27 @@ def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = F
         automator = BaseAutomator(adb_port=redroid_inst.adb_port)
         if not automator.initialize():
             console.print(f"[bold red]Failed to connect ADB/UIAutomator2 to port {redroid_inst.adb_port} for UID {uid}[/bold red]")
+            if str(action).lower().strip() in ["login", "fb_login"]:
+                record_login_result(uid, False, "ERROR", f"Failed to connect ADB/UIAutomator2 to port {redroid_inst.adb_port}")
             return False
 
         console.print(f"[bold cyan]Executing action '{action}' on UID {uid} (ADB Port {redroid_inst.adb_port})...[/bold cyan]")
         res = FBActionRouter.dispatch(automator, acc, action_name=action, params=params)
 
+        # Sau khi login xong cần delay khoảng 10s sau đó đóng redroid để chuẩn bị login account mới
+        if str(action).lower().strip() in ["login", "fb_login"]:
+            if res:
+                console.print(f"[bold green]✅ Login succeeded for UID {uid}. Waiting 10s before stopping Redroid container...[/bold green]")
+                time.sleep(10.0)
+            else:
+                console.print(f"[yellow]⚠️ Login ended with failure for UID {uid}. Waiting 3s before closing container...[/yellow]")
+                time.sleep(3.0)
+            auto_stop = True
+
     except Exception as e:
         console.print(f"[bold red]Error executing action for UID {uid}: {e}[/bold red]")
+        if str(action).lower().strip() in ["login", "fb_login"]:
+            record_login_result(uid, False, "ERROR", f"Runner exception: {e}")
         res = False
 
     finally:
@@ -137,6 +152,25 @@ def run_action(
             f.result()
 
     console.print(f"[bold green]Finished batch action '{action}'![/bold green]")
+
+
+@app.command("login")
+def run_login_cmd(
+    uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs to log in"),
+    concurrency: int = typer.Option(1, "--concurrency", "-m", help="Number of concurrent workers (default: 1)"),
+    auto_stop: bool = typer.Option(False, "--auto-stop", help="Auto stop container and release proxy after finish"),
+):
+    """Executes automated Facebook login with 2FA handling."""
+    target_uids = _parse_uids(uids)
+    if not target_uids:
+        console.print("[bold red]No valid account UIDs provided.[/bold red]")
+        return
+    console.print(f"[bold green]🚀 Starting Facebook Login for {len(target_uids)} accounts (concurrency {concurrency})...[/bold green]")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [executor.submit(_run_single_account, uid, "login", {}, auto_stop) for uid in target_uids]
+        for f in futures:
+            f.result()
+    console.print("[bold green]✅ Finished Facebook Login execution![/bold green]")
 
 
 @app.command("discussion-group")

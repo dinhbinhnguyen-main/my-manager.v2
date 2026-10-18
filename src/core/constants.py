@@ -15,6 +15,8 @@ APK_DIR.mkdir(exist_ok=True)
 
 DB_PATH = DATA_DIR / "manager.db"
 DEFAULT_FB_APK_PATH = APK_DIR / "facebook.apk"
+LOGIN_RESULTS_JSON = LOG_DIR / "login_results.json"
+LOGIN_RESULTS_LOG = LOG_DIR / "login_results.log"
 
 # Package names for Facebook
 FB_KATANA_PACKAGE = "com.facebook.katana"
