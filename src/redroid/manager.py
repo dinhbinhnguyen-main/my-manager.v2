@@ -405,6 +405,9 @@ class RedroidManager:
             self.ensure_app_permissions(container_name)
             self.hide_virtual_keyboard(container_name)
 
+            logger.info(f"Container '{container_name}' created and initialized. Waiting 10s for container to stabilize...")
+            time.sleep(10.0)
+
             return instance
         except Exception as e:
             logger.warning(f"Post-boot setup encountered an error for container '{container_name}': {e}")
@@ -973,6 +976,10 @@ class RedroidManager:
                 logger.warning(f"Could not assign proxy when starting container '{c_name}': {proxy_msg}")
         elif not use_proxy:
             logger.info(f"Container '{c_name}' running with default direct IP (no proxy).")
+
+        # Stabilization delay after starting container
+        logger.info(f"Container '{c_name}' started and configured. Waiting 10s for container to stabilize...")
+        time.sleep(10.0)
 
     def _delete_container_storage(self, storage_dir: Path):
         """Deletes container data directory on disk, bypassing root/read-only ownership created by Android/Docker."""

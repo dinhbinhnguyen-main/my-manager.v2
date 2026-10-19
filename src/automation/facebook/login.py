@@ -705,6 +705,11 @@ class FBLoginAction:
             self._dump_ui(tag=f"app_launch_failed_{self.account.uid}")
             return self._record_result(False, AccountStatus.ERROR, f"Failed to open Facebook app ('{package_name}') after {max_open_attempts} attempts")
 
+        # Chờ khoảng 10s sau khi mở app Facebook để app tải đầy đủ và ổn định
+        logger.info(f"Facebook app opened successfully. Waiting 10s for Facebook UI to settle and stabilize...")
+        time.sleep(10.0)
+        self.automator.handle_system_popups()
+
         # Check early checkpoint
         is_cp, cp_msg = self.detector.is_checkpoint()
         if is_cp:
