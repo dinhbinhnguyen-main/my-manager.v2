@@ -27,6 +27,7 @@ class ScrcpyManager:
         self.docker_mgr = RedroidManager()
         self._keyboard_hidden_targets: Set[str] = set()
         self._active_window_bounds: Dict[int, WindowBounds] = {}
+        self._active_processes: Dict[int, subprocess.Popen] = {}
 
     def hide_virtual_keyboard(self, target: Any) -> bool:
         """Disables virtual on-screen soft keyboard for target container/port."""
@@ -65,18 +66,18 @@ class ScrcpyManager:
             logger.error(f"Error checking running scrcpy processes: {e}")
         return port_to_pids
 
-    def open_scrcpy(
+    def open_scrcpy_process(
         self,
         adb_port: int,
         window_title: Optional[str] = None,
         bounds: Optional[WindowBounds] = None,
         force_reopen: bool = False
-    ) -> bool:
-        """Launches a scrcpy window for a given ADB port if not already open (or if force_reopen is True)."""
+    ) -> Optional[subprocess.Popen]:
+        """Launches a scrcpy process for a given ADB port and returns the subprocess.Popen instance."""
         pids = self.get_running_scrcpy_pids().get(adb_port, [])
         if pids and not force_reopen:
             logger.debug(f"scrcpy already running for port {adb_port} (PID: {pids}).")
-            return True
+            return self._active_processes.get(adb_port)
 
         if force_reopen and pids:
             self.close_scrcpy(adb_port)
@@ -89,7 +90,7 @@ class ScrcpyManager:
         try:
             subprocess.run(["adb", "connect", adb_target], capture_output=True, timeout=2)
         except Exception:
-            return False
+            return None
 
         # Fast check if adb is ready
         try:
@@ -101,9 +102,9 @@ class ScrcpyManager:
             )
             if "device" not in state_res.stdout:
                 logger.debug(f"ADB device {adb_target} not ready (state='{state_res.stdout.strip()}'). Skipping scrcpy launch.")
-                return False
+                return None
         except Exception:
-            return False
+            return None
 
         # Compute default bounds if not provided
         if bounds is None:
@@ -140,7 +141,8 @@ class ScrcpyManager:
             ])
 
         env = os.environ.copy()
-        if "DISPLAY" not in env or not env["DISPLAY"]:
+        import platform
+        if platform.system() != "Darwin" and ("DISPLAY" not in env or not env["DISPLAY"]):
             env["DISPLAY"] = ":0"
 
         try:
@@ -151,19 +153,77 @@ class ScrcpyManager:
             log_handle = open(log_file, "a")
 
             # Launch detached GUI process
-            subprocess.Popen(
+            proc = subprocess.Popen(
                 cmd,
                 env=env,
                 stdout=log_handle,
                 stderr=log_handle,
                 preexec_fn=os.setpgrp,
             )
+            self._active_processes[adb_port] = proc
             if bounds:
                 self._active_window_bounds[adb_port] = bounds
-            return True
+            return proc
         except Exception as e:
             logger.error(f"Failed to open scrcpy for port {adb_port}: {e}")
-            return False
+            return None
+
+    def open_scrcpy(
+        self,
+        adb_port: int,
+        window_title: Optional[str] = None,
+        bounds: Optional[WindowBounds] = None,
+        force_reopen: bool = False
+    ) -> bool:
+        """Launches a scrcpy window for a given ADB port if not already open (or if force_reopen is True)."""
+        proc = self.open_scrcpy_process(
+            adb_port=adb_port,
+            window_title=window_title,
+            bounds=bounds,
+            force_reopen=force_reopen,
+        )
+        if proc is not None:
+            return True
+        return not force_reopen and bool(self.get_running_scrcpy_pids().get(adb_port))
+
+    def wait_for_scrcpy_close(
+        self,
+        adb_port: int,
+        proc: Optional[subprocess.Popen] = None,
+        poll_interval: float = 0.5
+    ) -> None:
+        """Blocks until the scrcpy window for adb_port is closed by user or process terminates."""
+        time.sleep(1.0)
+        target_proc = proc or self._active_processes.get(adb_port)
+
+        # Mode A: Monitor direct Popen instance
+        if target_proc is not None:
+            try:
+                while target_proc.poll() is None:
+                    time.sleep(poll_interval)
+            except KeyboardInterrupt:
+                logger.info(f"Interrupted while waiting for scrcpy window on port {adb_port}. Closing scrcpy...")
+                self.close_scrcpy(adb_port)
+                raise
+            finally:
+                self._active_processes.pop(adb_port, None)
+                self._active_window_bounds.pop(adb_port, None)
+            return
+
+        # Mode B: Monitor system PIDs
+        try:
+            while True:
+                pids = self.get_running_scrcpy_pids().get(adb_port, [])
+                if not pids:
+                    break
+                time.sleep(poll_interval)
+        except KeyboardInterrupt:
+            logger.info(f"Interrupted while waiting for scrcpy on port {adb_port}. Closing scrcpy...")
+            self.close_scrcpy(adb_port)
+            raise
+        finally:
+            self._active_processes.pop(adb_port, None)
+            self._active_window_bounds.pop(adb_port, None)
 
     def get_host_clipboard(self) -> Optional[str]:
         """Reads host clipboard using pbpaste (macOS) or xclip (Linux)."""
@@ -212,6 +272,12 @@ class ScrcpyManager:
 
     def close_scrcpy(self, adb_port: int) -> int:
         """Terminates all scrcpy windows associated with a given ADB port."""
+        proc = self._active_processes.pop(adb_port, None)
+        if proc:
+            try:
+                proc.terminate()
+            except Exception:
+                pass
         pids = self.get_running_scrcpy_pids().get(adb_port, [])
         killed = 0
         for pid in pids:

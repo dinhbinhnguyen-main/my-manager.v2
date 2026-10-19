@@ -273,6 +273,18 @@ class ProxyRepository:
                 )
 
     @staticmethod
+    def get_by_account_uid(account_uid: str) -> Optional[Proxy]:
+        """Finds active proxy assigned to a specific account UID."""
+        with ProxyRepository._lock:
+            with get_db_cursor() as cursor:
+                cursor.execute(
+                    "SELECT * FROM proxies WHERE assigned_account_uid = ? AND status != 'unavailable' LIMIT 1",
+                    (account_uid,),
+                )
+                row = cursor.fetchone()
+                return Proxy(**dict(row)) if row else None
+
+    @staticmethod
     def release_proxy_by_account_uid(account_uid: str):
         """Releases all proxies currently bound to an account UID back to available."""
         with ProxyRepository._lock:

@@ -45,11 +45,15 @@ app.add_typer(automation_app, name="automation")
 
 from src.cli.automation_cmd import automation_app, progress_cmd, actions_guide
 from src.cli.redroid_cmd import app as redroid_app, scrcpy_cmd
+from src.cli.run_cmd import run_open_facebook_scrcpy_cmd, run_check_login_cmd
 
 # Top-level shortcut commands for live monitoring & action documentation
 app.command("progress")(progress_cmd)
 app.command("scrcpy")(scrcpy_cmd)
 app.command("actions")(actions_guide)
+app.command("open-facebook", help="Open Facebook app & Scrcpy window sequentially for a list of UIDs")(run_open_facebook_scrcpy_cmd)
+app.command("open-scrcpy", help="Open Facebook app & Scrcpy window sequentially for a list of UIDs")(run_open_facebook_scrcpy_cmd)
+app.command("check-login", help="Check login status for Facebook account(s)")(run_check_login_cmd)
 
 
 @app.command("dump", help="Dump screen snapshot, XML hierarchy, and interactive elements via port or UID")

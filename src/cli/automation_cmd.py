@@ -499,7 +499,19 @@ ACTION_REGISTRY = {
         ],
         "single_cli": 'python main-cli.py run reel-interactions --reel-id "3046151639050612" --uids "61588749472767" --like --comment --comment-content "Video rất hay" --share --share-num 1 --save',
         "script_json": '{"action": "reel_interactions", "params": {"reel_id": "3046151639050612", "like": true, "comment": true, "comment_content": "Tuyệt vời", "share": true, "share_num": 1, "save": true}}',
-    }
+    },
+    "open_facebook_scrcpy": {
+        "name": "open_facebook_scrcpy",
+        "aliases": ["open_scrcpy", "open_facebook", "open_app", "fb_scrcpy"],
+        "summary": "Mở container (sử dụng proxy available) -> mở Scrcpy -> mở app Facebook. Đóng Scrcpy tự động đóng container & mở tiếp theo.",
+        "description": "Nhận danh sách UID, tuần tự mở container với proxy available, mở cửa sổ Scrcpy tương ứng và mở app Facebook. Khi đóng cửa sổ Scrcpy, tự động đóng container, giải phóng proxy và mở container cho UID tiếp theo.",
+        "params": [
+            {"name": "deeplink", "type": "str", "required": False, "default": '"fb://feed"', "desc": "Deep link mở Facebook (mặc định: fb://feed)"},
+            {"name": "wait_for_close", "type": "bool", "required": False, "default": "true", "desc": "Chờ đóng cửa sổ Scrcpy mới đóng container và sang UID tiếp theo"}
+        ],
+        "single_cli": 'python main-cli.py run open-facebook --uids "61588749472767,61588749472768"',
+        "script_json": '{"action": "open_facebook_scrcpy", "params": {"deeplink": "fb://feed"}}',
+    },
 }
 
 

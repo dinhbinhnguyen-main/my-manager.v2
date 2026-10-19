@@ -16,6 +16,7 @@ from src.automation.facebook.actions.list_marketplace_share import FBMarketplace
 from src.automation.facebook.actions.single_listing import FBSingleListingAction
 from src.automation.facebook.actions.scroll_feed import FBScrollFeedAction
 from src.automation.facebook.actions.reel_interactions import FBReelInteractionsAction
+from src.automation.facebook.actions.open_facebook_scrcpy import FBOpenFacebookScrcpyAction
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +155,63 @@ class FBActionRouter:
                 save=params.get("save", False),
                 watch_delay=float(params.get("watch_delay", 15.0)),
             )
+
+        elif action in [
+            "open_facebook_scrcpy",
+            "open_scrcpy",
+            "open_facebook",
+            "open_app",
+            "view_account",
+            "fb_scrcpy",
+            "fb_open_scrcpy",
+        ]:
+            act = FBOpenFacebookScrcpyAction(automator, account)
+            return act.execute(
+                deeplink=params.get("deeplink", "fb://feed"),
+                wait_for_close=params.get("wait_for_close", True),
+                package_name=params.get("package_name", "com.facebook.katana"),
+            )
+
+        elif action in ["check_login", "is_logged_in"]:
+            from src.core.models import AccountStatus
+            from src.db.repository import AccountRepository
+            from src.automation.facebook.login import record_login_result
+
+            deeplink = params.get("deeplink", "fb://feed")
+            app_started = automator.open_facebook_app(deeplink=deeplink, max_attempts=4)
+            if not app_started:
+                logger.error(f"Failed to start Facebook app for UID {account.uid} after retries.")
+                is_logged = False
+                status_msg = "APP_NOT_RUNNING: Could not launch Facebook app ('com.facebook.katana')"
+                db_status = AccountStatus.ERROR
+            else:
+                is_logged, status_msg = automator.check_is_logged_in()
+                if is_logged:
+                    logger.info(f"Account UID {account.uid}: {status_msg}")
+                    db_status = AccountStatus.LIVE
+                elif "CHECKPOINT" in status_msg:
+                    logger.warning(f"Account UID {account.uid}: {status_msg}")
+                    db_status = AccountStatus.CHECKPOINT
+                else:
+                    logger.warning(f"Account UID {account.uid}: {status_msg}")
+                    db_status = AccountStatus.IDLE
+
+            try:
+                AccountRepository.update_status(account.uid, db_status, note=status_msg)
+            except Exception as dbe:
+                logger.error(f"Failed to update account {account.uid} status in DB: {dbe}")
+
+            try:
+                record_login_result(
+                    uid=account.uid,
+                    success=is_logged,
+                    status=db_status,
+                    message=status_msg,
+                )
+            except Exception as lge:
+                logger.error(f"Failed to record check_login result in log files: {lge}")
+
+            return is_logged
 
         else:
             logger.error(f"Unsupported Facebook action '{action_name}'.")

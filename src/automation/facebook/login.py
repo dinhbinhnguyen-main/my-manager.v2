@@ -79,6 +79,179 @@ def record_login_result(
     return record
 
 
+def check_is_logged_in(
+    device_or_automator: Any,
+    timeout: float = 3.0,
+) -> Tuple[bool, str]:
+    """
+    Kiểm tra xem ứng dụng Facebook trên thiết bị hiện tại đã đăng nhập hay chưa.
+
+    Parameters:
+        device_or_automator: uiautomator2.Device instance hoặc BaseAutomator instance.
+        timeout: Thời gian chờ tối đa khi quét UI.
+
+    Returns:
+        Tuple[bool, str]: (is_logged_in, reason_or_status)
+        - (True, "LOGGED_IN: ...") nếu đã đăng nhập và đang ở Home/Feed hoặc màn hình lưu thông tin.
+        - (False, "NOT_LOGGED_IN: ...") nếu đang ở màn hình đăng nhập, start screen, v.v.
+        - (False, "CHECKPOINT: ...") nếu tài khoản bị khóa/bắt xác minh danh tính.
+        - (False, "SESSION_EXPIRED: ...") nếu phiên đăng nhập đã hết hạn.
+    """
+    if not device_or_automator:
+        return False, "DEVICE_NOT_READY: device_or_automator is None"
+
+    if hasattr(device_or_automator, "dump_hierarchy"):
+        # device_or_automator is directly a UIAutomator2 Device
+        d = device_or_automator
+    elif hasattr(device_or_automator, "device"):
+        d = device_or_automator.device
+    elif hasattr(device_or_automator, "d"):
+        d = device_or_automator.d
+    else:
+        d = device_or_automator
+
+    if not d or not hasattr(d, "dump_hierarchy"):
+        return False, "DEVICE_NOT_READY: UIAutomator2 Device not connected or invalid"
+
+    # Đảm bảo app Facebook hiển thị ở foreground nếu có automator
+    if hasattr(device_or_automator, "ensure_foreground"):
+        try:
+            device_or_automator.ensure_foreground()
+        except Exception:
+            pass
+
+    # 1. Kiểm tra Checkpoint / Khóa tài khoản
+    detector = CheckpointDetector(d)
+    is_cp, cp_msg = detector.is_checkpoint()
+    if is_cp:
+        return False, f"CHECKPOINT: {cp_msg}"
+
+    # 2. Kiểm tra thông báo hết hạn phiên đăng nhập (Session expired)
+    session_expired_patterns = [
+        r"(?i).*(session expired|phiên đã hết hạn).*",
+        r"(?i).*(please log in again|vui lòng đăng nhập lại).*",
+    ]
+    for pat in session_expired_patterns:
+        try:
+            if d(textMatches=pat).exists or d(descriptionMatches=pat).exists:
+                return False, "SESSION_EXPIRED: Facebook session expired dialog visible"
+        except Exception:
+            pass
+
+    # 3. Kiểm tra các dấu hiệu ĐÃ ĐĂNG NHẬP (Home News Feed, Tab bar, Search bar, Composer)
+    home_tab_patterns = [
+        r"(?i).*(home|trang chủ).*tab.*",
+        r"(?i).*(notifications|thông báo).*tab.*",
+        r"(?i).*(watch|video).*tab.*",
+        r"(?i).*(marketplace).*tab.*",
+        r"(?i).*(menu|bảng feed|bảng tin).*tab.*",
+        r"(?i).*(friends|bạn bè).*tab.*",
+    ]
+    for pat in home_tab_patterns:
+        try:
+            if d(descriptionMatches=pat).exists or d(textMatches=pat).exists:
+                return True, "LOGGED_IN: News Feed / Home navigation bar visible"
+        except Exception:
+            pass
+
+    # Kiểm tra thanh tìm kiếm hoặc ô đăng bài "Bạn đang nghĩ gì?"
+    try:
+        if (
+            d(descriptionMatches=r"(?i).*(search facebook|tìm kiếm trên facebook).*").exists
+            or d(textMatches=r"(?i).*(search facebook|tìm kiếm trên facebook).*").exists
+            or d(descriptionMatches=r"(?i).*(what's on your mind|bạn đang nghĩ gì).*").exists
+            or d(textMatches=r"(?i).*(what's on your mind|bạn đang nghĩ gì).*").exists
+        ):
+            return True, "LOGGED_IN: Facebook search bar or feed composer visible"
+    except Exception:
+        pass
+
+    # 4. Kiểm tra các màn hình hậu đăng nhập (Đã đăng nhập thành công, chỉ đang hiển thị prompt)
+    post_login_patterns = [
+        r"(?i).*(save your login info|lưu thông tin đăng nhập).*",
+        r"(?i).*(continue in english|thử dùng facebook bằng tiếng việt).*",
+        r"(?i).*(contacts access|uploading your contacts|truy cập danh bạ|tải danh bạ).*",
+        r"(?i).*(find friends|people you may know|những người bạn có thể biết|tìm bạn bè).*",
+    ]
+    for pat in post_login_patterns:
+        try:
+            if d(descriptionMatches=pat).exists or d(textMatches=pat).exists:
+                return True, "LOGGED_IN: Post-login onboarding prompt visible (Save info/Languages)"
+        except Exception:
+            pass
+
+    # 5. Kiểm tra MÀN HÌNH ĐĂNG NHẬP (Form điền user/password)
+    try:
+        has_user_field = (
+            d(descriptionMatches=r"(?i).*(mobile number or email|số điện thoại hoặc email).*").exists
+            or d(textMatches=r"(?i).*(mobile number or email|số điện thoại hoặc email).*").exists
+        )
+        has_pwd_field = (
+            d(descriptionMatches=r"(?i).*(password|mật khẩu).*").exists
+            or d(textMatches=r"(?i).*(password|mật khẩu).*").exists
+        )
+        has_login_btn = (
+            d(descriptionMatches=r"(?i)^(log in|login|đăng nhập)$").exists
+            or d(textMatches=r"(?i)^(log in|login|đăng nhập)$").exists
+            or d(className="android.widget.Button", descriptionMatches=r"(?i).*log in.*").exists
+        )
+        if (has_user_field or has_pwd_field) and has_login_btn:
+            return False, "NOT_LOGGED_IN: Credentials login form visible (User/Pass fields)"
+        edits = d(className="android.widget.EditText")
+        if len(edits) >= 2 and has_login_btn:
+            return False, "NOT_LOGGED_IN: Credentials login form visible (2+ EditText fields)"
+    except Exception:
+        pass
+
+    # 6. Kiểm tra Màn hình bắt đầu (00_start: "Tham gia Facebook" / "Đã có tài khoản")
+    try:
+        if (
+            d(descriptionMatches=r"(?i).*(already have a profile|already have an account|đã có tài khoản).*").exists
+            or d(textMatches=r"(?i).*(already have a profile|already have an account|đã có tài khoản).*").exists
+            or d(descriptionMatches=r"(?i).*(join facebook|tham gia facebook|create new account|tạo tài khoản mới).*").exists
+            or d(textMatches=r"(?i).*(join facebook|tham gia facebook|create new account|tạo tài khoản mới).*").exists
+        ):
+            return False, "NOT_LOGGED_IN: Start screen visible ('Join Facebook' / 'Already have account')"
+    except Exception:
+        pass
+
+    # 7. Kiểm tra Màn hình chọn tài khoản đã lưu (Account Switcher)
+    try:
+        if (
+            d(descriptionMatches=r"(?i).*(log into another account|đăng nhập bằng tài khoản khác|find your account|tìm tài khoản).*").exists
+            or d(textMatches=r"(?i).*(log into another account|đăng nhập bằng tài khoản khác|find your account|tìm tài khoản).*").exists
+        ):
+            return False, "NOT_LOGGED_IN: Account chooser / saved accounts screen visible"
+    except Exception:
+        pass
+
+    # 8. Kiểm tra Màn hình nhập mã 2FA (Đang trong tiến trình đăng nhập)
+    try:
+        two_fa_kws = r"(?i).*(authentication app|two-factor|6-digit code|ứng dụng xác thực|xác thực 2 yếu tố|mã gồm 6 chữ số).*"
+        if d(descriptionMatches=two_fa_kws).exists or d(textMatches=two_fa_kws).exists:
+            return False, "NOT_LOGGED_IN: 2FA verification code screen pending"
+    except Exception:
+        pass
+
+    # 9. Quét XML Hierarchy dump tổng quát (Fallback scan)
+    try:
+        xml_dump = d.dump_hierarchy().lower()
+        if any(k in xml_dump for k in ["bạn đang nghĩ gì", "what's on your mind", "trang chủ, tab", "home, tab"]):
+            return True, "LOGGED_IN: Detected home feed keywords in UI hierarchy dump"
+        if any(k in xml_dump for k in ["số điện thoại hoặc email", "mobile number or email", "mật khẩu", "đăng nhập", "log in"]):
+            return False, "NOT_LOGGED_IN: Detected login credentials form in UI hierarchy dump"
+    except Exception:
+        pass
+
+    return False, "NOT_LOGGED_IN: Could not detect active Facebook feed/home screen"
+
+
+def is_logged_in(device_or_automator: Any) -> bool:
+    """Hàm tiện ích trả về True nếu đã đăng nhập Facebook, False nếu chưa đăng nhập."""
+    ok, _ = check_is_logged_in(device_or_automator)
+    return ok
+
+
 class FBLoginAction:
     def __init__(self, automator: BaseAutomator, account: Account):
         self.automator = automator

@@ -40,15 +40,42 @@ def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = F
     """Worker task executing action on single account's Redroid container with auto-start & proxy."""
     acc = AccountRepository.get_by_uid(uid)
     if not acc:
-        console.print(f"[bold red]Account UID {uid} not found in database.[/bold red]")
-        return False
+        from src.core.models import Account
+        console.print(f"[dim yellow]Account UID {uid} not in DB accounts table. Using transient account profile...[/dim yellow]")
+        acc = Account(uid=uid, password="", username=f"User_{uid}")
 
-    # 1. Acquire Proxy from pool for this account
-    proxy = ProxyRepository.acquire_available_proxy(uid)
+    # 1. Acquire Proxy from pool for this account (Strict requirement: Mở app luôn phải sử dụng proxy)
+    is_proxy_required = str(action).lower().strip() in [
+        "open_facebook_scrcpy",
+        "open_scrcpy",
+        "open_facebook",
+        "open_app",
+        "view_account",
+        "fb_scrcpy",
+        "fb_open_scrcpy",
+        "login",
+        "fb_login",
+    ] or params.get("require_proxy", False)
+
+    proxy = None
+    max_proxy_wait = 30
+    poll_start = time.time()
+    while time.time() - poll_start < max_proxy_wait:
+        proxy = ProxyRepository.acquire_available_proxy(uid)
+        if proxy:
+            break
+        if not is_proxy_required:
+            break
+        console.print(f"[dim yellow]Proxy is required for UID {uid}. Waiting for an available proxy in pool...[/dim yellow]")
+        time.sleep(2.0)
+
     proxy_url = proxy.url if proxy else None
     if proxy:
         console.print(f"[green]Acquired proxy #{proxy.id} for UID {uid}: {proxy.name or proxy.url[:35]}...[/green]")
     else:
+        if is_proxy_required:
+            console.print(f"[bold red]❌ Cannot proceed for UID {uid}: Proxy is strictly required ('Mở app luôn phải sử dụng proxy') but no available proxy was found in pool![/bold red]")
+            return False
         console.print(f"[yellow]No available proxy found in pool for UID {uid}. Running with default network.[/yellow]")
 
     redroid_inst = None
@@ -60,16 +87,16 @@ def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = F
         redroid_inst = RedroidRepository.get_by_account_uid(uid)
         if not redroid_inst:
             console.print(f"[cyan]Account UID {uid} has no Redroid container. Auto-provisioning with proxy...[/cyan]")
-            redroid_inst = manager.create_instance(account_uid=uid, proxy_url=proxy_url)
+            redroid_inst = manager.create_instance(account_uid=uid, proxy_url=proxy_url, use_proxy=True)
             AccountRepository.bind_container(uid, redroid_inst.container_id, redroid_inst.device_profile_id or "")
         else:
             live_status = manager.get_live_docker_status(redroid_inst.container_name)
             if live_status == "stopped":
                 console.print(f"[cyan]Container '{redroid_inst.container_name}' is stopped. Starting container & applying proxy...[/cyan]")
-                manager.start_instance(redroid_inst.container_name, proxy_url=proxy_url)
+                manager.start_instance(redroid_inst.container_name, proxy_url=proxy_url, use_proxy=True)
             elif live_status == "not_found":
                 console.print(f"[yellow]Container '{redroid_inst.container_name}' not found on Docker. Auto-creating...[/yellow]")
-                redroid_inst = manager.create_instance(account_uid=uid, proxy_url=proxy_url)
+                redroid_inst = manager.create_instance(account_uid=uid, proxy_url=proxy_url, use_proxy=True)
                 AccountRepository.bind_container(uid, redroid_inst.container_id, redroid_inst.device_profile_id or "")
             else:
                 console.print(f"[cyan]Container '{redroid_inst.container_name}' is already running.[/cyan]")
@@ -98,6 +125,25 @@ def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = F
             else:
                 console.print(f"[yellow]⚠️ Login ended with failure for UID {uid}. Waiting 3s before closing container...[/yellow]")
                 time.sleep(3.0)
+            auto_stop = True
+
+        if str(action).lower().strip() in [
+            "open_facebook_scrcpy",
+            "open_scrcpy",
+            "open_facebook",
+            "open_app",
+            "view_account",
+            "fb_scrcpy",
+            "fb_open_scrcpy",
+        ]:
+            console.print(f"[bold green]✔ Scrcpy window closed for UID {uid}. Auto-stopping container to proceed to next UID...[/bold green]")
+            auto_stop = True
+
+        if str(action).lower().strip() in ["check_login", "is_logged_in"]:
+            if res:
+                console.print(f"[bold green]✅ UID {uid}: Logged In (Live)[/bold green]")
+            else:
+                console.print(f"[bold yellow]⚠️ UID {uid}: Not Logged In / Checkpoint / Expired[/bold yellow]")
             auto_stop = True
 
     except Exception as e:
@@ -346,5 +392,114 @@ def run_reel_interactions(
             f.result()
 
     console.print(f"[bold green]✅ Finished 'reel_interactions' action![/bold green]")
+
+
+@app.command("open-facebook")
+@app.command("open-scrcpy")
+@app.command("open-app")
+def run_open_facebook_scrcpy_cmd(
+    uids: Optional[List[str]] = typer.Option(None, "--uids", "-u", help="List of Facebook account UIDs to open Facebook app & Scrcpy sequentially"),
+    group_id: Optional[int] = typer.Option(None, "--group-id", "-g", help="Account group ID to fetch UIDs from"),
+    all_accounts: bool = typer.Option(False, "--all", "-a", help="Run on all accounts in database"),
+    deeplink: str = typer.Option("fb://feed", "--deeplink", "-d", help="Facebook deep link or target (default: fb://feed)"),
+    concurrency: int = typer.Option(1, "--concurrency", "-m", help="Number of concurrent workers (default: 1 for sequential one-by-one)"),
+    auto_stop: bool = typer.Option(True, "--auto-stop/--no-auto-stop", help="Automatically stop container and release proxy after scrcpy is closed (default: True)"),
+):
+    """
+    Open Facebook app and Scrcpy window sequentially for a list of UIDs.
+    For each UID: starts container (using available proxy) -> launches scrcpy -> opens Facebook app.
+    When the user closes the Scrcpy window, the container automatically stops, releases the proxy, and opens the next UID.
+    """
+    target_uids = []
+    if uids:
+        target_uids = _parse_uids(uids)
+    elif group_id is not None:
+        accs = AccountRepository.list_by_group(group_id)
+        target_uids = [acc.uid for acc in accs if acc.uid]
+    elif all_accounts:
+        accs = AccountRepository.list_all()
+        target_uids = [acc.uid for acc in accs if acc.uid]
+
+    if not target_uids:
+        console.print("[bold red]Please provide account UIDs using --uids, --group-id, or --all.[/bold red]")
+        return
+
+    console.print(
+        f"[bold green]🚀 Opening Facebook App & Scrcpy for {len(target_uids)} account(s) (concurrency: {concurrency})...[/bold green]\n"
+        f"[dim]Note: Close the Scrcpy window when done with an account to automatically stop its container and proceed to the next.[/dim]"
+    )
+
+    params = {"deeplink": deeplink, "wait_for_close": True}
+
+    if concurrency > 1:
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
+            futures = [executor.submit(_run_single_account, uid, "open_facebook_scrcpy", params, auto_stop) for uid in target_uids]
+            for f in futures:
+                f.result()
+    else:
+        for idx, uid in enumerate(target_uids, 1):
+            console.print(f"\n[bold cyan]━━━━━━━━━━━━━ [{idx}/{len(target_uids)}] Processing UID: {uid} ━━━━━━━━━━━━━[/bold cyan]")
+            _run_single_account(uid, "open_facebook_scrcpy", params, auto_stop=auto_stop)
+
+    console.print(f"\n[bold green]✅ Finished Facebook & Scrcpy workflow for all {len(target_uids)} account(s)![/bold green]")
+
+
+@app.command("check-login")
+def run_check_login_cmd(
+    uids: Optional[List[str]] = typer.Option(None, "--uids", "-u", help="List of Facebook account UIDs to check login status"),
+    group_id: Optional[int] = typer.Option(None, "--group-id", "-g", help="Account group ID to fetch UIDs from"),
+    all_accounts: bool = typer.Option(False, "--all", "-a", help="Check all accounts in database"),
+    concurrency: int = typer.Option(2, "--concurrency", "-m", help="Concurrent workers (default: 2)"),
+    auto_stop: bool = typer.Option(True, "--auto-stop/--no-auto-stop", help="Auto stop container and release proxy after checking (default: True)"),
+):
+    """
+    Checks whether Facebook account(s) are logged in, logged out, or in checkpoint.
+    """
+    target_uids = []
+    if uids:
+        target_uids = _parse_uids(uids)
+    elif group_id is not None:
+        accs = AccountRepository.list_by_group(group_id)
+        target_uids = [acc.uid for acc in accs if acc.uid]
+    elif all_accounts:
+        accs = AccountRepository.list_all()
+        target_uids = [acc.uid for acc in accs if acc.uid]
+
+    if not target_uids:
+        console.print("[bold red]Please provide account UIDs using --uids, --group-id, or --all.[/bold red]")
+        return
+
+    console.print(f"[bold green]🔍 Checking Facebook login status for {len(target_uids)} account(s) (concurrency: {concurrency})...[/bold green]")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = [executor.submit(_run_single_account, uid, "check_login", {}, auto_stop) for uid in target_uids]
+        for f in futures:
+            try:
+                f.result()
+            except Exception as e:
+                console.print(f"[bold red]Worker error during check_login: {e}[/bold red]")
+
+    # Print summary table
+    from rich.table import Table
+    table = Table(title="📊 Facebook Login Check Results Summary", show_lines=True)
+    table.add_column("UID", style="cyan", no_wrap=True)
+    table.add_column("Status", justify="center")
+    table.add_column("Details / Diagnostic Note")
+    table.add_column("Updated At", style="dim", justify="right")
+
+    for uid in target_uids:
+        acc = AccountRepository.get_by_uid(uid)
+        if acc:
+            st = acc.status.value if hasattr(acc.status, "value") else str(acc.status)
+            color = "green" if st == "live" else "red" if st == "checkpoint" else "yellow"
+            status_text = f"[{color}]{st.upper()}[/{color}]"
+            table.add_row(uid, status_text, acc.note or "", str(acc.updated_at or "")[:19])
+        else:
+            table.add_row(uid, "[dim]UNKNOWN[/dim]", "Account not saved in DB", "")
+
+    console.print(table)
+    console.print(f"[bold green]✅ Finished checking login status for {len(target_uids)} account(s)![/bold green]")
+    console.print(f"[dim]📁 Results are saved to SQLite DB (table 'accounts'), logs/login_results.json, and logs/login_results.log[/dim]")
+
+
 
 

@@ -237,17 +237,107 @@ class BaseAutomator:
 
     def launch(self, deeplink: Optional[str] = None):
         """Launches target app, optionally using an Android Deep Link URL."""
+        package = self.package_name or "com.facebook.katana"
+        if package == "com.facebook.katana":
+            target_deeplink = deeplink or "fb://feed"
+            if self.device:
+                logger.info(f"Launching Facebook app via Deep Link: '{target_deeplink}'")
+                cmd = f"am start -a android.intent.action.VIEW -d '{target_deeplink}' {package}"
+                self.device.shell(cmd)
+            else:
+                self.adb_client.launch_app(package)
+            self.smart_sleep(2.0, 3.5)
+            return
+
         if not self.device:
-            self.adb_client.launch_app(self.package_name)
+            self.adb_client.launch_app(package)
             return
 
         if deeplink:
             logger.info(f"Launching app via Deep Link: '{deeplink}'")
-            cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' {self.package_name}"
+            cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' {package}"
             self.device.shell(cmd)
         else:
-            self.device.app_start(self.package_name, stop=False)
+            self.device.app_start(package, stop=False)
         self.smart_sleep(2.0, 4.0)
+
+    def open_facebook_app(self, deeplink: str = "fb://feed", max_attempts: int = 4) -> bool:
+        """
+        Launches Facebook application with a multi-attempt retry loop, handling APK check,
+        deep linking (fb://feed), component launch fallback, and system popup dismissal.
+        Similar to the resilient flow in FBLoginAction.
+        """
+        from src.core.constants import DEFAULT_FB_APK_PATH
+        package = self.package_name or "com.facebook.katana"
+
+        # 1. Ensure app is installed
+        try:
+            if not self.adb_client.is_app_installed(package):
+                if DEFAULT_FB_APK_PATH.exists():
+                    logger.info(f"Facebook app not installed on port {self.adb_port}. Installing from {DEFAULT_FB_APK_PATH}...")
+                    self.adb_client.install_apk(str(DEFAULT_FB_APK_PATH))
+                    time.sleep(3.0)
+                else:
+                    logger.warning(f"Facebook app '{package}' is not installed and APK not found at {DEFAULT_FB_APK_PATH}.")
+        except Exception as e:
+            logger.warning(f"Error checking/installing Facebook APK on port {self.adb_port}: {e}")
+
+        # 2. Multi-attempt launch loop
+        for attempt in range(1, max_attempts + 1):
+            logger.info(f"Launching Facebook app via '{deeplink}' (Attempt {attempt}/{max_attempts})...")
+            try:
+                # Launch via am start with deeplink
+                if self.device:
+                    cmd = f"am start -a android.intent.action.VIEW -d '{deeplink}' {package}"
+                    self.device.shell(cmd)
+                else:
+                    self.adb_client.execute_shell(f"am start -a android.intent.action.VIEW -d '{deeplink}' {package}")
+
+                self.smart_sleep(2.5, 4.0)
+                self.handle_system_popups()
+
+                # Check current package
+                curr_pkg = None
+                if self.device:
+                    try:
+                        curr = self.device.app_current()
+                        if isinstance(curr, dict):
+                            curr_pkg = curr.get("package")
+                    except Exception:
+                        pass
+
+                if curr_pkg == package:
+                    logger.info(f"Facebook app opened successfully on attempt {attempt}/{max_attempts}.")
+                    return True
+
+                # Fallback launch using specific activity or adb client
+                logger.warning(f"Facebook app not in foreground after attempt {attempt}/{max_attempts} (current: '{curr_pkg}'). Retrying...")
+                if self.device:
+                    try:
+                        self.device.shell(f"am start -n {package}/.LoginActivity")
+                    except Exception:
+                        pass
+                try:
+                    self.adb_client.launch_app(package)
+                except Exception:
+                    pass
+                time.sleep(2.0)
+
+                # Check again after fallback
+                if self.device:
+                    try:
+                        curr = self.device.app_current()
+                        if isinstance(curr, dict) and curr.get("package") == package:
+                            logger.info(f"Facebook app opened successfully via fallback on attempt {attempt}/{max_attempts}.")
+                            return True
+                    except Exception:
+                        pass
+            except Exception as e:
+                logger.warning(f"Error during Facebook launch attempt {attempt}/{max_attempts}: {e}")
+                time.sleep(2.0)
+
+        logger.error(f"Failed to open Facebook app ('{package}') after {max_attempts} attempts!")
+        return False
 
     def ensure_foreground(self):
         """Ensures target app remains in foreground."""
@@ -256,8 +346,11 @@ class BaseAutomator:
         try:
             curr = self.device.app_current()
             if curr.get("package") != self.package_name:
-                logger.info(f"App '{self.package_name}' minimized or closed. Relaunching...")
-                self.launch()
+                logger.info(f"App '{self.package_name}' minimized or closed (current: '{curr.get('package')}'). Relaunching...")
+                if self.package_name == "com.facebook.katana":
+                    self.launch(deeplink="fb://feed")
+                else:
+                    self.launch()
         except Exception as e:
             logger.warning(f"Error checking app foreground state: {e}")
 
@@ -540,7 +633,18 @@ class BaseAutomator:
             logger.debug(f"Could not hide keyboard: {e}")
         return False
 
+    def check_is_logged_in(self, timeout: float = 3.0) -> Tuple[bool, str]:
+        """Checks if Facebook app on this device/container is currently logged in."""
+        from src.automation.facebook.login import check_is_logged_in
+        return check_is_logged_in(self, timeout=timeout)
+
+    def is_logged_in(self) -> bool:
+        """Returns True if Facebook app on this device/container is currently logged in."""
+        from src.automation.facebook.login import is_logged_in
+        return is_logged_in(self)
+
     def teardown(self):
         """Teardown alias for close."""
         self.close()
+
 
