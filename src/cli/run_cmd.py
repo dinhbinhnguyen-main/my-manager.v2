@@ -449,6 +449,7 @@ def run_check_login_cmd(
     uids: Optional[List[str]] = typer.Option(None, "--uids", "-u", help="List of Facebook account UIDs to check login status"),
     group_id: Optional[int] = typer.Option(None, "--group-id", "-g", help="Account group ID to fetch UIDs from"),
     all_accounts: bool = typer.Option(False, "--all", "-a", help="Check all accounts in database"),
+    wait_time: int = typer.Option(10, "--wait", "-w", help="Seconds to wait after Facebook app launch before checking status (default: 10s)"),
     concurrency: int = typer.Option(2, "--concurrency", "-m", help="Concurrent workers (default: 2)"),
     auto_stop: bool = typer.Option(True, "--auto-stop/--no-auto-stop", help="Auto stop container and release proxy after checking (default: True)"),
 ):
@@ -469,9 +470,10 @@ def run_check_login_cmd(
         console.print("[bold red]Please provide account UIDs using --uids, --group-id, or --all.[/bold red]")
         return
 
-    console.print(f"[bold green]🔍 Checking Facebook login status for {len(target_uids)} account(s) (concurrency: {concurrency})...[/bold green]")
+    console.print(f"[bold green]🔍 Checking Facebook login status for {len(target_uids)} account(s) (waiting {wait_time}s after app launch, concurrency: {concurrency})...[/bold green]")
+    check_params = {"wait_after_launch": wait_time}
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
-        futures = [executor.submit(_run_single_account, uid, "check_login", {}, auto_stop) for uid in target_uids]
+        futures = [executor.submit(_run_single_account, uid, "check_login", check_params, auto_stop) for uid in target_uids]
         for f in futures:
             try:
                 f.result()

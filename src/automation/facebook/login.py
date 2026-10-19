@@ -82,6 +82,7 @@ def record_login_result(
 def check_is_logged_in(
     device_or_automator: Any,
     timeout: float = 3.0,
+    wait_after_launch: float = 0.0,
 ) -> Tuple[bool, str]:
     """
     Kiểm tra xem ứng dụng Facebook trên thiết bị hiện tại đã đăng nhập hay chưa.
@@ -89,6 +90,7 @@ def check_is_logged_in(
     Parameters:
         device_or_automator: uiautomator2.Device instance hoặc BaseAutomator instance.
         timeout: Thời gian chờ tối đa khi quét UI.
+        wait_after_launch: Thời gian chờ (giây) sau khi app mở để load hoàn tất trước khi quét.
 
     Returns:
         Tuple[bool, str]: (is_logged_in, reason_or_status)
@@ -119,6 +121,15 @@ def check_is_logged_in(
             device_or_automator.ensure_foreground()
         except Exception:
             pass
+
+    if wait_after_launch > 0:
+        logger.info(f"Waiting {wait_after_launch:.0f}s for Facebook app to finish loading...")
+        time.sleep(wait_after_launch)
+        if hasattr(device_or_automator, "handle_system_popups"):
+            try:
+                device_or_automator.handle_system_popups()
+            except Exception:
+                pass
 
     # 1. Kiểm tra Checkpoint / Khóa tài khoản
     detector = CheckpointDetector(d)

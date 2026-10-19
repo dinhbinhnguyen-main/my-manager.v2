@@ -130,7 +130,7 @@ class TestCheckLogin(unittest.TestCase):
              patch("src.automation.facebook.login.record_login_result") as mock_record_log:
             mock_detector.return_value.is_checkpoint.return_value = (False, "")
 
-            res = FBActionRouter.dispatch(automator, account, "check_login")
+            res = FBActionRouter.dispatch(automator, account, "check_login", params={"wait_after_launch": 0})
             self.assertTrue(res)
 
             # Verify SQLite DB update was invoked
@@ -146,6 +146,26 @@ class TestCheckLogin(unittest.TestCase):
             self.assertEqual(log_kwargs.get("uid"), "1000888999")
             self.assertTrue(log_kwargs.get("success"))
             self.assertEqual(log_kwargs.get("status"), AccountStatus.LIVE)
+
+    def test_router_dispatch_check_login_defaults_to_10s_wait(self):
+        from src.automation.facebook.router import FBActionRouter
+        from src.core.models import Account
+
+        automator = BaseAutomator(adb_port=6555)
+        automator.device = self.mock_device
+        automator.open_facebook_app = MagicMock(return_value=True)
+        automator.check_is_logged_in = MagicMock(return_value=(True, "LOGGED_IN: Feed"))
+        automator.handle_system_popups = MagicMock()
+        account = Account(uid="1000888999", password="pwd", username="user_test")
+
+        with patch("src.automation.facebook.router.time.sleep") as mock_sleep, \
+             patch("src.db.repository.AccountRepository.update_status"), \
+             patch("src.automation.facebook.login.record_login_result"):
+            res = FBActionRouter.dispatch(automator, account, "check_login")
+            self.assertTrue(res)
+            mock_sleep.assert_called_with(10.0)
+            automator.handle_system_popups.assert_called_once()
+            automator.check_is_logged_in.assert_called_once()
 
     def test_automator_open_facebook_app_happy_path(self):
         automator = BaseAutomator(adb_port=6555)

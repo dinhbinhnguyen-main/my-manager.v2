@@ -633,10 +633,10 @@ class BaseAutomator:
             logger.debug(f"Could not hide keyboard: {e}")
         return False
 
-    def check_is_logged_in(self, timeout: float = 3.0) -> Tuple[bool, str]:
+    def check_is_logged_in(self, timeout: float = 3.0, wait_after_launch: float = 0.0) -> Tuple[bool, str]:
         """Checks if Facebook app on this device/container is currently logged in."""
         from src.automation.facebook.login import check_is_logged_in
-        return check_is_logged_in(self, timeout=timeout)
+        return check_is_logged_in(self, timeout=timeout, wait_after_launch=wait_after_launch)
 
     def is_logged_in(self) -> bool:
         """Returns True if Facebook app on this device/container is currently logged in."""

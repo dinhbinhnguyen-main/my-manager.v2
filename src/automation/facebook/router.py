@@ -1,5 +1,4 @@
-"""Unified Facebook Action Router for my-manager.v2."""
-
+import time
 import logging
 from typing import Dict, Any, List, Optional
 
@@ -185,6 +184,12 @@ class FBActionRouter:
                 status_msg = "APP_NOT_RUNNING: Could not launch Facebook app ('com.facebook.katana')"
                 db_status = AccountStatus.ERROR
             else:
+                # Sau khi khởi động app Facebook, chờ 10s để app khởi động xong trước khi check
+                wait_seconds = float(params.get("wait_after_launch", params.get("wait_time", 10.0)))
+                logger.info(f"Facebook app launched for UID {account.uid}. Waiting {wait_seconds:.0f}s for app to finish loading...")
+                time.sleep(wait_seconds)
+                automator.handle_system_popups()
+
                 is_logged, status_msg = automator.check_is_logged_in()
                 if is_logged:
                     logger.info(f"Account UID {account.uid}: {status_msg}")
