@@ -141,5 +141,41 @@ def delete_account(
             console.print(f"[yellow]Account UID {uid} processed.[/yellow]")
 
     console.print(f"[bold green]Completed account deletion operation. Total deleted: {deleted_count}[/bold green]")
+    return True
+
+
+@app.command("set-group")
+def set_group_cmd(
+    target_group: int = typer.Option(..., "--to", "-t", help="Target group_id to assign accounts to (e.g. 0, 1, 2)"),
+    from_group: Optional[int] = typer.Option(None, "--from", "-f", help="Source group_id to move accounts from (e.g. -1)"),
+    uids: Optional[str] = typer.Option(None, "--uids", "-u", help="Comma-separated account UIDs to assign"),
+    limit: Optional[int] = typer.Option(None, "--limit", "-l", help="Limit number of accounts to move"),
+    all_accounts: bool = typer.Option(False, "--all", "-a", help="Move all accounts in database to target group"),
+):
+    """
+    Quickly adjust group_id for accounts:
+    - Move accounts from one group to another (e.g. --from -1 --to 0)
+    - Assign group_id to specific UIDs (e.g. --uids uid1,uid2 --to 0)
+    - Move a specific number of accounts (e.g. --from -1 --to 0 --limit 50)
+    """
+    if not all_accounts and from_group is None and not uids:
+        console.print("[bold red]Please specify --from <group_id>, --uids <uid1,uid2>, or --all.[/bold red]")
+        return
+
+    uid_list = None
+    if uids:
+        import re
+        raw = [re.sub(r'[\'"\s]', '', u) for u in uids.split(",")]
+        uid_list = [u for u in raw if u]
+
+    updated = AccountRepository.update_group_id(
+        target_group_id=target_group,
+        uids=uid_list,
+        from_group_id=from_group if not all_accounts else None,
+        limit=limit,
+    )
+
+    console.print(f"[bold green]✅ Successfully updated {updated} account(s) to group_id = {target_group}![/bold green]")
+
 
 

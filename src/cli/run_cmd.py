@@ -503,5 +503,34 @@ def run_check_login_cmd(
     console.print(f"[dim]📁 Results are saved to SQLite DB (table 'accounts'), logs/login_results.json, and logs/login_results.log[/dim]")
 
 
+@app.command("daily-rotation")
+def run_daily_rotation_cmd(
+    day: Optional[str] = typer.Option(None, "--day", "-d", help="Target weekday (2, 3, 4, 5, 6, 7, cn, or monday..). Defaults to today."),
+    group_id: int = typer.Option(0, "--group-id", "-g", help="Account group_id to filter from DB (default: 0)"),
+    status: str = typer.Option("live", "--status", "-s", help="Filter account status (live, idle, all. default: live)"),
+    concurrency: int = typer.Option(1, "--concurrency", "-m", help="Concurrent workers (default: 1)"),
+    group_count: int = typer.Option(3, "--group-count", "-c", help="Number of groups to post per single_listing account (default: 3)"),
+    swipes: int = typer.Option(20, "--swipes", "-w", help="Number of swipes per scroll_feed account (default: 20)"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview 7-group partition and planned actions without executing"),
+    only: Optional[str] = typer.Option(None, "--only", help="Run only 'listing' or 'feed' accounts"),
+):
+    """
+    Kịch bản xoay vòng 7 ngày cho tài khoản group_id = -1:
+    - Vào thứ X: nhóm tài khoản thuộc thứ X chạy 'single_listing', 6 nhóm còn lại chạy 'scroll_feed'.
+    """
+    from src.automation.daily_rotation import execute_daily_rotation
+    execute_daily_rotation(
+        group_id=group_id,
+        target_day=day,
+        status_filter=status,
+        concurrency=concurrency,
+        single_listing_group_count=group_count,
+        scroll_feed_swipes=swipes,
+        dry_run=dry_run,
+        only_action=only,
+    )
+
+
+
 
 

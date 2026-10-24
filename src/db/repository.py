@@ -134,8 +134,43 @@ class AccountRepository:
             cursor.execute("DELETE FROM accounts WHERE uid = ?", (acc.uid,))
             cursor.execute("DELETE FROM automation_jobs WHERE account_uid = ?", (acc.uid,))
             cursor.execute("DELETE FROM automation_tasks WHERE account_uid = ?", (acc.uid,))
-        return True
-
+    @staticmethod
+    def update_group_id(
+        target_group_id: int,
+        uids: Optional[List[str]] = None,
+        from_group_id: Optional[int] = None,
+        limit: Optional[int] = None,
+    ) -> int:
+        """Quickly updates group_id for specific UIDs or transfers accounts between groups."""
+        with get_db_cursor() as cursor:
+            if uids:
+                clean_uids = [u.strip() for u in uids if u.strip()]
+                if not clean_uids:
+                    return 0
+                placeholders = ",".join("?" for _ in clean_uids)
+                cursor.execute(
+                    f"UPDATE accounts SET group_id = ?, updated_at = CURRENT_TIMESTAMP WHERE uid IN ({placeholders})",
+                    (target_group_id, *clean_uids),
+                )
+                return cursor.rowcount
+            elif from_group_id is not None:
+                if limit and limit > 0:
+                    cursor.execute(
+                        f"""
+                        UPDATE accounts SET group_id = ?, updated_at = CURRENT_TIMESTAMP 
+                        WHERE uid IN (SELECT uid FROM accounts WHERE group_id = ? ORDER BY id ASC LIMIT ?)
+                        """,
+                        (target_group_id, from_group_id, limit),
+                    )
+                else:
+                    cursor.execute(
+                        "UPDATE accounts SET group_id = ?, updated_at = CURRENT_TIMESTAMP WHERE group_id = ?",
+                        (target_group_id, from_group_id),
+                    )
+                return cursor.rowcount
+            else:
+                cursor.execute("UPDATE accounts SET group_id = ?, updated_at = CURRENT_TIMESTAMP", (target_group_id,))
+                return cursor.rowcount
 
 
 class DeviceProfileRepository:

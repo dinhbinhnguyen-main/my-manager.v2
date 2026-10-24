@@ -13,6 +13,7 @@ Tài liệu tổng hợp đầy đủ và chi tiết tất cả các lệnh **CL
 5. [⚙️ 5. Cấu hình Hệ thống & Đường dẫn V1 (`setting`)](#️-5-cấu-hình-hệ-thống--đường-dẫn-v1-setting)
 6. [🏠 6. Tra cứu Sản phẩm BĐS từ V1 (`product`)](#-6-tra-cứu-sản-phẩm-bđs-từ-v1-product)
 7. [🚀 7. Chạy Tác vụ Đơn lẻ (`run`)](#-7-chạy-tác-vụ-đơn-lẻ-run)
+8. [📅 8. Kịch bản Xoay vòng Tài khoản 7 Ngày (`daily-rotation`)](#-8-kịch-bản-xoay-vòng-tài-khoản-7-ngày-daily-rotation)
 
 ---
 
@@ -36,7 +37,21 @@ python main-cli.py account show 61599900011122
 
 # ❌ Xóa tài khoản theo UID hoặc ID (TỰ ĐỘNG XÓA Container Docker + Thư mục data/containers/<uid> + Nhả Proxy + Xóa Kịch bản)
 python main-cli.py account delete 61599900011122
+
+# 🔄 Điều chỉnh nhanh Group ID cho tài khoản:
+# Gán group_id = 0 cho danh sách UIDs cụ thể:
+python main-cli.py account set-group --to 0 --uids 61588749472767,61593783300961
+
+# Chuyển tất cả nick từ group -1 sang group 0:
+python main-cli.py account set-group --to 0 --from -1
+
+# Chuyển 50 nick từ group -1 sang group 0:
+python main-cli.py account set-group --to 0 --from -1 --limit 50
+
+# Chuyển toàn bộ tài khoản trong database sang group 0:
+python main-cli.py account set-group --to 0 --all
 ```
+
 
 
 ---
@@ -321,3 +336,39 @@ python main-cli.py proxy delete --help
 python main-cli.py automation delete --help
 python main-cli.py redroid remove --help
 ```
+
+
+---
+
+## 📅 8. Kịch bản Xoay vòng Tài khoản 7 Ngày (`daily-rotation`)
+
+Kịch bản tự động chia danh sách tài khoản theo `group_id` (mặc định: `group_id = 0`) thành 7 nhóm tương ứng 7 ngày trong tuần.
+- Vào thứ X: Nhóm tài khoản thuộc thứ X chạy `single_listing`, 6 nhóm còn lại chạy `scroll_feed` nuôi tương tác.
+- Tự động gán Proxy, mở container, chạy tác vụ, dừng container và hoàn trả Proxy.
+
+```bash
+# Xem trước phân bổ kịch bản cho ngày hôm nay (mặc định group_id = 0):
+python main-cli.py run daily-rotation --dry-run
+
+# Xem trước kịch bản cho Thứ 2 (group_id = 0):
+python main-cli.py run daily-rotation --day 2 --dry-run
+
+# Xem trước kịch bản cho group_id = -1:
+python main-cli.py run daily-rotation -g -1 --dry-run
+
+# Chạy thực tế theo thứ hôm nay (concurrency 1 hoặc 2):
+python main-cli.py run daily-rotation --concurrency 1
+
+# Giả lập chạy kịch bản cho Thứ 2:
+python main-cli.py run daily-rotation --day 2 --concurrency 1
+
+# Chỉ muốn chạy nhóm đăng bài hôm nay (bỏ qua scroll_feed):
+python main-cli.py run daily-rotation --only listing
+
+# Chỉ muốn chạy nhóm nuôi nick/lướt feed (bỏ qua đăng bài):
+python main-cli.py run daily-rotation --only feed
+
+# Đặt lịch Crontab chạy tự động mỗi ngày vào 8h00 sáng:
+# 0 8 * * * /Volumes/KINGSTON/miniconda3/envs/my-manager.v2/bin/python /Users/dinhbinhnguyen/Dev/my-manager.v2/scripts/daily_rotation.py >> /Users/dinhbinhnguyen/Dev/my-manager.v2/logs/daily_rotation.log 2>&1
+```
+
