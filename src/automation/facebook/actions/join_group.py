@@ -99,7 +99,7 @@ class FBJoinGroupAction:
             d.press("enter")
         self.automator.smart_sleep(3.0, 4.5)
 
-        # 4. Switch to 'Groups' (Nhóm) tab
+        # 4. Switch to 'Groups' tab
         if not self._switch_to_groups_tab():
             logger.warning(f"[{self.account.uid}] Could not navigate to Groups tab. Aborting join_group.")
             return False
@@ -297,7 +297,7 @@ class FBJoinGroupAction:
                 except Exception:
                     pass
 
-        # 3. Click Submit / Gửi / Hoàn tất
+        # 3. Click Submit button
         submit_candidates = [
             "//android.widget.Button[@text='Gửi' or @text='Nộp' or @text='Submit' or @text='Hoàn tất']",
             "//android.widget.Button[contains(@text, 'Gửi') or contains(@text, 'Submit')]",

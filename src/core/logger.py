@@ -3,7 +3,7 @@ Centralized Colored Logging System for my-manager.v2.
 Provides rich colored console output for:
 - WARNING (Yellow)
 - ERROR / FAILED (Red)
-- INFO (White - trắng)
+- INFO (White)
 - DEBUG (Cyan/Dim)
 - SUCCESS (Green)
 """
@@ -67,7 +67,7 @@ class ColoredTerminalFormatter(logging.Formatter):
     """
     Format logs with distinct colors for terminal screen:
     - SUCCESS: Green [SUCCESS] + Green text
-    - INFO: White [INFO] + White text (info trắng)
+    - INFO: White [INFO] + White text
     - WARNING: Yellow [WARNING] + Yellow text
     - ERROR: Red [ERROR] + Red text
     - FAILED: Red [FAILED] + Red text
@@ -179,7 +179,7 @@ def setup_logging(level: int = logging.INFO, log_dir: Optional[Path] = None):
 
 # Direct terminal print helpers for scripts and CLI
 def print_info(message: str):
-    """Prints message in clean white (trắng)."""
+    """Prints message in clean white."""
     print(f"{COLOR_BOLD}{COLOR_WHITE}[INFO   ]{COLOR_RESET} {COLOR_WHITE}{message}{COLOR_RESET}")
 
 

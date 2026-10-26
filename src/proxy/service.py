@@ -138,27 +138,27 @@ class ProxyService:
         for attempt in range(1, max_retries + 1):
             success, parsed_proxy, msg, status_code = cls.rotate_proxy_api(proxy.url)
 
-            # STATUS == 100 -> Thành công xoay IP mới, không đóng băng, trả về ngay lập tức!
+            # STATUS == 100 -> Successfully rotated to new IP, no freeze, return immediately!
             if success and parsed_proxy:
                 proxy_target = proxy.id if proxy.id else proxy.url
                 ProxyRepository.update_current_proxy_http(proxy_target, parsed_proxy["formatted_url"])
                 proxy.current_proxy_http = parsed_proxy["formatted_url"]
                 return proxy, parsed_proxy, "Proxy acquired and rotated successfully."
 
-            # STATUS == 101 -> Chưa hết cooldown, cần chờ XX giây rồi gọi lại URL
+            # STATUS == 101 -> Cooldown not finished, wait XX seconds before requesting URL again
             if status_code == 101:
                 cooldown_sec = cls._extract_cooldown_seconds(msg)
-                wait_sec = cooldown_sec + 2  # Thêm 2 giây đệm an toàn
+                wait_sec = cooldown_sec + 2  # Add 2-second safety buffer
                 logger.info(
-                    f"❄️ [Status 101 - Cooldown] Luồng UID {account_uid} đóng băng {wait_sec}s "
-                    f"để chờ URL proxy ({proxy.url}) hết cooldown (Message: '{msg}')..."
+                    f"❄️ [Status 101 - Cooldown] Worker UID {account_uid} frozen for {wait_sec}s "
+                    f"waiting for proxy URL ({proxy.url}) cooldown to expire (Message: '{msg}')..."
                 )
                 print(
-                    f"❄️ [Luồng UID {account_uid}] Status 101 (Con {cooldown_sec}s) -> Đóng băng {wait_sec}s chờ reset (Lần {attempt}/{max_retries})..."
+                    f"❄️ [Worker UID {account_uid}] Status 101 ({cooldown_sec}s remaining) -> Frozen for {wait_sec}s waiting for reset (Attempt {attempt}/{max_retries})..."
                 )
                 time.sleep(wait_sec)
             else:
-                # Lỗi hệ thống/mạng khác (không phải status 101), chờ 5s rồi thử lại
+                # Other system/network error (not status 101), wait 5s and retry
                 logger.warning(f"Proxy API non-101 error: {msg}. Retrying in 5s...")
                 time.sleep(5)
 

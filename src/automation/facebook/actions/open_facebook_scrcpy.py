@@ -73,9 +73,9 @@ class FBOpenFacebookScrcpyAction:
     ) -> bool:
         """
         1. Ensures Facebook APK is installed on container (auto-installs if missing).
-        2. Strictly verifies and configures proxy on container (Mở app luôn phải sử dụng proxy).
+        2. Strictly verifies and configures proxy on container (app opening must use proxy).
         3. Opens Scrcpy window for container screen view.
-        4. Launches Facebook app with robust retry loop (tương tự như trong login.py).
+        4. Launches Facebook app with robust retry loop (similar logic to login.py).
         5. Waits until Scrcpy window is closed by the user.
         """
         port = self.automator.adb_port
@@ -107,7 +107,7 @@ class FBOpenFacebookScrcpyAction:
                 logger.error(f"Failed to launch Scrcpy for UID {uid} on port {port}.")
                 return False
 
-        # Step 4: Launch Facebook App with multi-attempt retry loop (logic tương tự login.py)
+        # Step 4: Launch Facebook App with multi-attempt retry loop (similar logic to login.py)
         app_opened = self.automator.open_facebook_app(deeplink=deeplink, max_attempts=max_open_attempts)
         if not app_opened:
             logger.error(f"Failed to open Facebook app ('{package_name}') after {max_open_attempts} attempts!")

@@ -109,12 +109,12 @@ my-manager.v2/
 
 ## MACOS Commands
 
-- **Khởi động môi trường (VM, Docker, Conda):**
+- **Start environment (VM, Docker, Conda):**
 ```bash
 mm-start
 ```
 
-- **Tắt máy ảo để giải phóng CPU & RAM cho Mac:**
+- **Stop VM to release CPU & RAM for Mac:**
 ```bash
 mm-stop
 ```

@@ -125,7 +125,7 @@ def step_1_open_marketplace(bot: BaseAutomator, timeout: int = 20) -> bool:
     sell_btn.click_exists(timeout=5)
     bot.smart_sleep(2.0)
 
-    # Check for 'Create listing' / 'Tạo bài niêm yết' button if shown
+    # Check for 'Create listing' button if shown
     create_btn = bot.get_button_by_text("create", timeout=3) or (bot.d(textMatches=r"(?i).*Create listing.*|.*Tạo bài niêm yết.*") if bot.d else None)
     if create_btn and create_btn.exists:
         bot.log("👆 Found 'Create listing' button, clicking...")

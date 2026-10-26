@@ -87,7 +87,7 @@ class FBMarketplaceAction:
 
             self.automator.smart_sleep(2.0, 3.0)
 
-            # Click Sell / Bán button
+            # Click Sell button
             self.automator.click_element(text="Sell") or self.automator.click_element(text="Bán")
             self.automator.click_element(text="Items") or self.automator.click_element(text="Mặt hàng")
 

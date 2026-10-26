@@ -1,18 +1,18 @@
-"""Daily Account Rotation Automation (Kịch bản xoay vòng tài khoản theo thứ trong tuần).
+"""Daily Account Rotation Automation (Account rotation schedule by day of the week).
 
-Chia các tài khoản trong database (group_id = -1) thành 7 nhóm cố định tương ứng với 7 ngày trong tuần:
-- Nhóm Thứ 2 (Monday, index 0)
-- Nhóm Thứ 3 (Tuesday, index 1)
-- Nhóm Thứ 4 (Wednesday, index 2)
-- Nhóm Thứ 5 (Thursday, index 3)
-- Nhóm Thứ 6 (Friday, index 4)
-- Nhóm Thứ 7 (Saturday, index 5)
-- Nhóm Chủ Nhật (Sunday, index 6)
+Partitions accounts in the database (group_id = -1) into 7 fixed groups corresponding to the 7 days of the week:
+- Monday group (index 0)
+- Tuesday group (index 1)
+- Wednesday group (index 2)
+- Thursday group (index 3)
+- Friday group (index 4)
+- Saturday group (index 5)
+- Sunday group (index 6)
 
-Logic vận hành:
-- Vào thứ X (hoặc chỉ định qua --day):
-  - Nhóm tài khoản thuộc thứ X sẽ chạy action 'single_listing' (đăng bài marketplace/group đơn lẻ).
-  - Tất cả các tài khoản thuộc 6 nhóm còn lại sẽ chạy action 'scroll_feed' (lướt news feed tương tác nuôi nick).
+Operational logic:
+- On day X (or specified via --day):
+  - Accounts assigned to day X run 'single_listing' (individual marketplace/group listing).
+  - All accounts belonging to the remaining 6 groups run 'scroll_feed' (news feed warm-up and interaction).
 """
 
 import re
@@ -55,19 +55,19 @@ def parse_target_weekday(target_input: Optional[Any] = None) -> int:
     raw_clean = re.sub(r'[\s_\-]', '', raw)
 
     mapping = {
-        # Thứ 2 (Monday -> 0)
+        # Monday (0)
         "2": 0, "thu2": 0, "t2": 0, "mon": 0, "monday": 0,
-        # Thứ 3 (Tuesday -> 1)
+        # Tuesday (1)
         "3": 1, "thu3": 1, "t3": 1, "tue": 1, "tuesday": 1,
-        # Thứ 4 (Wednesday -> 2)
+        # Wednesday (2)
         "4": 2, "thu4": 2, "t4": 2, "wed": 2, "wednesday": 2,
-        # Thứ 5 (Thursday -> 3)
+        # Thursday (3)
         "5": 3, "thu5": 3, "t5": 3, "thu": 3, "thursday": 3,
-        # Thứ 6 (Friday -> 4)
+        # Friday (4)
         "6": 4, "thu6": 4, "t6": 4, "fri": 4, "friday": 4,
-        # Thứ 7 (Saturday -> 5)
+        # Saturday (5)
         "7": 5, "thu7": 5, "t7": 5, "sat": 5, "saturday": 5,
-        # Chủ Nhật (Sunday -> 6)
+        # Sunday (6)
         "8": 6, "cn": 6, "chunhat": 6, "chu_nhat": 6, "sun": 6, "sunday": 6,
     }
 
@@ -214,7 +214,7 @@ def execute_daily_rotation(
     print_rotation_plan_table(plan)
 
     if dry_run:
-        console.print("[yellow]🔍 [DRY RUN] Chế độ xem trước: Không thực thi action lên thiết bị/container.[/yellow]")
+        console.print("[yellow]🔍 [DRY RUN] Preview mode: No actions will be executed on devices/containers.[/yellow]")
         return
 
     listing_accs = plan["listing_accounts"]
@@ -245,9 +245,9 @@ def execute_daily_rotation(
             tasks.append((acc.uid, "scroll_feed", params))
 
     console.print(
-        f"\n[bold green]🚀 Bắt đầu thực thi {len(tasks)} tasks "
+        f"\n[bold green]🚀 Starting execution of {len(tasks)} tasks "
         f"({len(listing_accs)} single_listing + {len(feed_accs)} scroll_feed) "
-        f"với Concurrency = {concurrency}...[/bold green]"
+        f"with Concurrency = {concurrency}...[/bold green]"
     )
 
     if concurrency > 1:
@@ -260,10 +260,10 @@ def execute_daily_rotation(
                 try:
                     f.result()
                 except Exception as e:
-                    console.print(f"[bold red]Lỗi khi chạy task: {e}[/bold red]")
+                    console.print(f"[bold red]Error running task: {e}[/bold red]")
     else:
         for idx, (uid, act, params) in enumerate(tasks, 1):
             console.print(f"\n[bold cyan]━━━━━━━━━━━━━ [{idx}/{len(tasks)}] UID: {uid} | Action: {act.upper()} ━━━━━━━━━━━━━[/bold cyan]")
             _run_single_account(uid, act, params, auto_stop=True)
 
-    console.print(f"\n[bold green]✅ Hoàn tất kịch bản xoay vòng cho tất cả {len(tasks)} tài khoản![/bold green]")
+    console.print(f"\n[bold green]✅ Daily rotation scenario completed for all {len(tasks)} accounts![/bold green]")

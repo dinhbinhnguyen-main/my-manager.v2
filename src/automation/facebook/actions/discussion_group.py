@@ -201,7 +201,7 @@ def is_group_matching_transaction_type(group_title: str, transaction_type: str =
 
     if t_type in ("sale", "ban", "mua_ban", "0"):
         if has_rental:
-            # Allow only if it is explicitly a dual buy/sell + rent group (e.g. 'mua bán và cho thuê')
+            # Allow only if it is explicitly a dual buy/sell + rent group (e.g. 'buy, sell & rent')
             if ("mua bán" in title or "mua ban" in title or "bán" in title) and not any(ex in title for ex in ["nhà trọ", "phòng trọ", "ở ghép"]):
                 return True, False
             return False, True
@@ -666,7 +666,7 @@ def click_gallery_button(bot: BaseAutomator, timeout: int = 15) -> bool:
     STEP 7:
     - Finds and clicks 'Gallery' / 'Ảnh/video' / 'Ảnh' button to open media picker.
     """
-    bot.log("🖼️ [Step 7] Finding and clicking 'Gallery' / 'Ảnh/video' button...")
+    bot.log("🖼️ [Step 7] Finding and clicking 'Gallery / Photo/video' button...")
 
     gallery_patterns = [
         r"(?i)^Gallery$",
@@ -709,8 +709,8 @@ def click_gallery_button(bot: BaseAutomator, timeout: int = 15) -> bool:
 
         bot.smart_sleep(1.0)
 
-    bot.log("❌ Could not find 'Gallery' / 'Ảnh/video' button.")
-    raise Exception("❌ Could not find 'Gallery' / 'Ảnh/video' button.")
+    bot.log("❌ Could not find 'Photo/video' button.")
+    raise Exception("❌ Could not find 'Photo/video' button.")
 
 
 # ==============================================================================
@@ -799,7 +799,7 @@ def select_pushed_images(bot: BaseAutomator, photo_count: int = 1, timeout: int 
         # Check and handle gallery retry error if it appears during photo loading
         from src.automation.facebook.actions.list_group_share import check_and_handle_gallery_retry
         if check_and_handle_gallery_retry(bot):
-            bot.log("🔄 Đã bấm 'Retry' khi tải ảnh Gallery (Discussion). Đặt lại timeout để tiếp tục quét ảnh...")
+            bot.log("🔄 Clicked 'Retry' while loading Gallery images (Discussion). Resetting timeout to continue scanning...")
             start_time = time.time()
             bot.smart_sleep(1.0)
             continue
@@ -903,7 +903,7 @@ def click_next_after_photos(bot: BaseAutomator, timeout: int = 15) -> bool:
     STEP 9:
     - Clicks 'Next' / 'Tiếp' button to confirm selected photos and return to composer.
     """
-    bot.log("➡️ [Step 9] Clicking 'Next' / 'Tiếp' button to confirm selected photos...")
+    bot.log("➡️ [Step 9] Clicking 'Next' button to confirm selected photos...")
 
     next_keywords = ["next", "tiếp", "tiếp tục", "xong", "done", "chọn", "thêm"]
 
@@ -946,16 +946,16 @@ def click_next_after_photos(bot: BaseAutomator, timeout: int = 15) -> bool:
 
 
 # ==============================================================================
-# STEP 10: CLICK 'POST' / 'ĐĂNG' BUTTON
+# STEP 10: CLICK 'POST' BUTTON
 # ==============================================================================
 
 def click_post_button(bot: BaseAutomator, timeout: int = 25) -> bool:
     """
     STEP 10:
-    - Finds and clicks 'Post' / 'Đăng' button in composer.
+    - Finds and clicks 'Post' button in composer.
     - Waits for post publication confirmation.
     """
-    bot.log("🚀 [Step 10] Finding and clicking 'Post' / 'Đăng' button...")
+    bot.log("🚀 [Step 10] Finding and clicking 'Post' button...")
 
     post_keywords = ["post", "đăng", "đăng bài", "publish", "chia sẻ"]
 
@@ -1003,8 +1003,8 @@ def click_post_button(bot: BaseAutomator, timeout: int = 25) -> bool:
         bot.smart_sleep(1.0)
 
     if not clicked:
-        bot.log("❌ Could not find or click 'Post' / 'Đăng' button.")
-        raise Exception("❌ Could not find 'Post' / 'Đăng' button.")
+        bot.log("❌ Could not find or click 'Post' button.")
+        raise Exception("❌ Could not find or click 'Post' button.")
 
     return True
 
@@ -1102,7 +1102,7 @@ class FBDiscussionGroupAction:
                 current_step = "step_9_click_next_after_photos"
                 click_next_after_photos(self.automator, timeout=15)
 
-            # Step 10: Click 'Post' / 'Đăng'
+            # Step 10: Click 'Post' button
             current_step = "step_10_click_post_button"
             click_post_button(self.automator, timeout=25)
 

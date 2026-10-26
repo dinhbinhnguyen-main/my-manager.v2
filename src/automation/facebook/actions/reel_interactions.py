@@ -380,7 +380,7 @@ class FBReelInteractionsAction:
         share_btn.click()
         self.automator.smart_sleep(2.0, 3.0)
 
-        # 2. Click 'Group' / 'Nhóm' button in share tray (secsion_03_share/01_share_clicked)
+        # 2. Click 'Group' button in share tray
         group_opt = None
         for attempt in range(3):
             for candidate in [
@@ -413,7 +413,7 @@ class FBReelInteractionsAction:
                 self.automator.smart_sleep(1.5, 2.0)
 
         if not group_opt or not group_opt.exists:
-            logger.warning(f"[{self.account.uid}] ⚠️ Could not find 'Group' / 'Nhóm' share option.")
+            logger.warning(f"[{self.account.uid}] ⚠️ Could not find 'Group' share option.")
             d.press("back")
             return False
 
@@ -453,7 +453,7 @@ class FBReelInteractionsAction:
                 break
 
             # 2. Check for Single-select List UI (03_group_clicked_02)
-            # Has "Select group" / "Chọn nhóm" or group Buttons with no checkboxes
+            # Has 'Select group' or group buttons with no checkboxes
             if (
                 d(textMatches=r"(?i)^select group$|^chọn nhóm$").exists or
                 d(descriptionMatches=r"(?i)^select group$|^chọn nhóm$").exists or

@@ -44,7 +44,7 @@ def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = F
         console.print(f"[dim yellow]Account UID {uid} not in DB accounts table. Using transient account profile...[/dim yellow]")
         acc = Account(uid=uid, password="", username=f"User_{uid}")
 
-    # 1. Acquire Proxy from pool for this account (Strict requirement: Mở app luôn phải sử dụng proxy)
+    # 1. Acquire Proxy from pool for this account (Strict requirement: App opening must always use proxy)
     is_proxy_required = str(action).lower().strip() in [
         "open_facebook_scrcpy",
         "open_scrcpy",
@@ -74,7 +74,7 @@ def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = F
         console.print(f"[green]Acquired proxy #{proxy.id} for UID {uid}: {proxy.name or proxy.url[:35]}...[/green]")
     else:
         if is_proxy_required:
-            console.print(f"[bold red]❌ Cannot proceed for UID {uid}: Proxy is strictly required ('Mở app luôn phải sử dụng proxy') but no available proxy was found in pool![/bold red]")
+            console.print(f"[bold red]❌ Cannot proceed for UID {uid}: Proxy is strictly required (opening app must use proxy) but no available proxy was found in pool![/bold red]")
             return False
         console.print(f"[yellow]No available proxy found in pool for UID {uid}. Running with default network.[/yellow]")
 
@@ -117,7 +117,7 @@ def _run_single_account(uid: str, action: str, params: dict, auto_stop: bool = F
         console.print(f"[bold cyan]Executing action '{action}' on UID {uid} (ADB Port {redroid_inst.adb_port})...[/bold cyan]")
         res = FBActionRouter.dispatch(automator, acc, action_name=action, params=params)
 
-        # Sau khi login xong cần delay khoảng 10s sau đó đóng redroid để chuẩn bị login account mới
+        # After login completes, delay ~10s then stop redroid container to prepare for next account login
         if str(action).lower().strip() in ["login", "fb_login"]:
             if res:
                 console.print(f"[bold green]✅ Login succeeded for UID {uid}. Waiting 10s before stopping Redroid container...[/bold green]")
@@ -332,7 +332,7 @@ def run_single_listing_cmd(
 @app.command("join-group")
 def run_join_group(
     uids: List[str] = typer.Option(..., "--uids", "-u", help="List of Facebook account UIDs to execute on"),
-    keyword: str = typer.Option(..., "--keyword", "-k", help="Search keyword for finding groups (e.g. 'bán nhà đà lạt')"),
+    keyword: str = typer.Option(..., "--keyword", "-k", help="Search keyword for finding groups (e.g. 'real estate')"),
     group_count: int = typer.Option(3, "--count", "-c", help="Number of groups to join per account"),
     concurrency: int = typer.Option(2, "--concurrency", "-m", help="Number of accounts to run concurrently"),
     auto_stop: bool = typer.Option(False, "--auto-stop", help="Automatically stop container and release proxy after completion"),
@@ -515,8 +515,8 @@ def run_daily_rotation_cmd(
     only: Optional[str] = typer.Option(None, "--only", help="Run only 'listing' or 'feed' accounts"),
 ):
     """
-    Kịch bản xoay vòng 7 ngày cho tài khoản group_id = -1:
-    - Vào thứ X: nhóm tài khoản thuộc thứ X chạy 'single_listing', 6 nhóm còn lại chạy 'scroll_feed'.
+    7-day rotation scenario for accounts with group_id = -1:
+    - On weekday X: account group assigned to day X runs 'single_listing', remaining 6 groups run 'scroll_feed'.
     """
     from src.automation.daily_rotation import execute_daily_rotation
     execute_daily_rotation(

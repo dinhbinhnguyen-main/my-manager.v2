@@ -1,161 +1,158 @@
-# 🛠 CLIDOCS - Hướng dẫn Lệnh CLI Suite cho `my-manager.v2`
+# 🛠 CLIDOCS - CLI Suite User Guide for `my-manager.v2`
 
-Tài liệu tổng hợp đầy đủ và chi tiết tất cả các lệnh **CLI Suite** của hệ thống **`my-manager.v2`** (Redroid FB Multi-Account & Automation Engine).
-
----
-
-## 📑 Danh mục Tính năng CLI
-
-1. [🔑 1. Quản lý & Xóa Tài khoản Facebook (`account`)](#-1-quản-lý--xóa-tài-khoản-facebook-account)
-2. [🌐 2. Quản lý & Xóa Proxy Rotation API (`proxy`)](#-2-quản-lý--xóa-proxy-rotation-api-proxy)
-3. [🤖 3. Quản lý Máy ảo Redroid Docker & Scrcpy GUI (`redroid`, `scrcpy`)](#-3-quản-lý-máy-ảo-redroid-docker--scrcpy-gui-redroid-scrcpy)
-4. [📋 4. Quản lý, Reset/Refresh & Xóa Kịch bản Scenario Batch & Tiến trình (`automation`, `progress`)](#-4-quản-lý-resetrefresh--xóa-kịch-bản-scenario-batch--tiến-trình-automation-progress)
-5. [⚙️ 5. Cấu hình Hệ thống & Đường dẫn V1 (`setting`)](#️-5-cấu-hình-hệ-thống--đường-dẫn-v1-setting)
-6. [🏠 6. Tra cứu Sản phẩm BĐS từ V1 (`product`)](#-6-tra-cứu-sản-phẩm-bđs-từ-v1-product)
-7. [🚀 7. Chạy Tác vụ Đơn lẻ (`run`)](#-7-chạy-tác-vụ-đơn-lẻ-run)
-8. [📅 8. Kịch bản Xoay vòng Tài khoản 7 Ngày (`daily-rotation`)](#-8-kịch-bản-xoay-vòng-tài-khoản-7-ngày-daily-rotation)
+Comprehensive guide covering all commands in the **CLI Suite** for **`my-manager.v2`** (Redroid FB Multi-Account & Automation Engine).
 
 ---
 
-## 🔑 1. Quản lý & Xóa Tài khoản Facebook (`account`)
+## 📑 Feature Index
+
+1. [🔑 1. Facebook Account Management (`account`)](#-1-facebook-account-management-account)
+2. [🌐 2. Proxy Rotation API Management (`proxy`)](#-2-proxy-rotation-api-management-proxy)
+3. [🤖 3. Redroid Docker Container & Scrcpy GUI Management (`redroid`, `scrcpy`)](#-3-redroid-docker-container--scrcpy-gui-management-redroid-scrcpy)
+4. [📋 4. Automation Scenario Batch & Progress Tracking (`automation`, `progress`)](#-4-automation-scenario-batch--progress-tracking-automation-progress)
+5. [⚙️ 5. System Settings & V1 Database Paths (`setting`)](#️-5-system-settings--v1-database-paths-setting)
+6. [🏠 6. V1 Real Estate Product Catalog (`product`)](#-6-v1-real-estate-product-catalog-product)
+7. [🚀 7. Direct Single Task Execution (`run`)](#-7-direct-single-task-execution-run)
+8. [📸 8. UI Hierarchy & Screen Dump Diagnostics (`dump`)](#-8-ui-hierarchy--screen-dump-diagnostics-dump)
+9. [📅 9. 7-Day Account Rotation Scenario (`daily-rotation`)](#-9-7-day-account-rotation-scenario-daily-rotation)
+
+---
+
+## 🔑 1. Facebook Account Management (`account`)
 
 ```bash
-# Thêm tài khoản Facebook mới kèm theo Nhóm sản phẩm (Category: real_estate, tire, fashion) & Loại giao dịch (Transaction Type: rental, sale)
-python main-cli.py account add --uid "61599900011122" --username "nguyenvan.a" --password "SecretPass123" --two-fa "JBSWY3DPEHPK3PXP" --category "real_estate" --transaction-type "rental" --note "FB Acc BĐS Cho Thê"
+# Add a new Facebook account with Category (real_estate, tire, fashion) & Transaction Type (rental, sale)
+python main-cli.py account add --uid "61599900011122" --username "john.doe" --password "SecretPass123" --two-fa "JBSWY3DPEHPK3PXP" --category "real_estate" --transaction-type "rental" --note "FB Rental Account"
 
-# Thêm tài khoản chạy nhóm ngành Lốp xe / Thời trang
-python main-cli.py account add --uid "61588800022233" --password "SecretPass123" --category "tire" --transaction-type "sale" --note "FB Acc Lốp Xe"
+# Add account for Tire / Fashion niche
+python main-cli.py account add --uid "61588800022233" --password "SecretPass123" --category "tire" --transaction-type "sale" --note "FB Tire Sale Account"
 
-# Xem danh sách tất cả tài khoản (Bao gồm cột Category & Trans. Type)
+# List all accounts (includes Category & Trans. Type columns)
 python main-cli.py account list
 
-# Lọc tài khoản theo trạng thái (live, checkpoint, idle, warmup, banned)
+# Filter accounts by status (live, checkpoint, idle, warmup, banned)
 python main-cli.py account list --status live
 
-# Xem thông tin chi tiết của 1 tài khoản theo UID
+# Show account details by UID
 python main-cli.py account show 61599900011122
 
-# ❌ Xóa tài khoản theo UID hoặc ID (TỰ ĐỘNG XÓA Container Docker + Thư mục data/containers/<uid> + Nhả Proxy + Xóa Kịch bản)
+# ❌ Delete account by UID or ID (automatically cleans up Docker container + data directory + releases proxy + removes jobs)
 python main-cli.py account delete 61599900011122
 
-# 🔄 Điều chỉnh nhanh Group ID cho tài khoản:
-# Gán group_id = 0 cho danh sách UIDs cụ thể:
+# 🔄 Batch update account Group ID:
+# Assign group_id = 0 to specific UIDs:
 python main-cli.py account set-group --to 0 --uids 61588749472767,61593783300961
 
-# Chuyển tất cả nick từ group -1 sang group 0:
+# Move all accounts from group -1 to group 0:
 python main-cli.py account set-group --to 0 --from -1
 
-# Chuyển 50 nick từ group -1 sang group 0:
+# Move first 50 accounts from group -1 to group 0:
 python main-cli.py account set-group --to 0 --from -1 --limit 50
 
-# Chuyển toàn bộ tài khoản trong database sang group 0:
+# Move all accounts in database to group 0:
 python main-cli.py account set-group --to 0 --all
 ```
 
-
-
 ---
 
-## 🌐 2. Quản lý & Xóa Proxy Rotation API (`proxy`)
+## 🌐 2. Proxy Rotation API Management (`proxy`)
 
 ```bash
-# Thêm Proxy Rotation API URL mới (Kèm tên gợi nhớ)
-python main-cli.py proxy add --name "Proxy_Viettel_01" --url "https://proxyxoay.shop/api/get.php?key=aaFRTbzxdBViCFjkUpFpDj&&nhamang=random&&tinhthanh=0"
+# Add a new Rotation Proxy API URL (with mnemonic name)
+python main-cli.py proxy add --name "Proxy_Viettel_01" --url "https://proxyxoay.shop/api/get.php?key=YOUR_KEY&&nhamang=random&&tinhthanh=0"
 
-# Xem danh sách tất cả Proxy URL (Tên, API URL, IP hiện tại, Trạng thái rảnh/bận, UID đang dùng)
+# List all Proxy URLs (Name, API URL, Current Public IP, Status available/working/unavailable, Bound UID)
 python main-cli.py proxy list
 
-# Đổi trạng thái Proxy thủ công (available: rảnh, working: bận, unavailable: khóa không dùng)
+# Manually update Proxy status (available: idle, working: busy, unavailable: disabled)
 python main-cli.py proxy set-status 1 unavailable
 python main-cli.py proxy set-status "Proxy_Viettel_01" available
 
-# ❌ Xóa Proxy API URL theo ID, Tên gợi nhớ hoặc URL
+# ❌ Delete Proxy API URL by ID, Name, or URL
 python main-cli.py proxy delete 1
 python main-cli.py proxy delete "Proxy_Viettel_01"
 ```
 
 ---
 
-## 🤖 3. Quản lý Máy ảo Redroid Docker & Scrcpy GUI (`redroid`, `scrcpy`)
+## 🤖 3. Redroid Docker Container & Scrcpy GUI Management (`redroid`, `scrcpy`)
 
-### 3.1. Quản lý Docker Container Redroid (`redroid`)
+### 3.1. Redroid Docker Containers (`redroid`)
 > [!IMPORTANT]
-> **Giới hạn Tài nguyên & Tự động Xoay tua máy ảo (LRU Idle Eviction)**: Hệ thống giới hạn **tối đa 6 container Redroid chạy đồng thời cùng lúc** (`MAX_CONCURRENT_REDROID_CONTAINERS = 6`). Khi đạt ngưỡng 6 máy ảo, nếu có yêu cầu mở/tạo máy ảo mới, hệ thống sẽ **tự động tìm máy ảo rảnh rỗi (IDLE - không chạy job) có thời gian mở lâu nhất (`StartedAt` cũ nhất) để đóng lại và nhả Proxy**, mở đường cho máy ảo mới khởi chạy liền mạch mà **không hề báo lỗi**.
+> **Resource Limits & Auto LRU Idle Eviction**: The system enforces **a maximum of 6 concurrent running Redroid containers** (`MAX_CONCURRENT_REDROID_CONTAINERS = 6`). When the limit is reached and a new container is requested, the engine **automatically identifies the oldest idle container (IDLE - no active jobs) with the earliest `StartedAt` timestamp, safely stops it, and releases its proxy**, allowing the new container to launch without errors.
 
 ```bash
-# Tạo mới 1 Redroid container gắn với UID tài khoản (Tự động nạp Proxy rảnh + cài đặt Facebook APK)
+# Create a new Redroid container bound to an account UID (automatically assigns an available proxy & installs Facebook APK)
 python main-cli.py redroid create --uid "61599900011122"
 
-
-# Xem danh sách tất cả container Redroid đang quản lý kèm live status Docker
+# List all managed Redroid containers with live Docker status
 python main-cli.py redroid list
 
-# Kiểm tra Proxy trong Android & IP Ngoại mạng (Public IP) thực tế của tất cả container
+# Check Android internal proxy configuration & actual Public IP across all containers
 python main-cli.py redroid check-ip
 
-# Đóng container (Hỗ trợ UID, Port ADB hoặc Tên container - Tự động nhả Proxy)
+# Stop container (accepts UID, ADB Port, or Container Name - releases proxy automatically)
 python main-cli.py redroid stop 61599900011122
 python main-cli.py redroid stop 5555
 
-# 🛑 Đóng TOÀN BỘ các Redroid container đang chạy trên hệ thống & nhả toàn bộ Proxy
+# 🛑 Stop ALL running Redroid containers and release all proxies
 python main-cli.py redroid stop --all
 python main-cli.py redroid stop all
 
-# Khởi động lại container đã dừng (Gán tự động Proxy khả dụng trong DB)
+# Restart a stopped container (automatically binds an available proxy from pool)
 python main-cli.py redroid start 61599900011122
 
-# Khởi động container với 1 Proxy chỉ định cụ thể (theo ID, Tên gợi nhớ hoặc Proxy API URL)
+# Start container with a specific proxy override (by ID, Name, or Proxy URL)
 python main-cli.py redroid start 61599900011122 --proxy 1
 python main-cli.py redroid start 61599900011122 --proxy "Proxy_Viettel_01"
-python main-cli.py redroid start 61599900011122 --proxy "https://proxyxoay.shop/api/getproxy.php?key=YOUR_KEY"
 
-# 📲 Cài đặt APK cho 1 container / account (Tự động tạo container nếu chưa có, khởi động nếu đang dừng, bỏ qua nếu app đã cài)
+# 📲 Install APK on a container / account (auto-creates container if missing, starts it if stopped, skips if already installed)
 python main-cli.py redroid install 61599900011122 --apk data/apks/facebook.apk
 python main-cli.py redroid install-apk 5555 --apk /path/to/custom_app.apk
 
-# 📲 Cài đặt APK HÀNG LOẠT cho TOÀN BỘ ACCOUNT (Tự động duyệt danh sách account, tạo Redroid container tương ứng nếu chưa có, nếu đã có thì kiểm tra xem đã cài APK chưa: đã cài thì bỏ qua, chưa cài thì tiến hành cài đặt)
+# 📲 Batch install APK for ALL accounts (iterates accounts, creates container if missing, verifies APK installation)
 python main-cli.py redroid install --all --apk data/apks/facebook.apk
 python main-cli.py redroid install all --apk data/apks/facebook.apk
 python main-cli.py redroid install --uids "61599900011122,61599900033344" --apk data/apks/facebook.apk
 
-# ❌ Xóa hoàn toàn container khỏi Docker, DB, và XÓA THƯ MỤC LƯU TRỮ DỮ LIỆU `data/containers/<uid>` TRÊN ĐĨA
+# ❌ Completely remove container from Docker, DB, and DELETE DATA STORAGE DIRECTORY `data/containers/<uid>` ON DISK
 python main-cli.py redroid remove 61599900011122
 python main-cli.py redroid remove 5555
 ```
 
-### 3.2. Scrcpy Process Supervisor - Giám sát Thời Gian Thực & Tự động Đóng/Mở Màn hình GUI (`scrcpy`)
+### 3.2. Scrcpy Process Supervisor - Real-Time GUI Screen Monitoring (`scrcpy`)
 ```bash
-# [MẶC ĐỊNH] Khởi chạy Live Supervisor THỜI GIAN THỰC: liên tục theo dõi container, TỰ ĐỘNG MỞ scrcpy khi container chạy & TỰ ĐỘNG ĐÓNG khi container dừng
+# [DEFAULT] Launch Real-Time Live Supervisor: continuously monitors containers, AUTO-OPENS scrcpy when container runs & AUTO-CLOSES when stopped
 python main-cli.py scrcpy
 
-# Kiểm tra & đồng bộ 1 lần rồi thoát (không chạy vòng lặp giám sát liên tục)
+# Synchronize once and exit (no persistent monitoring loop)
 python main-cli.py scrcpy --once
 
-# Tùy chỉnh chu kỳ quét thời gian thực (ví dụ 1.0 giây / lần)
+# Customize real-time poll interval (e.g., 1.0 second)
 python main-cli.py scrcpy --interval 1.0
 
-# Mở thủ công màn hình GUI scrcpy cho 1 container cụ thể (theo Port hoặc UID)
+# Manually open scrcpy GUI window for a specific container (by Port or UID)
 python main-cli.py scrcpy --open 5555
 python main-cli.py scrcpy 61599900011122 --open
 
-# Đóng thủ công màn hình GUI scrcpy của 1 container cụ thể
+# Manually close scrcpy GUI window for a specific container
 python main-cli.py scrcpy --close 5555
 python main-cli.py scrcpy 61599900011122 --close
 
-# ⌨️ Ẩn bàn phím ảo (Soft Keyboard) cho tất cả container đang chạy (hoặc 1 container chỉ định)
+# ⌨️ Hide soft virtual keyboard for all running containers (or a specific container)
 python main-cli.py scrcpy --hide-keyboard
 python main-cli.py scrcpy -k
 python main-cli.py scrcpy 5555 -k
 
-# ⌨️ Bật lại bàn phím ảo nếu cần
+# ⌨️ Re-enable soft keyboard if needed
 python main-cli.py scrcpy --show-keyboard
 python main-cli.py scrcpy 5555 --show-keyboard
 
-# 📋 Dán nội dung text trực tiếp vào container đang chạy
-python main-cli.py scrcpy --paste "Nội dung cần dán"
-python main-cli.py scrcpy 61599900011122 --paste "Nội dung cần dán"
+# 📋 Paste text directly into a running container
+python main-cli.py scrcpy --paste "Text content to paste"
+python main-cli.py scrcpy 61599900011122 --paste "Text content to paste"
 
-# 📋 Dán clipboard hiện tại của máy tính (PC clipboard) vào container
+# 📋 Paste current host machine clipboard into container
 python main-cli.py scrcpy --paste-clipboard
 python main-cli.py scrcpy -P
 python main-cli.py scrcpy 61599900011122 -P
@@ -163,212 +160,205 @@ python main-cli.py scrcpy 61599900011122 -P
 
 ---
 
-## 📋 4. Quản lý, Xóa Kịch bản Scenario Batch & Tiến trình (`automation`, `progress`)
+## 📋 4. Automation Scenario Batch & Progress Tracking (`automation`, `progress`)
 
-### 4.1. Tạo, Chạy & Xóa Kịch bản theo Nhóm (`automation`)
+### 4.1. Create, Run & Manage Batch Scenarios (`automation`)
 ```bash
-# Tạo kịch bản Nuôi nick (Lướt Feed & Tham gia Nhóm) cho nhóm list_uid_01
+# Create warm-up batch scenario (scroll feed & join groups) for group list_uid_01
 python main-cli.py automation create-batch \
   --tag list_uid_01 \
   --uids "10001,10002" \
   --actions '[{"action": "scroll_feed", "params": {"scroll_count": 5}}, {"action": "join_group", "params": {"group_id": "123456"}}]' \
-  --name "Kịch bản Feed & Join Group"
+  --name "Feed & Join Group Scenario"
 
 python main-cli.py automation create-batch \
   --tag "0923_list_group_share" \
-  --uids "61592898754968, 61592910155352, 61592925664417, 61592938083539, 61593009841811, 61592814908663, " \
+  --uids "61592898754968, 61592910155352, 61592925664417" \
   --actions '[{"action": "list_group_share", "params": {"group_ids": ["5857815244230418"], "use_v1_product": true, "use_ai": true}}]' \
-  --name "Kịch bản Bốc BĐS Ngẫu Nhiên v1 + AI Gemini"
+  --name "V1 Random Product + Gemini AI Listing Scenario"
+
 python main-cli.py automation create-batch \
   --tag "0923_scroll_feed" \
-  --uids "61592898754968, 61592910155352, 61592925664417, 61592938083539, 61593009841811, 61592814908663, " \
+  --uids "61592898754968, 61592910155352" \
   --actions '[{"action": "scroll_feed", "params": {"max_swipes": 25, "min_delay": 3.0, "max_delay": 8.0, "max_likes": 3}}]' \
-  --name "scroll feed"
+  --name "Scroll Feed Scenario"
 
-python main-cli.py run action --action discussion_group --uids "61587778096475" --auto-stop
-# {{"action": "discussion_group", "params": {"use_v1_product": true, "use_ai": true}}
-
-
-# Xem danh sách kịch bản đã khởi tạo (Lọc theo Tag hoặc Status)
+# List created scenarios (filter by Tag or Status)
 python main-cli.py automation list --tag list_uid_01
 python main-cli.py automation list --status pending
 
-# Thực thi kịch bản hàng loạt (Tự động điều tiết min(proxy_count, threads))
+# Execute batch scenario (automatically adjusts concurrency to min(proxy_count, threads))
 python main-cli.py automation run-batch --tag list_uid_01 --threads 4
 
-# 🔄 Reset / Refresh kịch bản về trạng thái 'pending' & xóa dữ liệu lỗi cũ theo Tag / UID
+# 🔄 Reset / Refresh scenarios back to 'pending' and clear error logs by Tag / UID
 python main-cli.py automation reset --tag 0923_scroll_feed
 python main-cli.py automation refresh --tag 0923_scroll_feed
 
-# 🔄 Chỉ Reset các job bị lỗi (status failed) trong tag
+# 🔄 Reset only failed jobs in tag
 python main-cli.py automation reset --tag 0923_scroll_feed --failed
 
-# 🔄 Reset 1 job chỉ định theo Job ID hoặc Account UID
+# 🔄 Reset specific job by Job ID or Account UID
 python main-cli.py automation reset 5
 
-# 🔄 Reset toàn bộ tất cả job trong Database về pending
+# 🔄 Reset all jobs in Database to pending
 python main-cli.py automation reset --all
 
-# ❌ Xóa kịch bản theo ID, Group Tag hoặc Account UID
+# ❌ Delete scenarios by ID, Tag, or UID
 python main-cli.py automation delete 1
 python main-cli.py automation delete --tag list_uid_01
 
-# ❌ Dọn dẹp tất cả kịch bản đã hoàn thành (status finished hoặc failed)
+# ❌ Clean up completed jobs (status finished or failed)
 python main-cli.py automation delete --clear
 
-# ⚠️ Xóa toàn bộ kịch bản khỏi Database
+# ⚠️ Remove all scenarios from database
 python main-cli.py automation delete --all
 ```
 
-### 4.2. Theo dõi Tiến trình Real-time Dashboard (`progress`)
+### 4.2. Real-Time Progress Dashboard (`progress`)
 ```bash
-# Xem tổng quan tiến trình hiện tại (Snapshot Overview: Total, Pending, Running, Finished, Failed, Progress %)
+# Overview snapshot of current progress (Total, Pending, Running, Finished, Failed, Progress %)
 python main-cli.py progress
 
-# Xem tiến trình của một nhóm kịch bản chỉ định
+# View progress for a specific batch tag
 python main-cli.py progress --tag list_uid_01
 
-# 🖥 Bổ sung quan sát thời gian thực các Redroid container trên Docker & Trạng thái toàn bộ Proxy Pool
+# 🖥 Include real-time status of Docker Redroid containers & Proxy Pool
 python main-cli.py progress --system
 python main-cli.py progress --watch --system
 ```
 
-### 4.3. Tra cứu Hướng dẫn Action, Tham số & Ví dụ (`actions`)
+### 4.3. Action Documentation & Examples (`actions`)
 ```bash
-# Xem bảng tổng quan danh sách tất cả Action, Aliases, Tham số bắt buộc & Mô tả chức năng
+# View table overview of all Actions, Aliases, Required Parameters, and Descriptions
 python main-cli.py actions
 
-# Xem hướng dẫn chi tiết, tham số đầu vào, ví dụ chạy đơn CLI & ví dụ JSON kịch bản cho 1 Action cụ thể
+# View detailed documentation, parameters, single CLI usage, and script JSON examples for a specific action
 python main-cli.py actions login
 python main-cli.py actions scroll_feed
 python main-cli.py actions marketplace
 python main-cli.py actions group_share
 python main-cli.py actions join_group
 python main-cli.py actions post_group
-python main-cli.py actions group_share
 python main-cli.py actions list_group_share
+python main-cli.py actions reel_interactions
 ```
-
 
 ---
 
-## ⚙️ 5. Cấu hình Hệ thống & Đường dẫn V1 (`setting`)
+## ⚙️ 5. System Settings & V1 Database Paths (`setting`)
 
 ```bash
-# Xem tất cả các thiết lập cấu hình trong hệ thống
+# List all system settings
 python main-cli.py setting list
 
-# Cấu hình API Key AI Gemini
+# Configure Gemini AI API Key
 python main-cli.py setting set gemini_api_key "AIzaSyYourActualGeminiApiKeyHere"
 
-# Cấu hình đường dẫn tới SQLite Database của dự án my-manager.v1
+# Configure SQLite Database path for my-manager.v1 / phonemanager.v1
 python main-cli.py setting set v1_db_path "/home/dinhbinhnguyen/Devs/my-manager.v1/bin/products.db"
 
-# Cấu hình thư mục chứa hình ảnh BĐS của dự án my-manager.v1
+# Configure product images storage directory for my-manager.v1
 python main-cli.py setting set v1_image_dir "/home/dinhbinhnguyen/Devs/my-manager.v1/bin/images"
 ```
 
 ---
 
-## 🏠 6. Tra cứu Sản phẩm BĐS từ V1 (`product`)
+## 🏠 6. V1 Real Estate Product Catalog (`product`)
 
 ```bash
-# Danh sách tất cả sản phẩm BĐS dùng chung từ V1 Database
+# List all shared real estate products from V1 Database
 python main-cli.py product list
 
-# Xem chi tiết thông tin sản phẩm & xem thử nội dung AI Gemini viết lại chuẩn Meta
+# Show detailed product info and preview Gemini AI rewritten content
 python main-cli.py product show 1
 ```
 
 ---
 
-## 🚀 7. Chạy Tác vụ Đơn lẻ (`run`)
+## 🚀 7. Direct Single Task Execution (`run`)
 
 ```bash
-# Chạy Đăng nhập tự động + Vượt 2FA TOTP cho 1 tài khoản
+# Run automated login + 2FA TOTP bypass for single account
 python main-cli.py run action --action login --uids "61599900011122"
 
-# Chạy Action Group Share BĐS 7 bước (Vào nhóm -> Bán gì -> Đẩy ảnh -> Viết lại AI -> Chọn Marketplace & Nhóm -> Đăng)
+# Run 7-step Group Share listing (Navigate -> Sell -> Push Images -> AI Rewrite -> Select Marketplace & Groups -> Publish)
 python main-cli.py run action --action group_share --uids "61599900011122" --auto-stop
 ```
 
 ---
 
-## 📸 8. Phân tích Giao diện, Chụp Màn hình & XML Hierarchy (`dump`)
+## 📸 8. UI Hierarchy & Screen Dump Diagnostics (`dump`)
 
-Tool phục vụ gỡ lỗi (debug), kiểm tra phần tử UI (elements, buttons, input fields, coordinates) trên Redroid / Android thông qua ADB Port hoặc UID:
+Debugging tool for inspecting UI elements, buttons, input fields, and coordinates on Redroid / Android via ADB Port or UID:
 
 ```bash
-# Dump màn hình qua ADB Port (ví dụ port 5555 hoặc 5565)
+# Dump screen via ADB Port (e.g., port 5555 or 5565)
 python main-cli.py dump --port 5555
-# hoặc gọi trực tiếp script trong ./test:
+# Or call script in ./test directly:
 python ./test/dump_view.py --port 5555
 
-# Dump tự động tìm ADB Port từ Facebook UID
+# Auto-resolve ADB Port from Facebook UID
 python main-cli.py dump --uid "61592898754968"
 
-# Thêm tag tên bước để dễ phân loại thư mục lưu
+# Add custom tag for directory categorization
 python ./test/dump_view.py --port 5555 --tag "step_3_pick_photos"
 
-# Bỏ qua chụp ảnh màn hình (chỉ dump XML và JSON)
+# Skip screenshot capture (XML and JSON dump only)
 python ./test/dump_view.py --port 5555 --no-photo
 ```
 
-**Kết quả được lưu tại:**
+**Output files are saved to:**
 - `tests/dumps/<tag>_<timestamp>/`:
-  - `dumped_screen.png`: Ảnh chụp màn hình sắc nét.
-  - `dumped_view.xml`: Cây phân cấp UI gốc từ Android.
-  - `dumped_view.json`: Danh sách các phần tử tương tác đã được phân tích kèm tọa độ `center`, `bounds`, và mã `suggested_selector` cho UIAutomator2.
-- `tests/dumps/latest/`: Bản sao chép của lần dump gần nhất để kiểm tra nhanh.
-
+  - `dumped_screen.png`: High-resolution screenshot.
+  - `dumped_view.xml`: Raw Android UI hierarchy tree.
+  - `dumped_view.json`: Parsed interactive elements with `center`, `bounds`, and `suggested_selector` for UIAutomator2.
+- `tests/dumps/latest/`: Copy of the most recent dump for quick inspection.
 
 ---
 
-## 💡 Mẹo Tiện ích (Global Help)
+## 💡 Global Help
 
 ```bash
-# Xem trợ giúp tổng quan
+# Global CLI overview
 python main-cli.py --help
 
-# Xem trợ giúp lệnh delete của từng nhóm
+# Subcommand-specific help
 python main-cli.py account delete --help
 python main-cli.py proxy delete --help
 python main-cli.py automation delete --help
 python main-cli.py redroid remove --help
 ```
 
-
 ---
 
-## 📅 8. Kịch bản Xoay vòng Tài khoản 7 Ngày (`daily-rotation`)
+## 📅 9. 7-Day Account Rotation Scenario (`daily-rotation`)
 
-Kịch bản tự động chia danh sách tài khoản theo `group_id` (mặc định: `group_id = 0`) thành 7 nhóm tương ứng 7 ngày trong tuần.
-- Vào thứ X: Nhóm tài khoản thuộc thứ X chạy `single_listing`, 6 nhóm còn lại chạy `scroll_feed` nuôi tương tác.
-- Tự động gán Proxy, mở container, chạy tác vụ, dừng container và hoàn trả Proxy.
+Automated scenario dividing accounts by `group_id` (default: `group_id = 0`) into 7 fixed groups matching the 7 days of the week.
+- On weekday X: Accounts assigned to day X run `single_listing`, the other 6 groups run `scroll_feed` for account warm-up.
+- Automatically binds proxy, starts container, executes action, stops container, and releases proxy.
 
 ```bash
-# Xem trước phân bổ kịch bản cho ngày hôm nay (mặc định group_id = 0):
+# Preview scenario allocation for today (default group_id = 0):
 python main-cli.py run daily-rotation --dry-run
 
-# Xem trước kịch bản cho Thứ 2 (group_id = 0):
+# Preview scenario for Monday (group_id = 0):
 python main-cli.py run daily-rotation --day 2 --dry-run
 
-# Xem trước kịch bản cho group_id = -1:
+# Preview scenario for group_id = -1:
 python main-cli.py run daily-rotation -g -1 --dry-run
 
-# Chạy thực tế theo thứ hôm nay (concurrency 1 hoặc 2):
+# Live execution for today (concurrency 1 or 2):
 python main-cli.py run daily-rotation --concurrency 1
 
-# Giả lập chạy kịch bản cho Thứ 2:
+# Simulate run for Monday:
 python main-cli.py run daily-rotation --day 2 --concurrency 1
 
-# Chỉ muốn chạy nhóm đăng bài hôm nay (bỏ qua scroll_feed):
+# Run only today's listing accounts (skip scroll_feed):
 python main-cli.py run daily-rotation --only listing
 
-# Chỉ muốn chạy nhóm nuôi nick/lướt feed (bỏ qua đăng bài):
+# Run only warm-up / scroll_feed accounts (skip listing):
 python main-cli.py run daily-rotation --only feed
 
-# Đặt lịch Crontab chạy tự động mỗi ngày vào 8h00 sáng:
+# Crontab schedule to run automatically daily at 08:00 AM:
 # 0 8 * * * /Volumes/KINGSTON/miniconda3/envs/my-manager.v2/bin/python /Users/dinhbinhnguyen/Dev/my-manager.v2/scripts/daily_rotation.py >> /Users/dinhbinhnguyen/Dev/my-manager.v2/logs/daily_rotation.log 2>&1
 ```
-

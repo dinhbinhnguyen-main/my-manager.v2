@@ -497,7 +497,7 @@ def execute_single_group_post(
             select_pushed_images(bot, photo_count=min(len(image_paths), 5), timeout=15)
             click_next_after_photos(bot, timeout=15)
 
-        bot.log("👉 [Step D6] Clicking 'Post' / 'Đăng' button...")
+        bot.log("👉 [Step D6] Clicking 'Post' button...")
         click_post_button(bot, timeout=25)
         bot.log("⏳ Waiting 10s after posting before next step...")
         bot.smart_sleep(10.0, 10.5)

@@ -432,12 +432,12 @@ ACTION_REGISTRY = {
         "summary": "Join Facebook Groups by Keyword or Deeplink",
         "description": "Searches Facebook Groups by keyword and automatically joins up to group_count groups, or joins directly via group_id.",
         "params": [
-            {"name": "keyword", "type": "str", "required": False, "default": "N/A", "desc": "Search keyword for finding groups (e.g., 'bán nhà đà lạt')"},
+            {"name": "keyword", "type": "str", "required": False, "default": "N/A", "desc": "Search keyword for finding groups (e.g., 'real estate dalat')"},
             {"name": "group_count", "type": "int", "required": False, "default": "3", "desc": "Number of groups to join when searching by keyword"},
             {"name": "group_id", "type": "str", "required": False, "default": "N/A", "desc": "Target Facebook Group ID for direct join (e.g., '123456789')"}
         ],
         "single_cli": 'python main-cli.py run action --action join_group --uids "61599900011122"',
-        "script_json": '{"action": "join_group", "params": {"keyword": "bán nhà đà lạt", "group_count": 3}}',
+        "script_json": '{"action": "join_group", "params": {"keyword": "real estate dalat", "group_count": 3}}',
     },
     "post_group": {
         "name": "post_group",
@@ -497,17 +497,17 @@ ACTION_REGISTRY = {
             {"name": "save", "type": "bool", "required": False, "default": "false", "desc": "Save the reel to collections"},
             {"name": "watch_delay", "type": "float", "required": False, "default": "15.0", "desc": "Seconds to delay simulating watching the reel"}
         ],
-        "single_cli": 'python main-cli.py run reel-interactions --reel-id "3046151639050612" --uids "61588749472767" --like --comment --comment-content "Video rất hay" --share --share-num 1 --save',
-        "script_json": '{"action": "reel_interactions", "params": {"reel_id": "3046151639050612", "like": true, "comment": true, "comment_content": "Tuyệt vời", "share": true, "share_num": 1, "save": true}}',
+        "single_cli": 'python main-cli.py run reel-interactions --reel-id "3046151639050612" --uids "61588749472767" --like --comment --comment-content "Great video" --share --share-num 1 --save',
+        "script_json": '{"action": "reel_interactions", "params": {"reel_id": "3046151639050612", "like": true, "comment": true, "comment_content": "Awesome", "share": true, "share_num": 1, "save": true}}',
     },
     "open_facebook_scrcpy": {
         "name": "open_facebook_scrcpy",
         "aliases": ["open_scrcpy", "open_facebook", "open_app", "fb_scrcpy"],
-        "summary": "Mở container (sử dụng proxy available) -> mở Scrcpy -> mở app Facebook. Đóng Scrcpy tự động đóng container & mở tiếp theo.",
-        "description": "Nhận danh sách UID, tuần tự mở container với proxy available, mở cửa sổ Scrcpy tương ứng và mở app Facebook. Khi đóng cửa sổ Scrcpy, tự động đóng container, giải phóng proxy và mở container cho UID tiếp theo.",
+        "summary": "Start container (with available proxy) -> Launch Scrcpy -> Launch Facebook app. Closing Scrcpy auto-stops container & proceeds to next.",
+        "description": "Takes a list of UIDs, sequentially starts container with an available proxy, opens corresponding Scrcpy window and launches Facebook app. When Scrcpy window is closed, automatically stops container, releases proxy, and starts container for the next UID.",
         "params": [
-            {"name": "deeplink", "type": "str", "required": False, "default": '"fb://feed"', "desc": "Deep link mở Facebook (mặc định: fb://feed)"},
-            {"name": "wait_for_close", "type": "bool", "required": False, "default": "true", "desc": "Chờ đóng cửa sổ Scrcpy mới đóng container và sang UID tiếp theo"}
+            {"name": "deeplink", "type": "str", "required": False, "default": '"fb://feed"', "desc": "Deeplink to open Facebook (default: fb://feed)"},
+            {"name": "wait_for_close", "type": "bool", "required": False, "default": "true", "desc": "Wait for Scrcpy window to close before stopping container and moving to next UID"}
         ],
         "single_cli": 'python main-cli.py run open-facebook --uids "61588749472767,61588749472768"',
         "script_json": '{"action": "open_facebook_scrcpy", "params": {"deeplink": "fb://feed"}}',

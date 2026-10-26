@@ -89,7 +89,7 @@ class FBActionRouter:
                 logger.error("Missing required parameter 'group_id' for post_group action.")
                 return False
 
-            content = params.get("content", "Bài viết chia sẻ bất động sản.")
+            content = params.get("content", "Real estate share post.")
             images = params.get("image_paths", [])
             act = FBPostGroupAction(automator, account)
             return act.execute(group_id=str(group_id), content=content, image_paths=images)
@@ -184,7 +184,7 @@ class FBActionRouter:
                 status_msg = "APP_NOT_RUNNING: Could not launch Facebook app ('com.facebook.katana')"
                 db_status = AccountStatus.ERROR
             else:
-                # Sau khi khởi động app Facebook, chờ 10s để app khởi động xong trước khi check
+                # After launching Facebook app, wait 10s for app to load completely before checking
                 wait_seconds = float(params.get("wait_after_launch", params.get("wait_time", 10.0)))
                 logger.info(f"Facebook app launched for UID {account.uid}. Waiting {wait_seconds:.0f}s for app to finish loading...")
                 time.sleep(wait_seconds)

@@ -68,7 +68,7 @@ FURNITURE_MAP = {
 
 
 def _format_ward(ward_raw: Any) -> str:
-    """Cleans and standardizes ward names (e.g. phuong_8_lam_vien -> Phường 8)."""
+    """Cleans and standardizes ward names (e.g. phuong_8_lam_vien -> Ward 8)."""
     if not ward_raw:
         return ""
     w = str(ward_raw).strip()

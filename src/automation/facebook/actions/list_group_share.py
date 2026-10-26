@@ -341,15 +341,15 @@ def check_and_click_buy_sell_tab(bot: BaseAutomator) -> bool:
 
 
 # ==============================================================================
-# STEP 2: CLICK 'WHAT ARE YOU SELLING?' / 'BẠN ĐANG BÁN GÌ?'
+# STEP 2: CLICK 'WHAT ARE YOU SELLING?'
 # ==============================================================================
 
 def dismiss_listing_tooltip_popups(bot: BaseAutomator) -> bool:
     """
-    Kiểm tra và đóng các tooltip / popover / coachmark hiển thị đè lên form niêm yết
-    (ví dụ: 'You can find tips for how to improve your listing photos here.').
-    Những tooltip này là PopupWindow riêng biệt, sẽ chiếm quyền accessibility khiến
-    UIAutomator không thể nhìn thấy các trường 'Title', 'Price', 'Location' hay 'Add photos'.
+    Checks and dismisses tooltips / popovers / coachmarks overlaid on the listing form
+    (e.g., 'You can find tips for how to improve your listing photos here.').
+    These tooltips are separate PopupWindows that take accessibility focus, preventing
+    UIAutomator from finding 'Title', 'Price', 'Location', or 'Add photos' fields.
     """
     if not bot.d:
         return False
@@ -368,21 +368,21 @@ def dismiss_listing_tooltip_popups(bot: BaseAutomator) -> bool:
         for p in tooltip_patterns:
             tip_desc = bot.d(descriptionMatches=p)
             if tip_desc.exists:
-                bot.log(f"🧹 Phát hiện tooltip che khuất form niêm yết (desc: '{p}'). Đang click đóng...")
+                bot.log(f"🧹 Detected tooltip obstructing listing form (desc: '{p}'). Dismissing...")
                 tip_desc.click_exists(timeout=2)
                 bot.smart_sleep(1.0)
                 return True
 
             tip_text = bot.d(textMatches=p)
             if tip_text.exists:
-                bot.log(f"🧹 Phát hiện tooltip che khuất form niêm yết (text: '{p}'). Đang click đóng...")
+                bot.log(f"🧹 Detected tooltip obstructing listing form (text: '{p}'). Dismissing...")
                 tip_text.click_exists(timeout=2)
                 bot.smart_sleep(1.0)
                 return True
 
         tip_generic = bot.d(className="android.view.ViewGroup", descriptionMatches=r"(?i).*(tips|mẹo).*")
         if tip_generic.exists:
-            bot.log("🧹 Phát hiện popup tooltip ('tips/mẹo'). Đang click đóng...")
+            bot.log("🧹 Detected tooltip popup ('tips'). Dismissing...")
             tip_generic.click_exists(timeout=2)
             bot.smart_sleep(1.0)
             return True
@@ -397,7 +397,7 @@ def dismiss_listing_tooltip_popups(bot: BaseAutomator) -> bool:
                 if 50 < height < 500:
                     tip_child = bot.d(descriptionMatches=r"(?i).*(tip|photo|ảnh|here|đây).*")
                     if tip_child.exists:
-                        bot.log("🧹 Phát hiện popup FrameLayout lơ lửng. Đang click để dismiss...")
+                        bot.log("🧹 Detected floating FrameLayout popup. Clicking to dismiss...")
                         popup_frame.click_exists(timeout=2)
                         bot.smart_sleep(1.0)
                         return True
@@ -497,7 +497,7 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
         # Check and dismiss any listing tooltip popup (e.g. "improve your listing photos")
         dismiss_listing_tooltip_popups(bot)
 
-        # Check if draft discard prompt appeared ("Discard draft?" / "Bỏ bản nháp?" / "Bỏ bài viết")
+        # Check if draft discard prompt appeared ("Discard draft?")
         for discard_kw in ["discard", "bỏ bài viết", "bỏ bản nháp"]:
             discard_btn = bot.get_button_by_text(discard_kw, timeout=0.3)
             if discard_btn and discard_btn.exists:
@@ -506,7 +506,7 @@ def click_what_are_you_selling(bot: BaseAutomator, timeout: int = 20) -> bool:
                 bot.smart_sleep(1.0)
                 break
 
-        # Check if intermediate layout (category selection) is shown: "Items" / "Mặt hàng"
+        # Check if intermediate layout (category selection) is shown: "Items"
         for item_kw in ["items", "mặt hàng"]:
             # 1. Button or TextView matching text / content-desc (e.g. "Items Furniture, clothing, toys, etc.")
             item_btn = bot.get_button_by_text(item_kw, timeout=0.5)
@@ -609,7 +609,7 @@ def check_and_handle_gallery_retry(bot: BaseAutomator, wait_after_click: float =
             retry_btn = bot.d(className="android.widget.Button", textMatches=r"(?i)^retry$|^thử lại$")
 
         if err_text.exists or (retry_btn and retry_btn.exists):
-            bot.log("⚠️ Phát hiện lỗi 'An unexpected error occurred' trong Gallery. Đang nhấn nút 'Retry'...")
+            bot.log("⚠️ Detected 'An unexpected error occurred' error in Gallery. Clicking 'Retry' button...")
             clicked = False
             if retry_btn and retry_btn.exists:
                 clicked = retry_btn.click_exists(timeout=3)
@@ -619,11 +619,11 @@ def check_and_handle_gallery_retry(bot: BaseAutomator, wait_after_click: float =
                     clicked = r.click_exists(timeout=2)
 
             if clicked:
-                bot.log("🔄 Đã nhấn nút 'Retry'. Chờ gallery tải lại hình ảnh...")
+                bot.log("🔄 Clicked 'Retry' button. Waiting for gallery to reload images...")
                 bot.smart_sleep(wait_after_click)
                 return True
             else:
-                bot.log("⚠️ Tìm thấy trạng thái lỗi nhưng không click được nút 'Retry'.")
+                bot.log("⚠️ Found error state but could not click 'Retry' button.")
     except Exception as ex:
         logger.debug(f"Error checking/handling gallery retry: {ex}")
 
@@ -654,7 +654,7 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
         logger.debug(f"Pre-grant permissions error: {pe}")
 
     def _trigger_add_photos_button() -> bool:
-        """Finds and clicks 'Add photos' / 'Thêm ảnh' via multiple selectors."""
+        """Finds and clicks 'Add photos' via multiple selectors."""
         add_photo_keywords = [
             "add photos", "thêm ảnh", "add photo", "thêm hình ảnh",
             "thêm ảnh/video", "add photos/videos", "ảnh/video", "photo/video"
@@ -948,7 +948,7 @@ def click_add_photos(bot: BaseAutomator, photo_num: int = 1, timeout: int = 15, 
 
         # Check and handle gallery retry error if it appears during photo loading
         if check_and_handle_gallery_retry(bot):
-            bot.log("🔄 Đã bấm 'Retry' khi tải ảnh Gallery. Đặt lại timeout để tiếp tục quét ảnh...")
+            bot.log("🔄 Clicked 'Retry' while loading Gallery images. Resetting timeout to continue scanning...")
             start_time = time.time()
             bot.smart_sleep(1.0)
             continue
@@ -1226,7 +1226,7 @@ def _set_category(bot: BaseAutomator, category_name: str = "Miscellaneous", max_
     save_keywords = ["save", "lưu"]
 
     def _click_save_if_present() -> bool:
-        """Helper to click 'Save' or 'Lưu' button on modal category popup."""
+        """Helper to click 'Save' button on modal category popup."""
         for skw in save_keywords:
             s_btn = bot.get_button_by_text(skw, timeout=1)
             if s_btn and s_btn.exists:
@@ -1802,7 +1802,7 @@ def click_next_button(bot: BaseAutomator, timeout: int = 15) -> bool:
                 break
 
     if not next_btn or not next_btn.exists:
-        # Check if the button is directly 'Publish' or 'Đăng' on this form!
+        # Check if the button is directly 'Publish' on this form!
         for pub in ["Publish", "Đăng", "Đăng bài", "Xong"]:
             direct_pub = bot.d(textMatches=f"(?i)^{pub}.*")
             if not direct_pub.exists:
@@ -2147,7 +2147,7 @@ def list_in_more_places(
     )
 
     if not ranked_groups:
-        bot.log("⚠️ No groups matched mandatory location ('đà lạt' or 'lâm đồng'). Skipping group selection.")
+        bot.log("⚠️ No groups matched mandatory location ('Dalat' / 'Lam Dong'). Skipping group selection.")
         return 0
 
     top_groups_list = ranked_groups[:target_count]

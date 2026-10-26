@@ -85,19 +85,19 @@ def check_is_logged_in(
     wait_after_launch: float = 0.0,
 ) -> Tuple[bool, str]:
     """
-    Kiểm tra xem ứng dụng Facebook trên thiết bị hiện tại đã đăng nhập hay chưa.
+    Checks whether Facebook app on the current device is logged in.
 
     Parameters:
-        device_or_automator: uiautomator2.Device instance hoặc BaseAutomator instance.
-        timeout: Thời gian chờ tối đa khi quét UI.
-        wait_after_launch: Thời gian chờ (giây) sau khi app mở để load hoàn tất trước khi quét.
+        device_or_automator: uiautomator2.Device instance or BaseAutomator instance.
+        timeout: Maximum wait time when scanning UI.
+        wait_after_launch: Wait time (seconds) after opening app to let it finish loading before scanning.
 
     Returns:
         Tuple[bool, str]: (is_logged_in, reason_or_status)
-        - (True, "LOGGED_IN: ...") nếu đã đăng nhập và đang ở Home/Feed hoặc màn hình lưu thông tin.
-        - (False, "NOT_LOGGED_IN: ...") nếu đang ở màn hình đăng nhập, start screen, v.v.
-        - (False, "CHECKPOINT: ...") nếu tài khoản bị khóa/bắt xác minh danh tính.
-        - (False, "SESSION_EXPIRED: ...") nếu phiên đăng nhập đã hết hạn.
+        - (True, "LOGGED_IN: ...") if logged in and on Home/Feed or save credentials screen.
+        - (False, "NOT_LOGGED_IN: ...") if on login credentials form, start screen, etc.
+        - (False, "CHECKPOINT: ...") if account is locked or requiring identity verification.
+        - (False, "SESSION_EXPIRED: ...") if login session has expired.
     """
     if not device_or_automator:
         return False, "DEVICE_NOT_READY: device_or_automator is None"
@@ -115,7 +115,7 @@ def check_is_logged_in(
     if not d or not hasattr(d, "dump_hierarchy"):
         return False, "DEVICE_NOT_READY: UIAutomator2 Device not connected or invalid"
 
-    # Đảm bảo app Facebook hiển thị ở foreground nếu có automator
+    # Ensure Facebook app is in foreground if automator is available
     if hasattr(device_or_automator, "ensure_foreground"):
         try:
             device_or_automator.ensure_foreground()
@@ -131,13 +131,13 @@ def check_is_logged_in(
             except Exception:
                 pass
 
-    # 1. Kiểm tra Checkpoint / Khóa tài khoản
+    # 1. Check for Checkpoint / Locked account
     detector = CheckpointDetector(d)
     is_cp, cp_msg = detector.is_checkpoint()
     if is_cp:
         return False, f"CHECKPOINT: {cp_msg}"
 
-    # 2. Kiểm tra thông báo hết hạn phiên đăng nhập (Session expired)
+    # 2. Check for Session Expired dialog
     session_expired_patterns = [
         r"(?i).*(session expired|phiên đã hết hạn).*",
         r"(?i).*(please log in again|vui lòng đăng nhập lại).*",
@@ -149,7 +149,7 @@ def check_is_logged_in(
         except Exception:
             pass
 
-    # 3. Kiểm tra các dấu hiệu ĐÃ ĐĂNG NHẬP (Home News Feed, Tab bar, Search bar, Composer)
+    # 3. Check for LOGGED IN indicators (Home News Feed, Tab bar, Search bar, Composer)
     home_tab_patterns = [
         r"(?i).*(home|trang chủ).*tab.*",
         r"(?i).*(notifications|thông báo).*tab.*",
@@ -165,7 +165,7 @@ def check_is_logged_in(
         except Exception:
             pass
 
-    # Kiểm tra thanh tìm kiếm hoặc ô đăng bài "Bạn đang nghĩ gì?"
+    # Check search bar or "What's on your mind?" feed composer box
     try:
         if (
             d(descriptionMatches=r"(?i).*(search facebook|tìm kiếm trên facebook).*").exists
@@ -177,7 +177,7 @@ def check_is_logged_in(
     except Exception:
         pass
 
-    # 4. Kiểm tra các màn hình hậu đăng nhập (Đã đăng nhập thành công, chỉ đang hiển thị prompt)
+    # 4. Check post-login screens (Successfully logged in, prompt/onboarding visible)
     post_login_patterns = [
         r"(?i).*(save your login info|lưu thông tin đăng nhập).*",
         r"(?i).*(continue in english|thử dùng facebook bằng tiếng việt).*",
@@ -191,7 +191,7 @@ def check_is_logged_in(
         except Exception:
             pass
 
-    # 5. Kiểm tra MÀN HÌNH ĐĂNG NHẬP (Form điền user/password)
+    # 5. Check LOGIN CREDENTIALS FORM (User/password input fields)
     try:
         has_user_field = (
             d(descriptionMatches=r"(?i).*(mobile number or email|số điện thoại hoặc email).*").exists
@@ -214,7 +214,7 @@ def check_is_logged_in(
     except Exception:
         pass
 
-    # 6. Kiểm tra Màn hình bắt đầu (00_start: "Tham gia Facebook" / "Đã có tài khoản")
+    # 6. Check Start Screen (00_start: "Join Facebook" / "Already have account")
     try:
         if (
             d(descriptionMatches=r"(?i).*(already have a profile|already have an account|đã có tài khoản).*").exists
@@ -226,7 +226,7 @@ def check_is_logged_in(
     except Exception:
         pass
 
-    # 7. Kiểm tra Màn hình chọn tài khoản đã lưu (Account Switcher)
+    # 7. Check Saved Accounts Chooser Screen (Account Switcher)
     try:
         if (
             d(descriptionMatches=r"(?i).*(log into another account|đăng nhập bằng tài khoản khác|find your account|tìm tài khoản).*").exists
@@ -236,7 +236,7 @@ def check_is_logged_in(
     except Exception:
         pass
 
-    # 8. Kiểm tra Màn hình nhập mã 2FA (Đang trong tiến trình đăng nhập)
+    # 8. Check 2FA Verification Code Input Screen (Login in progress)
     try:
         two_fa_kws = r"(?i).*(authentication app|two-factor|6-digit code|ứng dụng xác thực|xác thực 2 yếu tố|mã gồm 6 chữ số).*"
         if d(descriptionMatches=two_fa_kws).exists or d(textMatches=two_fa_kws).exists:
@@ -244,7 +244,7 @@ def check_is_logged_in(
     except Exception:
         pass
 
-    # 9. Quét XML Hierarchy dump tổng quát (Fallback scan)
+    # 9. Generic XML Hierarchy Dump Scan (Fallback scan)
     try:
         xml_dump = d.dump_hierarchy().lower()
         if any(k in xml_dump for k in ["bạn đang nghĩ gì", "what's on your mind", "trang chủ, tab", "home, tab"]):
@@ -258,7 +258,7 @@ def check_is_logged_in(
 
 
 def is_logged_in(device_or_automator: Any) -> bool:
-    """Hàm tiện ích trả về True nếu đã đăng nhập Facebook, False nếu chưa đăng nhập."""
+    """Helper returning True if Facebook app is logged in, False otherwise."""
     ok, _ = check_is_logged_in(device_or_automator)
     return ok
 
@@ -472,7 +472,7 @@ class FBLoginAction:
     # -------------------------------------------------------------------------
 
     def _click_start_already_have_profile(self) -> bool:
-        """Clicks 'I already have a profile' / 'Tôi đã có tài khoản' button on 00_start screen."""
+        """Clicks 'I already have a profile' button on 00_start screen."""
         d = self.d
         if not d:
             return False
@@ -493,7 +493,7 @@ class FBLoginAction:
         return False
 
     def _click_save(self) -> bool:
-        """Clicks 'Save' / 'Lưu' button on 03_save screen."""
+        """Clicks 'Save' button on 03_save screen."""
         d = self.d
         if not d:
             return False
@@ -535,7 +535,7 @@ class FBLoginAction:
         return False
 
     def _click_skip(self) -> bool:
-        """Clicks 'Skip' / 'Bỏ qua' button on onboarding screens."""
+        """Clicks 'Skip' button on onboarding screens."""
         d = self.d
         if not d:
             return False
@@ -610,7 +610,7 @@ class FBLoginAction:
         logger.info(f"Starting login flow for account UID {self.account.uid}...")
 
         # ---------------------------------------------------------------------
-        # 0.0. Lấy thông tin của account từ db (bảng accounts)
+        # 0.0. Fetch account info from database (table 'accounts')
         # ---------------------------------------------------------------------
         db_account = AccountRepository.get_by_uid(self.account.uid)
         if not db_account:
@@ -625,8 +625,8 @@ class FBLoginAction:
             return self._record_result(False, AccountStatus.ERROR, f"Account UID {self.account.uid} does not have a password configured in database")
 
         # ---------------------------------------------------------------------
-        # 0.1. Kiểm tra xem ứng dụng facebook đã cài đặt chưa
-        # Sau khi install delay 3s để container ổn định
+        # 0.1. Check if Facebook application is installed
+        # Delay 3s after install for container stabilization
         # ---------------------------------------------------------------------
         package_name = self.automator.package_name or "com.facebook.katana"
         if not self.automator.adb_client.is_app_installed(package_name):
@@ -647,7 +647,7 @@ class FBLoginAction:
             logger.info(f"[Step 0.1] Verified Facebook app ('{package_name}') is installed.")
 
         # ---------------------------------------------------------------------
-        # Mở app Facebook thông qua deeplink trước Bước 1 (thử lại tối đa 3 lần nếu thất bại)
+        # Launch Facebook app via deeplink before Step 1 (retry up to 3 times on failure)
         # ---------------------------------------------------------------------
         app_opened = False
         max_open_attempts = 3
@@ -658,7 +658,7 @@ class FBLoginAction:
                 self.automator.smart_sleep(3.0, 5.0)
                 self.automator.handle_system_popups()
 
-                # Kiểm tra xem ứng dụng đã ở foreground hoặc xuất hiện màn hình FB chưa
+                # Verify if app is in foreground or FB screen has appeared
                 curr_pkg = None
                 if self.d:
                     try:
@@ -705,7 +705,7 @@ class FBLoginAction:
             self._dump_ui(tag=f"app_launch_failed_{self.account.uid}")
             return self._record_result(False, AccountStatus.ERROR, f"Failed to open Facebook app ('{package_name}') after {max_open_attempts} attempts")
 
-        # Chờ khoảng 10s sau khi mở app Facebook để app tải đầy đủ và ổn định
+        # Wait ~10s after launching Facebook app for UI to settle and load completely
         logger.info(f"Facebook app opened successfully. Waiting 10s for Facebook UI to settle and stabilize...")
         time.sleep(10.0)
         self.automator.handle_system_popups()
@@ -729,7 +729,7 @@ class FBLoginAction:
             return self._record_result(False, AccountStatus.ERROR, f"UIAutomator2 device connection not available for UID {self.account.uid}")
 
         # ---------------------------------------------------------------------
-        # 1. @tests/dumps/00_start: Nếu có ui này thì click vào btn 'I already have a profile' hoặc tương tự
+        # 1. @tests/dumps/00_start: If present, click 'I already have a profile' button
         # ---------------------------------------------------------------------
         if self._is_start_screen():
             logger.info("[Step 1] Detected '00_start' screen. Clicking 'I already have a profile'...")
@@ -747,7 +747,7 @@ class FBLoginAction:
             self.automator.smart_sleep(2.0, 3.0)
 
         # ---------------------------------------------------------------------
-        # 2. @tests/dumps/01_login: type uid, mật khẩu -> Click btn 'Login' hoặc tương tự
+        # 2. @tests/dumps/01_login: Type UID & password -> Click 'Login' button
         # ---------------------------------------------------------------------
         login_ready = False
         start_wait_login = time.time()
@@ -842,9 +842,9 @@ class FBLoginAction:
 
         # ---------------------------------------------------------------------
         # 3. @tests/dumps/02_two_fa: MANDATORY!
-        # Nếu có thì sử dụng logic @src/utils/2fa.py để lấy code (raw_secret luôn không chứa khoảng trắng)
-        # -> Click btn 'Continue' chờ trong 30s hoặc không còn UI này nữa.
-        # Nếu không có @tests/dumps/02_two_fa thì dump & return False
+        # Generate TOTP using logic in src/utils/2fa.py (raw_secret without whitespace)
+        # -> Click 'Continue' and wait up to 30s or until this UI is dismissed.
+        # If @tests/dumps/02_two_fa does not appear, dump UI hierarchy and return False
         # ---------------------------------------------------------------------
         logger.info(f"[Step 3] Waiting for 2FA screen (02_two_fa) for UID {self.account.uid}...")
         two_fa_detected = False
@@ -923,7 +923,7 @@ class FBLoginAction:
             self._dump_ui(tag=f"missing_continue_btn_{self.account.uid}")
             return self._record_result(False, AccountStatus.ERROR, f"Could not find Continue button on 2FA screen for UID {self.account.uid}")
 
-        # Chờ trong 30s hoặc không còn UI này nữa
+        # Wait up to 30s or until 2FA UI is dismissed
         logger.info("[Step 3] Waiting up to 30s or until 2FA UI is dismissed...")
         start_wait_dismiss = time.time()
         while time.time() - start_wait_dismiss < 30.0:
@@ -935,7 +935,7 @@ class FBLoginAction:
         # ---------------------------------------------------------------------
         # Order-Independent Post-Login Reactive Loop:
         # Handles 03_save, 05_use_vi, 04_access_contact, 06_add_friend, 07_add_mail, add_phone
-        # Cần 1 logic để có thể không phụ thuộc vào các bước
+        # Robust reactive logic independent of prompt order
         # ---------------------------------------------------------------------
         logger.info(f"Entering order-independent post-login reactive loop for UID {self.account.uid}...")
         max_loop_steps = 25
@@ -957,14 +957,14 @@ class FBLoginAction:
                 logged_in_confirmed = True
                 break
 
-            # 3. Handle @tests/dumps/03_save: nếu có thì click btn 'Save'
+            # 3. Handle @tests/dumps/03_save: click 'Save' button if present
             if self._is_save_login_screen():
                 logger.info(f"[Post-Login Step {step}] Detected '03_save' screen. Clicking 'Save'...")
                 self._click_save()
                 self.automator.smart_sleep(2.0, 3.0)
                 continue
 
-            # 4. Handle @tests/dumps/05_use_vi: nếu có thì click btn 'Continue in English...'
+            # 4. Handle @tests/dumps/05_use_vi: click 'Continue in English...' button if present
             if self._is_use_vi_screen():
                 logger.info(f"[Post-Login Step {step}] Detected '05_use_vi' screen. Clicking 'Continue in English...'...")
                 self._click_continue_in_english()
@@ -973,7 +973,7 @@ class FBLoginAction:
 
             # 5. Handle Onboarding Screens:
             # @tests/dumps/04_access_contact, @tests/dumps/06_add_friend,
-            # @tests/dumps/07_add_mail, @tests/dumps/add_phone: Nếu có thì click skip
+            # @tests/dumps/07_add_mail, @tests/dumps/add_phone: click 'Skip' if present
             if (
                 self._is_access_contact_screen()
                 or self._is_add_friend_screen()

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Standalone Runner Script for Daily Account Rotation.
-Sử dụng:
+Usage:
   python scripts/daily_rotation.py --dry-run
   python scripts/daily_rotation.py --day 2 --dry-run
   python scripts/daily_rotation.py --concurrency 2

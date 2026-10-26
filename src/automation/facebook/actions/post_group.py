@@ -60,7 +60,7 @@ class FBPostGroupAction:
             if not d:
                 return False
 
-            # Click Write something / Bấm để viết bài
+            # Click 'Write something...' composer box
             post_box_xpaths = [
                 "//*[contains(@text, 'Write something') or contains(@text, 'Viết gì đó') or contains(@text, 'Tạo bài viết')]",
                 "//*[contains(@content-desc, 'Write something') or contains(@content-desc, 'Viết gì đó')]"
@@ -88,7 +88,7 @@ class FBPostGroupAction:
                     d(className="android.widget.ImageView")[0].click()
                     self.automator.click_element(text="Next") or self.automator.click_element(text="Tiếp")
 
-            # Click POST / ĐĂNG
+            # Click POST button
             self.automator.click_element(text="POST") or self.automator.click_element(text="ĐĂNG") or self.automator.click_element(text="Post")
             self.automator.smart_sleep(5.0, 8.0)
 

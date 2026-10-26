@@ -1,74 +1,69 @@
-Viewed run_cmd.py:60-151
-Viewed run_cmd.py:100-151
-Edited run_cmd.py
-Ran command: `/Volumes/KINGSTON/miniconda3/envs/my-manager.v2/bin/python main-cli.py run --help`
-Ran command: `/Volumes/KINGSTON/miniconda3/envs/my-manager.v2/bin/python main-cli.py run discussion-group --help`
-Ran command: `/Volumes/KINGSTON/miniconda3/envs/my-manager.v2/bin/python main-cli.py run marketplace-share --help; /Volumes/KINGSTON/miniconda3/envs/my-manager.v2/bin/python main-cli.py run single-listing --help`
+# 🧪 CLI Action Tests Guide
 
-Dưới đây là các lệnh CLI `python main-cli.py run ...` đã được thiết kế sẵn để bạn có thể test trực tiếp từng action trên các Redroid container.
+Below are the pre-configured CLI commands (`python main-cli.py run ...`) designed for testing each action directly on Redroid containers.
 
-Bạn có thể sử dụng theo 2 cách: **Lệnh chuyên dụng trực tiếp** *(khuyên dùng vì ngắn gọn, rõ ràng)* hoặc **Lệnh tổng quát `run action`**.
+You can run them in two ways: **Dedicated Direct Commands** *(recommended for brevity and clarity)* or the **Generic `run action` Command**.
 
 ---
 
-### 1. Test Action `discussion_group` (Đăng bài thảo luận nhóm)
+### 1. Test Action `discussion_group` (Group Discussion Post)
 
-**Lệnh chuyên dụng:**
+**Dedicated Commands:**
 ```bash
-# 1.1. Đăng thảo luận vào nhóm ngẫu nhiên theo loại giao dịch (cho thuê / rental)
+# 1.1. Post discussion to a random group by transaction type (rental)
 python main-cli.py run discussion-group -u 100089123456789 -t rental --use-ai --v1-prod
 
-# 1.2. Đăng thảo luận bán đất/nhà (sale) vào 1 nhóm cụ thể (chỉ định group ID)
+# 1.2. Post real estate sale discussion to a specific group by ID
 python main-cli.py run discussion-group -u 100089123456789 -g 5857815244230418 -t sale --use-ai --v1-prod
 
-# 1.3. Đăng với nội dung custom (không lấy từ DB v1)
-python main-cli.py run discussion-group -u 100089123456789 --no-v1-prod -c "Chính chủ cho thuê nhà nguyên căn view rừng thông Đà Lạt, giá 8tr/tháng."
+# 1.3. Post with custom content (not fetched from v1 DB)
+python main-cli.py run discussion-group -u 100089123456789 --no-v1-prod -c "Private owner renting whole house with pine forest view in Da Lat, 8M/month."
 ```
 
 ---
 
-### 2. Test Action `list_group_share` (Niêm yết Mua bán nhóm + Cross-share)
+### 2. Test Action `list_group_share` (Group Buy/Sell Listing + Cross-Share)
 
-**Lệnh chuyên dụng:**
+**Dedicated Commands:**
 ```bash
-# 2.1. Niêm yết sản phẩm từ v1 DB vào nhóm gốc và cross-share sang 5 nhóm Top thành viên
+# 2.1. List product from v1 DB into primary group and cross-share to 5 top-member groups
 python main-cli.py run group-share -u 100089123456789 -g 5857815244230418 -s 5 -t rental --use-ai --v1-prod
 
-# 2.2. Chạy hàng loạt 3 tài khoản cùng lúc (concurrency = 3)
+# 2.2. Batch run across 3 accounts concurrently (concurrency = 3)
 python main-cli.py run group-share -u 100089123456789 -u 100089123456780 -u 100089123456781 -s 10 -t sale -m 3
 ```
 
 ---
 
-### 3. Test Action `list_marketplace_share` (Niêm yết Marketplace + Cross-share)
+### 3. Test Action `list_marketplace_share` (Marketplace Listing + Cross-Share)
 
-**Lệnh chuyên dụng:**
+**Dedicated Commands:**
 ```bash
-# 3.1. Đăng bài niêm yết lên Marketplace Đà Lạt và chia sẻ lên 20 nhóm liên quan
+# 3.1. Create listing on Da Lat Marketplace and share to 20 related groups
 python main-cli.py run marketplace-share -u 100089123456789 -l "Da Lat" -s 20 -t sale --use-ai --v1-prod
 
-# 3.2. Đăng bài cho thuê trên Marketplace
+# 3.2. Post rental listing on Marketplace
 python main-cli.py run marketplace-share -u 100089123456789 -l "Da Lat" -s 15 -t rental --use-ai --v1-prod
 ```
 
 ---
 
-### 4. Test Action `single_listing` (Đăng bài thông minh qua $N$ nhóm)
+### 4. Test Action `single_listing` (Smart Posting across N Groups)
 
-**Lệnh chuyên dụng:**
+**Dedicated Commands:**
 ```bash
-# 4.1. Đăng lần lượt qua 3 nhóm (tự động phát hiện Sell hay Discussion cho từng nhóm)
+# 4.1. Sequentially post across 3 groups (auto-detects Buy/Sell or Discussion format for each)
 python main-cli.py run single-listing -u 100089123456789 -c 3 -t rental --use-ai --v1-prod
 
-# 4.2. Đăng qua 5 nhóm mua bán đất (sale)
+# 4.2. Post across 5 real estate sale groups
 python main-cli.py run single-listing -u 100089123456789 -c 5 -t sale --use-ai --v1-prod
 ```
 
 ---
 
-### 5. Cách gọi tổng quát qua `run action --action <TÊN_ACTION>`
+### 5. Generic Invocation via `run action --action <ACTION_NAME>`
 
-Bạn cũng có thể truyền JSON params tùy ý qua lệnh `run action`:
+You can also pass arbitrary JSON params via the `run action` command:
 
 ```bash
 # 5.1. Test discussion_group
@@ -84,4 +79,4 @@ python main-cli.py run action --action list_marketplace_share --uids 10008912345
 python main-cli.py run action --action single_listing --uids 100089123456789 --params '{"group_count": 3, "transaction_type": "rental"}'
 ```
 
-> **Lưu ý:** Thêm cờ `--auto-stop` vào bất kỳ lệnh nào nếu bạn muốn hệ thống tự động tắt Redroid container và nhả Proxy sau khi hoàn thành.
+> **Note:** Add the `--auto-stop` flag to any command if you want the system to automatically stop the Redroid container and release the proxy upon completion.

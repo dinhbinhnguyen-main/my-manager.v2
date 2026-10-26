@@ -435,7 +435,7 @@ class BaseAutomator:
         self.device.swipe(w // 2, sy, w // 2, ey, steps=10)
 
     def try_click_see_more(self) -> bool:
-        """Clicks 'See more / Xem thêm' text expansion button if visible.
+        """Clicks 'See more' text expansion button if visible.
 
         Strictly excludes 3-dot overflow options menu ('See more options...', 'More options...').
         """
