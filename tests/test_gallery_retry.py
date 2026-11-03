@@ -87,7 +87,11 @@ class TestGalleryRetry(unittest.TestCase):
         result = dismiss_listing_tooltip_popups(self.mock_bot)
         self.assertTrue(result)
         mock_tip.click_exists.assert_called_once()
-        self.mock_bot.log.assert_any_call("🧹 Phát hiện tooltip che khuất form niêm yết (desc: '(?i).*improve your listing photos.*'). Đang click đóng...")
+        expected_log = (
+            "🧹 Detected tooltip obstructing listing form (desc: '(?i).*(improve your listing photos|"
+            "tips for how to|listing photos here|improve your listing|mẹo cải thiện ảnh|mẹo.*ảnh niêm yết|mẹo cho ảnh).*'). Dismissing..."
+        )
+        self.mock_bot.log.assert_any_call(expected_log)
 
 
 if __name__ == "__main__":

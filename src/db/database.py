@@ -14,6 +14,9 @@ def get_db_connection() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA foreign_keys=ON;")
+    conn.execute("PRAGMA synchronous=NORMAL;")
+    conn.execute("PRAGMA temp_store=MEMORY;")
+    conn.execute("PRAGMA cache_size=-64000;")
     return conn
 
 
@@ -114,9 +117,9 @@ def init_db(force: bool = False):
             imei TEXT,
             mac_address TEXT,
             serial TEXT,
-            width INTEGER DEFAULT 1080,
-            height INTEGER DEFAULT 1920,
-            dpi INTEGER DEFAULT 420,
+            width INTEGER DEFAULT 720,
+            height INTEGER DEFAULT 1280,
+            dpi INTEGER DEFAULT 320,
             locale TEXT DEFAULT 'vi-VN',
             timezone TEXT DEFAULT 'Asia/Ho_Chi_Minh'
         );

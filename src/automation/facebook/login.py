@@ -797,8 +797,13 @@ class FBLoginAction:
             if not pwd_field.exists:
                 pwd_field = d(className="android.widget.EditText", textMatches=r"(?i).*(password|mật khẩu).*")
             if not pwd_field.exists:
-                pwd_field = d(className="android.widget.EditText", password=True)
-            if not pwd_field.exists:
+                try:
+                    xp = d.xpath('//android.widget.EditText[@password="true"]')
+                    if xp.exists:
+                        pwd_field = xp
+                except Exception:
+                    pass
+            if not pwd_field or not pwd_field.exists:
                 edits = d(className="android.widget.EditText")
                 if len(edits) > 1:
                     pwd_field = edits[1]

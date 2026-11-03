@@ -18,7 +18,12 @@ def sync_all():
     init_db(force=True)
 
     # 1. Import accounts from v1
-    v1_acc_db = Path("/Users/dinhbinhnguyen/Dev/my-manager.v1/bin/accounts.db")
+    candidate_acc_dbs = [
+        Path("/Users/dinhbinhnguyen/Dev/my-manager.v1/bin/accounts.db"),
+        Path("/home/dinhbinhnguyen/Devs/my-manager.v1/bin/accounts.db"),
+        BASE_DIR.parent / "my-manager.v1" / "bin" / "accounts.db",
+    ]
+    v1_acc_db = next((p for p in candidate_acc_dbs if p.exists()), candidate_acc_dbs[0])
     if v1_acc_db.exists():
         conn_v1 = sqlite3.connect(v1_acc_db)
         conn_v1.row_factory = sqlite3.Row
@@ -57,7 +62,12 @@ def sync_all():
         print(f"Imported accounts from {v1_acc_db}.")
 
     # 2. Import proxies from v1 settings
-    v1_set_db = Path("/Users/dinhbinhnguyen/Dev/my-manager.v1/bin/settings.db")
+    candidate_set_dbs = [
+        Path("/Users/dinhbinhnguyen/Dev/my-manager.v1/bin/settings.db"),
+        Path("/home/dinhbinhnguyen/Devs/my-manager.v1/bin/settings.db"),
+        BASE_DIR.parent / "my-manager.v1" / "bin" / "settings.db",
+    ]
+    v1_set_db = next((p for p in candidate_set_dbs if p.exists()), candidate_set_dbs[0])
     if v1_set_db.exists():
         conn_v1_s = sqlite3.connect(v1_set_db)
         conn_v1_s.row_factory = sqlite3.Row

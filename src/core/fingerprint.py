@@ -23,9 +23,9 @@ class DeviceProfile(BaseModel):
     imei: str
     mac_address: str
     serial: str
-    width: int = 1080
-    height: int = 1920
-    dpi: int = 420
+    width: int = 720
+    height: int = 1280
+    dpi: int = 320
     locale: str = "vi-VN"
     timezone: str = "Asia/Ho_Chi_Minh"
 

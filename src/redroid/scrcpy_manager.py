@@ -124,9 +124,11 @@ class ScrcpyManager:
             title,
             "--no-audio",
             "--max-size",
-            "960",
+            "640",
             "--max-fps",
-            "30",
+            "15",
+            "--video-bit-rate",
+            "2M",
             "--shortcut-mod=lctrl,rctrl,lalt,lsuper",
             "--prefer-text",
             "--keyboard=sdk",
@@ -160,6 +162,8 @@ class ScrcpyManager:
                 stderr=log_handle,
                 preexec_fn=os.setpgrp,
             )
+            # Close handle in parent process to avoid file descriptor leakage (child process holds its own dup)
+            log_handle.close()
             self._active_processes[adb_port] = proc
             if bounds:
                 self._active_window_bounds[adb_port] = bounds

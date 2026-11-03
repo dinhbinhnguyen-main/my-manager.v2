@@ -354,31 +354,25 @@ def dismiss_listing_tooltip_popups(bot: BaseAutomator) -> bool:
     if not bot.d:
         return False
 
-    tooltip_patterns = [
-        r"(?i).*improve your listing photos.*",
-        r"(?i).*tips for how to.*",
-        r"(?i).*listing photos here.*",
-        r"(?i).*improve your listing.*",
-        r"(?i).*mẹo cải thiện ảnh.*",
-        r"(?i).*mẹo.*ảnh niêm yết.*",
-        r"(?i).*mẹo cho ảnh.*",
-    ]
+    tooltip_pattern = (
+        r"(?i).*(improve your listing photos|tips for how to|listing photos here|"
+        r"improve your listing|mẹo cải thiện ảnh|mẹo.*ảnh niêm yết|mẹo cho ảnh).*"
+    )
 
     try:
-        for p in tooltip_patterns:
-            tip_desc = bot.d(descriptionMatches=p)
-            if tip_desc.exists:
-                bot.log(f"🧹 Detected tooltip obstructing listing form (desc: '{p}'). Dismissing...")
-                tip_desc.click_exists(timeout=2)
-                bot.smart_sleep(1.0)
-                return True
+        tip_desc = bot.d(descriptionMatches=tooltip_pattern)
+        if tip_desc.exists:
+            bot.log(f"🧹 Detected tooltip obstructing listing form (desc: '{tooltip_pattern}'). Dismissing...")
+            tip_desc.click_exists(timeout=2)
+            bot.smart_sleep(1.0)
+            return True
 
-            tip_text = bot.d(textMatches=p)
-            if tip_text.exists:
-                bot.log(f"🧹 Detected tooltip obstructing listing form (text: '{p}'). Dismissing...")
-                tip_text.click_exists(timeout=2)
-                bot.smart_sleep(1.0)
-                return True
+        tip_text = bot.d(textMatches=tooltip_pattern)
+        if tip_text.exists:
+            bot.log(f"🧹 Detected tooltip obstructing listing form (text: '{tooltip_pattern}'). Dismissing...")
+            tip_text.click_exists(timeout=2)
+            bot.smart_sleep(1.0)
+            return True
 
         tip_generic = bot.d(className="android.view.ViewGroup", descriptionMatches=r"(?i).*(tips|mẹo).*")
         if tip_generic.exists:

@@ -91,7 +91,7 @@ class BaseAutomator:
             self.device.watcher("OK_BUTTON").when(
                 "//android.widget.Button[@text='OK' or @text='Ok' or @text='ok']"
             ).click()
-            self.device.watcher.start(interval=2.0)
+            self.device.watcher.start(interval=5.0)
         except Exception as e:
             logger.warning(f"Could not setup watchers: {e}")
 

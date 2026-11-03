@@ -280,6 +280,61 @@ class TestFBLoginAction(unittest.TestCase):
             self.assertIn("[SUCCESS] UID: 1111", lines[0])
             self.assertIn("[FAILED ] UID: 2222", lines[1])
 
+    @patch("time.sleep")
+    @patch("time.time")
+    @patch("src.db.repository.AccountRepository.get_by_uid")
+    @patch.object(FBLoginAction, "_dump_ui")
+    def test_password_field_fallback_to_edits(self, mock_dump_ui, mock_get_by_uid, mock_time, mock_sleep):
+        """Verifies password field falls back to edits[1] without raising ReferenceError if text/desc doesn't match."""
+        curr_t = [0.0]
+        def fake_time():
+            curr_t[0] += 5.0
+            return curr_t[0]
+        mock_time.side_effect = fake_time
+        mock_get_by_uid.return_value = Account(uid="10004", password="pwd", two_fa="JBSWY3DPEHPK3PXP")
+
+        account = Account(uid="10004", password="pwd", two_fa="JBSWY3DPEHPK3PXP")
+        action = FBLoginAction(self.mock_automator, account)
+        action.detector.is_checkpoint = MagicMock(return_value=(False, ""))
+        action._is_start_screen = MagicMock(return_value=False)
+        action._is_login_screen = MagicMock(return_value=True)
+        action._is_2fa_screen = MagicMock(return_value=False)
+        action._is_home_screen = MagicMock(return_value=False)
+
+        mock_user = MagicMock()
+        mock_user.exists = True
+        mock_user.get_text.return_value = "10004"
+        mock_pwd = MagicMock()
+        mock_pwd.exists = True
+        mock_pwd.get_text.return_value = "pwd"
+        mock_btn = MagicMock()
+        mock_btn.exists = True
+
+        def device_call(**kwargs):
+            if "descriptionMatches" in kwargs and "mobile number" in kwargs["descriptionMatches"]:
+                return mock_user
+            if "className" in kwargs and kwargs["className"] == "android.widget.EditText" and "descriptionMatches" not in kwargs and "textMatches" not in kwargs:
+                coll = MagicMock()
+                coll.__len__.return_value = 2
+                coll.__getitem__.side_effect = lambda idx: [mock_user, mock_pwd][idx]
+                return coll
+            if "descriptionMatches" in kwargs and "log in" in kwargs["descriptionMatches"]:
+                return mock_btn
+            m = MagicMock()
+            m.exists = False
+            return m
+
+        self.mock_device.side_effect = device_call
+        self.mock_device.xpath.return_value.exists = False
+
+        res = action.execute()
+        # Should not raise ReferenceError; instead executes flow and proceeds to 2FA check
+        self.assertFalse(res)
+        mock_dump_ui.assert_called_once()
+        self.assertIn("no_2fa_10004", mock_dump_ui.call_args[1]["tag"])
+        mock_pwd.set_text.assert_called_once_with("pwd")
+
+
 
 if __name__ == "__main__":
     unittest.main()
