@@ -13,6 +13,11 @@ DATA_DIR.mkdir(exist_ok=True)
 LOG_DIR.mkdir(exist_ok=True)
 APK_DIR.mkdir(exist_ok=True)
 
+CRM_SERVER_URL = os.getenv("CRM_SERVER_URL", "http://192.168.1.12:3000")
+CRM_DB_PATH = DATA_DIR / "crm_dev.db"
+CRM_IMAGES_DIR = DATA_DIR / "crm_images"
+CRM_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+
 DB_PATH = DATA_DIR / "manager.db"
 DEFAULT_FB_APK_PATH = APK_DIR / "facebook.apk"
 LOGIN_RESULTS_JSON = LOG_DIR / "login_results.json"

@@ -1,4 +1,4 @@
-"""CLI Subcommands for Real Estate Product Inspection from v1 DB."""
+"""CLI Subcommands for Real Estate Product Inspection from CRM Server / DB."""
 
 import typer
 from rich.console import Console
@@ -6,8 +6,22 @@ from rich.table import Table
 
 from src.services.v1_bridge import V1DatabaseBridge
 
-app = typer.Typer(help="Inspect real estate products from my-manager.v1 DB.")
+app = typer.Typer(help="Inspect real estate products from CRM Server (192.168.1.12) / DB.")
 console = Console()
+
+
+@app.command("sync")
+def sync_crm(
+    force: bool = typer.Option(True, "--force/--no-force", help="Force download latest snapshot from CRM server"),
+):
+    """Sync latest SQLite database snapshot from CRM server (192.168.1.12)."""
+    bridge = V1DatabaseBridge()
+    console.print(f"[cyan]Connecting to CRM server at {bridge._crm_url}...[/cyan]")
+    success = bridge.sync_crm_database(force=force)
+    if success:
+        console.print(f"[bold green]✅ Synced CRM database successfully to {bridge._crm_db_path}[/bold green]")
+    else:
+        console.print(f"[bold red]❌ Failed to sync CRM database from {bridge._crm_url}[/bold red]")
 
 
 @app.command("random")

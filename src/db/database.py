@@ -183,8 +183,15 @@ def init_db(force: bool = False):
         # Insert default customizable settings if not exist
         default_settings = [
             ("gemini_api_key", ""),
-            ("v1_db_path", "/home/dinhbinhnguyen/Devs/my-manager.v1/bin/products.db"),
-            ("v1_image_dir", "/home/dinhbinhnguyen/Devs/my-manager.v1/bin/images"),
+            ("crm_server_url", "http://192.168.1.12:3000"),
+            ("data_source", "crm"),
+            ("watermark_logo_path", "/Users/dinhbinhnguyen/Dev/my-manager.v1/assets/logos/logo_phone_number.png"),
+            ("watermark_opacity", "0.75"),
+            ("watermark_scale", "0.22"),
+            ("contact_name", "Đ. Bình"),
+            ("contact_phone", "0375 155 525"),
+            ("v1_db_path", "/Users/dinhbinhnguyen/Dev/my-manager.v1/bin/products.db"),
+            ("v1_image_dir", "/Users/dinhbinhnguyen/Dev/my-manager.v1/bin/products"),
             ("container", str(DATA_DIR / "containers")),
         ]
         for name, default_val in default_settings:
