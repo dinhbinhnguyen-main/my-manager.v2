@@ -65,6 +65,8 @@ htmlcov/
 /data/containers
 /data/containers/
 /data/containers*
+/data/crm_images/
+/data/crm_images
 /data/logs/
 /data/manager.db*
 
